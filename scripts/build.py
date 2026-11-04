@@ -128,7 +128,7 @@ def property_html(value, page):
         return ''.join(parts)
     if value.startswith(('https://', 'http://')) and safe_url(value):
         return f'<a href="{escape(value,quote=True)}">{escape(value)}</a>'
-    return escape(value) if value else '<span class="empty">Пусто</span>'
+    return escape(value) if value else ''
 
 def matching_page(group, row):
     matches = [p for p in pages.values() if p['group'] == group and p['title'] == row['Name']]
@@ -153,11 +153,58 @@ nav = ''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}"
 
 def shell(title, body, group=''):
     crumb = f'<span>/</span><span>{escape(group)}</span>' if group else ''
-    return f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{escape(title)} · PhiloLoom</title><meta name="description" content="PhiloLoom — личный философский справочник"><link rel="stylesheet" href="style.css"><script src="app.js" defer></script></head><body><a class="skip" href="#main">К содержимому</a><header><a class="brand" href="index.html">📜 PhiloLoom</a>{crumb}<button id="search-open" type="button">Поиск</button></header><main id="main">{body}</main><footer>PhiloLoom · Философский справочник</footer><dialog id="page-panel" aria-label="Подробности страницы"><div class="panel-toolbar"><button id="panel-back" aria-label="Назад в панели">←</button><button id="panel-next" aria-label="Следующая запись">↓</button><a id="panel-full" data-full-page aria-label="Открыть на всю страницу" title="Открыть на всю страницу">↗</a><button id="panel-close" aria-label="Закрыть подробности">×</button></div><div id="panel-content" class="panel-content" aria-live="polite"></div></dialog><dialog id="image-dialog" aria-label="Просмотр изображения"><button id="image-close" aria-label="Закрыть изображение">×</button><img id="image-full" alt=""></dialog><dialog id="search-dialog"><form method="dialog"><label for="query">Поиск по справочнику</label><button aria-label="Закрыть поиск">×</button></form><input id="query" type="search" placeholder="Тема, философ или фрагмент текста…" autocomplete="off"><p id="search-status" role="status"></p><ul id="results"></ul></dialog></body></html>'''
+    cover = '<div class="hero-cover"><img src="ui/forest-cover.jpg" alt="" width="4800" height="3200" fetchpriority="high"></div>' if not group else ''
+    return f'''<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>{escape(title)} · PhiloLoom</title>
+<meta name="description" content="PhiloLoom — личный философский справочник">
+<link rel="stylesheet" href="style.css">
+<script src="app.js" defer>
+</script>
+</head>
+<body>
+<a class="skip" href="#main">К содержимому</a>
+<header>
+<a class="brand" href="index.html">📜 PhiloLoom</a>{crumb}<button id="search-open" type="button">Поиск</button>
+</header>{cover}<main id="main" class="{'home-page' if not group else 'detail-page'}">{body}</main>
+<footer>PhiloLoom · Философский справочник</footer>
+<dialog id="page-panel" aria-label="Подробности страницы">
+<div class="panel-toolbar">
+<button id="panel-back" aria-label="Назад в панели">←</button>
+<button id="panel-next" aria-label="Следующая запись">↓</button>
+<a id="panel-full" data-full-page aria-label="Открыть на всю страницу" title="Открыть на всю страницу">↗</a>
+<button id="panel-close" aria-label="Закрыть подробности">×</button>
+</div>
+<div id="panel-content" class="panel-content" aria-live="polite">
+</div>
+</dialog>
+<dialog id="image-dialog" aria-label="Просмотр изображения">
+<button id="image-close" aria-label="Закрыть изображение">×</button>
+<img id="image-full" alt="">
+</dialog>
+<dialog id="search-dialog">
+<form method="dialog">
+<label for="query">Поиск по справочнику</label>
+<button aria-label="Закрыть поиск">×</button>
+</form>
+<input id="query" type="search" placeholder="Тема, философ или фрагмент текста…" autocomplete="off">
+<p id="search-status" role="status">
+</p>
+<ul id="results">
+</ul>
+</dialog>
+</body>
+</html>'''
 
 if OUT.exists():
     shutil.rmtree(OUT)
 OUT.mkdir()
+if (ROOT / 'site' / 'assets').exists():
+    shutil.copytree(ROOT / 'site' / 'assets', OUT / 'ui')
 if (ROOT / 'content' / 'previews').exists():
     shutil.copytree(ROOT / 'content' / 'previews', OUT / 'previews')
 for source,dest in assets.items():
@@ -179,8 +226,10 @@ for p in pages.values():
     row = rows_by_id.get(p['id'])
     if row:
         props = [(k,v) for k,v in row.items() if k != 'Name']
+    props = [(k,v) for k,v in props if v.strip() and k != 'Конспект']
     table = '<dl class="properties">' + ''.join(f'<dt>{escape(k)}</dt><dd>{property_html(v,p)}</dd>' for k,v in props) + '</dl>' if props else ''
-    body = f'<nav class="back"><a href="index.html">← Философия</a></nav><h1>{escape(p["title"])}</h1>{table}<article>{render(chr(10).join(lines),p)}</article>'
+    quote_class = ' class="quote-heading"' if p['group'] == 'Цитаты' else ''
+    body = f'<nav class="back"><a href="index.html">← Философия</a></nav><h1{quote_class}>{escape(p["title"])}</h1>{table}<article>{render(chr(10).join(lines),p)}</article>'
     (OUT / (p['id'] + '.html')).write_text(shell(p['title'],body,p['group']),encoding='utf-8')
 
 intro = home['text'].split('\n## ')[0].splitlines()[1:]
@@ -188,51 +237,85 @@ intro_html = render('\n'.join(intro),home)
 # The export represents Notion toggles as top-level list items.
 intro_html = re.sub(r'<li>\s*<p>(Посмотреть|📗\s*Почитать)</p>([\s\S]*?)</li>',r'<li><details><summary>\1</summary>\2</details></li>',intro_html)
 body = f'<div class="page-icon">📜</div><h1>Философия</h1><div class="intro">{intro_html}</div><nav class="section-nav" aria-label="Разделы">{nav}</nav>'
+class MediaLinks(HTMLParser):
+    def __init__(self, text):
+        super().__init__()
+        self.images, self.links = [], []
+        self.feed(markdown.markdown(text))
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'img' and attrs.get('src'):
+            self.images.append(attrs['src'])
+        elif tag == 'a' and attrs.get('href','').startswith(('http://','https://')):
+            self.links.append(attrs['href'])
+
+
+def page_image(page):
+    media = MediaLinks(page['text'])
+    # Prefer saved portraits for people; preserve original embedded illustrations for articles.
+    if page['group'] != 'Личности' and media.images:
+        return resolve(media.images[0], page)
+    for url in media.links:
+        data = previews.get(url, {})
+        image = data.get('local_image') or data.get('image')
+        if image and safe_url(image):
+            return image
+    return resolve(media.images[0], page) if media.images else ''
+
+
+def record_meta(group, row):
+    if group == 'Личности':
+        return ' — '.join(row.get(k,'') for k in ('Год рождения','Год смерти') if row.get(k,''))
+    return re.sub(r' \(%.*$', '', row.get('Автор','') or row.get('Блок',''))
+
+
+def records(group):
+    return sorted(ordered[group], key=lambda page: page['title'].casefold()) if group == 'Темы' else ordered[group]
+
+
 def gallery(group):
-    markup = '<div class="cards">'
-    records = sorted(ordered[group], key=lambda p: p['title'].casefold()) if group == 'Темы' else ordered[group]
-    for p in records:
-        row = rows_by_id[p['id']]
-        desc = row.get('Автор','') or row.get('Блок','')
-        author = re.sub(r' \(%.*$', '', desc)
-        cover = ''
-        if group in ('Самостоятельная работа', 'Личности'):
-            external = re.search(r'\]\((https?://[^\s)]+)\)', p['text'])
-            # Prefer the biography bookmark metadata over an obsolete portrait URL.
-            urls = re.findall(r'(?<!!)\[[^\]]*\]\((https?://[^\s)]+)\)', p['text'])
-            image = next(((previews[u].get('local_image') or previews[u]['image']) for u in urls if previews.get(u,{}).get('image')), '')
-            if not image and group == 'Личности' and external:
-                image = external[1]
-            if image and safe_url(image):
-                cover = f'<img class="card-cover" src="{escape(image,quote=True)}" alt="" loading="lazy" referrerpolicy="no-referrer">'
-        markup += f'<a class="card" href="{p["id"]}.html">{cover}<span>{escape(p["title"])}</span>' + (f'<small>{escape(author)}</small>' if author else '') + '</a>'
+    markup = '<div class="cards' + (' quote-cards' if group == 'Цитаты' else '') + '">'
+    for page in records(group):
+        description = record_meta(group, rows_by_id[page['id']])
+        image = page_image(page) if group not in ('Цитаты', 'Темы') else ''
+        cover = f'<img class="card-cover" src="{escape(image,quote=True)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' if image else ''
+        markup += f'<a class="card" href="{page["id"]}.html">{cover}<span>{escape(page["title"])}</span>' + (f'<small>{escape(description)}</small>' if description else '') + '</a>'
     return markup + '</div>'
+
+
+def record_list(group):
+    markup = '<ul class="entry-list' + (' quotes-list' if group == 'Цитаты' else '') + '">'
+    for page in records(group):
+        description = record_meta(group, rows_by_id[page['id']])
+        markup += f'<li><a class="entry-link" href="{page["id"]}.html"><span class="entry-title">{escape(page["title"])}</span>' + (f'<span class="entry-meta">{escape(description)}</span>' if description else '') + '</a></li>'
+    return markup + '</ul>'
 
 
 def database_table(group):
     columns = (['Name','Темы','Личности'] if group == 'История философии' else
-               ['Name','Год рождения','Год смерти','Темы','История философии'] if group == 'Личности' else ['Name','Блок','Зачтено'])
+               ['Name','Год рождения','Год смерти','Темы','История философии'] if group == 'Личности' else
+               ['Name','Автор'] if group == 'Цитаты' else
+               ['Name','История философии','Личности','Связь'] if group == 'Темы' else ['Name','Блок','Зачтено'])
+    columns = [column for column in columns if column == 'Name' or any(row.get(column, '').strip() for row in databases[group])]
     markup = '<div class="table-scroll" tabindex="0" role="region" aria-label="'+escape(group)+'"><table class="database"><thead><tr>'
-    markup += ''.join(f'<th><button class="column-sort" type="button" data-column="{i}">{escape(c)}</button></th>' for i,c in enumerate(columns)) + '</tr></thead><tbody>'
-    for p in ordered[group]:
-        row = rows_by_id[p['id']]
-        markup += '<tr><td><a href="'+p['id']+'.html">'+escape(p['title'])+'</a></td>' + ''.join('<td>'+property_html(row.get(c,''),p)+'</td>' for c in columns[1:]) + '</tr>'
+    markup += ''.join(f'<th scope="col"><button class="column-sort" type="button" data-column="{i}">{escape("Название" if column=="Name" else column)}</button></th>' for i,column in enumerate(columns)) + '</tr></thead><tbody>'
+    for page in records(group):
+        row = rows_by_id[page['id']]
+        markup += '<tr><td><a href="'+page['id']+'.html">'+escape(page['title'])+'</a></td>' + ''.join('<td>'+property_html(row.get(column,''),page)+'</td>' for column in columns[1:]) + '</tr>'
     return markup + '</tbody></table></div>'
 
 
+DEFAULT_VIEWS = {'Темы':'gallery','История философии':'table','Цитаты':'list','Личности':'table','Самостоятельная работа':'gallery'}
 for group,label in GROUPS:
-    dbid = next(i for i,n in db_ids.items() if n==group)
-    body += f'<section id="{dbid}"><h2>{label}</h2>'
-    if group in ('История философии','Личности','Самостоятельная работа'):
-        default = 'gallery' if group == 'Самостоятельная работа' else 'table'
-        body += '<div class="view-controls" role="group" aria-label="Вид раздела">' + ''.join(f'<button type="button" data-view="{view}" aria-pressed="{str(view==default).lower()}">{label}</button>' for view,label in [('table','Таблица'),('gallery','Галерея')]) + '</div>'
-        for view,content in [('table',database_table(group)),('gallery',gallery(group))]:
-            hidden = '' if view == default else ' hidden'
-            body += f'<div data-view-content="{view}"{hidden}>{content}</div>'
-    else:
-        body += gallery(group)
+    dbid = next(i for i,name in db_ids.items() if name==group)
+    body += f'<section id="{dbid}" class="reference-section" aria-labelledby="heading-{dbid}"><h2 id="heading-{dbid}">{label}</h2>'
+    default = DEFAULT_VIEWS[group]
+    body += '<div class="view-controls" role="group" aria-label="Вид раздела">' + ''.join(f'<button type="button" data-view="{view}" aria-pressed="{str(view==default).lower()}">{view_label}</button>' for view,view_label in [('gallery','Галерея'),('list','Список'),('table','Таблица')]) + '</div>'
+    for view,content in [('gallery',gallery(group)),('list',record_list(group)),('table',database_table(group))]:
+        hidden = '' if view == default else ' hidden'
+        body += f'<div data-view-content="{view}"{hidden}>{content}</div>'
     body += '</section>'
 (OUT / 'index.html').write_text(shell('Философия',body),encoding='utf-8')
-search = [dict(title=p['title'],group=p['group'],url=('index.html' if p==home else p['id']+'.html'),text=p['text']) for p in pages.values()]
+search = [dict(title=p['title'],group=p['group'],url=('index.html' if p==home else p['id']+'.html'),text=re.sub(r'^Конспект:.*(?:\n|$)', '', p['text'], flags=re.MULTILINE)) for p in pages.values()]
 (OUT / 'search.json').write_text(json.dumps(search,ensure_ascii=False),encoding='utf-8')
 print(f'Built {len(pages)} pages; {len(assets)} assets; '+', '.join(f'{g}: {len(ordered[g])}' for g,_ in GROUPS))

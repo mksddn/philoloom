@@ -259,13 +259,69 @@ if (initialPeek && pagePath(initialPeek)) {
   displayPanel(initialPeek);
 }
 
-// Database views and column sorting operate on existing generated content.
-document.querySelectorAll('.view-controls button').forEach(button => {
-  button.addEventListener('click', () => {
-    const section = button.closest('section');
-    section.querySelectorAll('[data-view]').forEach(control => control.setAttribute('aria-pressed', String(control === button)));
-    section.querySelectorAll('[data-view-content]').forEach(view => { view.hidden = view.dataset.viewContent !== button.dataset.view; });
+// Preserve real links and all section content in static HTML; enhance navigation in the browser.
+const sectionNav = document.querySelector('.section-nav');
+const sectionTabs = sectionNav ? [...sectionNav.querySelectorAll('a')] : [];
+const sections = [...document.querySelectorAll('.reference-section')];
+function activateSection(id, focus = false) {
+  const selected = sections.find(section => section.id === id) || sections[0];
+  if (!selected) return;
+  sections.forEach(section => { section.hidden = section !== selected; });
+  sectionTabs.forEach(tab => {
+    const active = tab.getAttribute('aria-controls') === selected.id;
+    tab.setAttribute('aria-selected', String(active));
+    tab.tabIndex = active ? 0 : -1;
+    if (active && focus) tab.focus();
   });
+}
+if (sectionNav) {
+  sectionNav.setAttribute('role', 'tablist');
+  sectionTabs.forEach((tab, index) => {
+    const id = new URL(tab.href).hash.slice(1);
+    tab.id = `section-tab-${index}`;
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-controls', id);
+    const section = document.getElementById(id);
+    section.setAttribute('role', 'tabpanel');
+    section.setAttribute('aria-labelledby', tab.id);
+    section.tabIndex = 0;
+    tab.addEventListener('click', event => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+      event.preventDefault();
+      const url = new URL(location.href);
+      url.hash = id;
+      history.replaceState(history.state, '', url);
+      activateSection(id);
+    });
+    tab.addEventListener('keydown', event => {
+      let next;
+      if (event.key === 'ArrowRight') next = (index+1) % sectionTabs.length;
+      if (event.key === 'ArrowLeft') next = (index-1+sectionTabs.length) % sectionTabs.length;
+      if (event.key === 'Home') next = 0;
+      if (event.key === 'End') next = sectionTabs.length-1;
+      if (next !== undefined) { event.preventDefault(); sectionTabs[next].click(); sectionTabs[next].focus(); }
+    });
+  });
+  activateSection(location.hash.slice(1));
+  window.addEventListener('hashchange', () => activateSection(location.hash.slice(1)));
+  window.addEventListener('popstate', () => activateSection(location.hash.slice(1)));
+}
+function selectView(section, view, remember = false) {
+  const target = section.querySelector(`[data-view-content="${view}"]`);
+  if (!target) return;
+  section.querySelectorAll('[data-view]').forEach(control => control.setAttribute('aria-pressed', String(control.dataset.view === view)));
+  section.querySelectorAll('[data-view-content]').forEach(content => { content.hidden = content !== target; });
+  if (remember) {
+    try { localStorage.setItem(`philoloom:view:${section.id}`, view); } catch { /* Storage may be disabled. */ }
+  }
+}
+sections.forEach(section => {
+  let saved;
+  try { saved = localStorage.getItem(`philoloom:view:${section.id}`); } catch { /* Default views still work. */ }
+  if (['gallery', 'list', 'table'].includes(saved)) selectView(section, saved);
+});
+document.querySelectorAll('.view-controls button').forEach(button => {
+  button.addEventListener('click', () => selectView(button.closest('section'), button.dataset.view, true));
 });
 document.querySelectorAll('.column-sort').forEach(button => {
   button.addEventListener('click', () => {

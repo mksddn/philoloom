@@ -167,3 +167,42 @@ dialog input { width: 100%; padding: 10px; border: 1px solid var(--line); border
   main.home-page { margin-top: 0; }
   .reference-section[hidden] { display: block !important; }
 }
+
+/* Reading controls, explicit record relationships, and page paths. */
+.page-breadcrumbs { display: flex; gap: 8px; align-items: center; min-width: 0; font-size: 13px; }
+.page-breadcrumbs a { flex: 0 0 auto; text-decoration: none; }
+.page-breadcrumbs [aria-current] { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.panel-path { height: 36px; padding: 0 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; }
+.panel-path .page-breadcrumbs { margin: 0; width: 100%; }
+.panel-path:empty { visibility: hidden; }
+.panel-content { height: calc(100% - 84px); }
+.reading-controls { margin: 0 0 24px; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 13px; }
+.reading-controls > button { border: 1px solid var(--line); }
+.reading-controls > button[aria-pressed=true] { background: var(--surface); color: var(--accent); border-color: var(--accent); }
+.reader-options { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; color: var(--muted); }
+.reader-options output { min-width: 42px; text-align: center; }
+.reader-options label { margin-left: 10px; }
+.reader-options select { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 4px; }
+.reader-options button:disabled { opacity: .35; }
+.reader-mode article { max-width: var(--reader-width, 64ch); font-size: var(--reader-size, 18px); line-height: 1.85; margin-inline: auto; }
+.reader-mode .properties { display: none; }
+.reader-mode .related-records { max-width: var(--reader-width, 64ch); margin-inline: auto; }
+.related-records { border-top: 1px solid var(--line); margin-top: 48px; padding-top: 4px; }
+.related-records h2 { font-size: 20px; }
+.related-records ul { list-style: none; padding: 0; }
+.related-records li a { display: flex; gap: 16px; align-items: baseline; justify-content: space-between; padding: 7px 8px; text-decoration: none; border-radius: 4px; }
+.related-records li span { overflow-wrap: anywhere; }
+.related-records small { color: var(--muted); flex-shrink: 0; font-size: 12px; }
+.related-records summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+@media (max-width: 650px) {
+  .page-breadcrumbs { flex-wrap: wrap; gap: 3px 8px; }
+  .page-breadcrumbs [aria-current] { flex-basis: 100%; }
+  .panel-path { height: 58px; }
+  .panel-path .page-breadcrumbs [aria-current] { flex-basis: 100%; }
+  .panel-content { height: calc(100% - 106px); }
+  .related-records li a { display: block; }
+  .related-records small { display: block; }
+}
+@media print {
+  .reading-controls, .reader-options { display: none !important; }
+}

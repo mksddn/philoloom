@@ -1,5 +1,6 @@
 """Build a portable static reference from the original Notion export."""
 import csv
+import hashlib
 import html
 import json
 import re
@@ -39,6 +40,49 @@ db_ids = {ID.search(p.name)[1]: re.sub(r' [a-f0-9]{32}_all$', '', p.stem)
 assets = {p.resolve(): 'assets/' + p.relative_to(CONTENT).as_posix()
           for p in CONTENT.rglob('*') if p.is_file() and p.suffix not in ('.md', '.csv')}
 
+IMAGE_MANIFEST = ROOT / 'content' / 'image-manifest.json'
+image_manifest = json.loads(IMAGE_MANIFEST.read_text(encoding='utf-8')) if IMAGE_MANIFEST.exists() else {'sources': {}}
+optimized_sources = image_manifest['sources']
+variant_sources = {variant['url']: info for info in optimized_sources.values() for variant in info['variants']}
+
+
+def image_info(url):
+    decoded = unquote(url)
+    if decoded in variant_sources:
+        return variant_sources[decoded]
+    for prefix, source in [('previews/', 'content/previews/'), ('ui/', 'site/assets/'), ('assets/', 'content/notion/')]:
+        if decoded.startswith(prefix):
+            return optimized_sources.get(source + decoded[len(prefix):])
+    return None
+
+
+def image_url(url):
+    info = image_info(url)
+    return info['variants'][-1]['url'] if info else url
+
+
+def image_html(url, css_class='', sizes='(max-width: 700px) 100vw, 700px', priority=False):
+    info = image_info(url)
+    attrs = f' class="{escape(css_class, quote=True)}"' if css_class else ''
+    if info:
+        variants = info['variants']
+        largest = variants[-1]
+        srcset = ', '.join(f"{item['url']} {item['width']}w" for item in variants)
+        attrs += (f' srcset="{escape(srcset,quote=True)}" sizes="{escape(sizes,quote=True)}"'
+                  f' width="{largest["width"]}" height="{largest["height"]}" data-full-src="{largest["url"]}"')
+        url = largest['url']
+    loading = 'fetchpriority="high"' if priority else 'loading="lazy"'
+    return f'<img{attrs} src="{escape(url,quote=True)}" alt="" {loading} decoding="async" referrerpolicy="no-referrer">'
+
+
+def local_portrait(page, fallback):
+    if page['group'] == 'Личности':
+        for url, metadata in previews.items():
+            if metadata.get('local_image') and url in page['text']:
+                return metadata['local_image']
+    return fallback
+
+
 def safe_url(url):
     return urlsplit(url).scheme.lower() in ('', 'https', 'http', 'mailto') and not url.startswith('//')
 
@@ -56,7 +100,7 @@ def resolve(url, page):
     candidate = (page['path'].parent / decoded).resolve()
     if candidate in assets:
         from urllib.parse import quote
-        return quote(assets[candidate])
+        return quote(image_url(assets[candidate]))
     return url if safe_url(url) else '#'
 
 class CleanHTML(HTMLParser):
@@ -68,6 +112,16 @@ class CleanHTML(HTMLParser):
         self.page, self.output = page, []
     def handle_starttag(self, tag, attrs):
         if tag not in self.allowed:
+            return
+        if tag == 'img':
+            values = dict(attrs)
+            source = values.get('src','')
+            if source and safe_url(source):
+                source = resolve(local_portrait(self.page, source), self.page)
+                markup = image_html(source)
+                alt = values.get('alt','')
+                markup = markup.replace('alt=""', f'alt="{escape(alt,quote=True)}"', 1)
+                self.output.append(markup)
             return
         clean = []
         for key, value in attrs:
@@ -96,7 +150,7 @@ def bookmark(url, label, page):
     if not image and 'wikipedia.org/wiki/' in url:
         portrait = re.search(r'!\[[^\]]*\]\((https?://[^\s]+)\)', page['text'])
         image = portrait[1] if portrait else ''
-    media = (f'<span class="bookmark-media"><img src="{escape(image,quote=True)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"></span>'
+    media = (f'<span class="bookmark-media">{image_html(image, sizes="(max-width: 700px) 30vw, 230px")}</span>'
              if image and safe_url(image) else '')
     description_html = f'<span class="bookmark-description">{escape(description)}</span>' if description else ''
     domain = urlsplit(html.unescape(url)).netloc
@@ -153,7 +207,7 @@ nav = ''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}"
 
 def shell(title, body, group=''):
     crumb = f'<span>/</span><span>{escape(group)}</span>' if group else ''
-    cover = '<div class="hero-cover"><img src="ui/forest-cover.jpg" alt="" width="4800" height="3200" fetchpriority="high"></div>' if not group else ''
+    cover = f'<div class="hero-cover">{image_html("ui/forest-cover.jpg", sizes="100vw", priority=True)}</div>' if not group else ''
     return f'''<!doctype html>
 <html lang="ru">
 <head>
@@ -179,6 +233,7 @@ def shell(title, body, group=''):
 <a id="panel-full" data-full-page aria-label="Открыть на всю страницу" title="Открыть на всю страницу">↗</a>
 <button id="panel-close" aria-label="Закрыть подробности">×</button>
 </div>
+<div id="panel-path" class="panel-path"></div>
 <div id="panel-content" class="panel-content" aria-live="polite">
 </div>
 </dialog>
@@ -203,33 +258,91 @@ def shell(title, body, group=''):
 if OUT.exists():
     shutil.rmtree(OUT)
 OUT.mkdir()
-if (ROOT / 'site' / 'assets').exists():
-    shutil.copytree(ROOT / 'site' / 'assets', OUT / 'ui')
-if (ROOT / 'content' / 'previews').exists():
-    shutil.copytree(ROOT / 'content' / 'previews', OUT / 'previews')
-for source,dest in assets.items():
-    target = OUT / dest
+def copy_asset(source, target):
+    with source.open('rb') as stream:
+        if stream.read(100).startswith(b'version https://git-lfs.github.com/spec/v1'):
+            raise RuntimeError('Missing Git LFS image contents. Run git lfs install and git lfs pull before building.')
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(source, target)
+
+
+for relative, info in optimized_sources.items():
+    source = ROOT / relative
+    if hashlib.sha256(source.read_bytes()).hexdigest() != info['sha256']:
+        raise RuntimeError('Image source changed or is a Git LFS pointer. Run git lfs pull and python3 scripts/optimize_images.py.')
+    for variant in info['variants']:
+        source = ROOT / 'content' / 'optimized' / Path(variant['url']).name
+        copy_asset(source, OUT / variant['url'])
+for folder, destination in [('site/assets', 'ui'), ('content/previews', 'previews')]:
+    for source in (ROOT / folder).rglob('*'):
+        if source.is_file() and source.relative_to(ROOT).as_posix() not in optimized_sources:
+            copy_asset(source, OUT / destination / source.relative_to(ROOT / folder))
+for source, dest in assets.items():
+    if source.relative_to(ROOT).as_posix() not in optimized_sources:
+        copy_asset(source, OUT / dest)
 for name in ('style.css', 'app.js'):
     shutil.copyfile(ROOT / 'site' / name, OUT / name)
+
+def page_parts(page):
+    lines = page['text'].splitlines()[1:]
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    properties = []
+    while lines and re.match(r'^[^#>\-*\[\n]{1,35}: ', lines[0]):
+        properties.append(lines.pop(0).split(': ', 1))
+    return properties, '\n'.join(lines)
+
+
+connections = {pid: set() for pid in pages}
+for pid, page in pages.items():
+    values = [value for key, value in rows_by_id.get(pid, {}).items() if key not in ('Name', 'Конспект', 'Задание')]
+    values.append(page_parts(page)[1])
+    for related_id in set(re.findall(r'([a-f0-9]{32})\.md', unquote(' '.join(values)))):
+        if related_id in pages and related_id != pid:
+            connections[pid].add(related_id)
+            connections[related_id].add(pid)
+
+
+def related_records(page):
+    linked = sorted((pages[pid] for pid in connections[page['id']]), key=lambda p: (p['group'] != 'Темы', p['group'], p['title'].casefold()))
+    if not linked:
+        return ''
+    def items(records):
+        return '<ul>' + ''.join(f'<li><a href="{p["id"]}.html"><span>{escape(p["title"])}</span><small>{escape(p["group"])}</small></a></li>' for p in records) + '</ul>'
+    content = items(linked[:10])
+    if len(linked) > 10:
+        content += f'<details><summary>Ещё {len(linked)-10}</summary>{items(linked[10:])}</details>'
+    return '<aside class="related-records" aria-label="Связанные записи"><h2>Связанные записи</h2>' + content + '</aside>'
+
+
+def breadcrumbs(page):
+    group_id = next((pid for pid, group in db_ids.items() if group == page['group']), '')
+    group_link = f'<a href="index.html#{group_id}">{escape(page["group"])}</a>' if group_id else ''
+    return (f'<nav class="back page-breadcrumbs" aria-label="Путь по справочнику"><a href="index.html">PhiloLoom</a>'
+            f'<span aria-hidden="true">/</span>{group_link}<span aria-hidden="true">/</span>'
+            f'<span aria-current="page" title="{escape(page["title"],quote=True)}">{escape(page["title"])}</span></nav>')
+
+
+READING_CONTROLS = ('<div class="reading-controls"><button type="button" data-reader-toggle aria-pressed="false">Режим чтения</button>'
+                    '<div class="reader-options" hidden><span>Размер текста</span>'
+                    '<button type="button" data-font-step="-1" aria-label="Уменьшить размер текста">A-</button>'
+                    '<output data-reader-output aria-label="Размер текста">18 px</output>'
+                    '<button type="button" data-font-step="1" aria-label="Увеличить размер текста">A+</button>'
+                    '<label>Ширина <select data-reader-width><option value="narrow">Узкая</option><option value="normal" selected>Обычная</option><option value="wide">Широкая</option></select></label>'
+                    '</div></div>')
+
 
 for p in pages.values():
     if p == home:
         continue
-    lines = p['text'].splitlines()[1:]
-    while lines and not lines[0].strip():
-        lines.pop(0)
-    props = []
-    while lines and re.match(r'^[^#>\-*\[\n]{1,35}: ', lines[0]):
-        props.append(lines.pop(0).split(': ', 1))
+    props, body_text = page_parts(p)
     row = rows_by_id.get(p['id'])
     if row:
         props = [(k,v) for k,v in row.items() if k != 'Name']
     props = [(k,v) for k,v in props if v.strip() and k != 'Конспект']
     table = '<dl class="properties">' + ''.join(f'<dt>{escape(k)}</dt><dd>{property_html(v,p)}</dd>' for k,v in props) + '</dl>' if props else ''
     quote_class = ' class="quote-heading"' if p['group'] == 'Цитаты' else ''
-    body = f'<nav class="back"><a href="index.html">← Философия</a></nav><h1{quote_class}>{escape(p["title"])}</h1>{table}<article>{render(chr(10).join(lines),p)}</article>'
+    body = f'{breadcrumbs(p)}<h1{quote_class}>{escape(p["title"])}</h1>{READING_CONTROLS}{table}<article>{render(body_text,p)}</article>{related_records(p)}'
     (OUT / (p['id'] + '.html')).write_text(shell(p['title'],body,p['group']),encoding='utf-8')
 
 intro = home['text'].split('\n## ')[0].splitlines()[1:]
@@ -278,7 +391,7 @@ def gallery(group):
     for page in records(group):
         description = record_meta(group, rows_by_id[page['id']])
         image = page_image(page) if group not in ('Цитаты', 'Темы') else ''
-        cover = f'<img class="card-cover" src="{escape(image,quote=True)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' if image else ''
+        cover = image_html(image, 'card-cover', '(max-width: 650px) 50vw, 320px') if image else ''
         markup += f'<a class="card" href="{page["id"]}.html">{cover}<span>{escape(page["title"])}</span>' + (f'<small>{escape(description)}</small>' if description else '') + '</a>'
     return markup + '</div>'
 

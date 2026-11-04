@@ -45,6 +45,7 @@ dialog.addEventListener('close', () => { revision++; });
 
 const panel = document.querySelector('#page-panel');
 const panelContent = document.querySelector('#panel-content');
+const panelPathBar = document.querySelector('#panel-path');
 const panelFull = document.querySelector('#panel-full');
 const panelBack = document.querySelector('#panel-back');
 const panelNext = document.querySelector('#panel-next');
@@ -56,6 +57,51 @@ let panelPath;
 let panelDepth = 0;
 let requestController;
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const readerWidths = {narrow:'48ch', normal:'64ch', wide:'76ch'};
+let readerSettings = {enabled:false, size:18, width:'normal'};
+try {
+  const saved = JSON.parse(localStorage.getItem('philoloom:reader') || 'null');
+  if (saved && typeof saved === 'object') {
+    readerSettings.enabled = saved.enabled === true;
+    readerSettings.size = Number.isFinite(saved.size) ? Math.max(16, Math.min(24, saved.size)) : 18;
+    readerSettings.width = Object.hasOwn(readerWidths, saved.width) ? saved.width : 'normal';
+  }
+} catch { /* Reading still works when storage is unavailable. */ }
+function updateReaderControls(root = document) {
+  root.querySelectorAll('[data-reader-toggle]').forEach(button => button.setAttribute('aria-pressed',String(readerSettings.enabled)));
+  root.querySelectorAll('.reader-options').forEach(options => { options.hidden = !readerSettings.enabled; });
+  root.querySelectorAll('[data-reader-output]').forEach(output => { output.textContent = `${readerSettings.size} px`; });
+  root.querySelectorAll('[data-reader-width]').forEach(select => { select.value = readerSettings.width; });
+  root.querySelectorAll('[data-font-step]').forEach(button => { button.disabled = Number(button.dataset.fontStep)<0 ? readerSettings.size<=16 : readerSettings.size>=24; });
+}
+function applyReaderSettings(remember = false) {
+  document.body.classList.toggle('reader-mode', readerSettings.enabled);
+  document.body.style.setProperty('--reader-size', `${readerSettings.size}px`);
+  document.body.style.setProperty('--reader-width', readerWidths[readerSettings.width]);
+  updateReaderControls();
+  if (remember) {
+    try { localStorage.setItem('philoloom:reader', JSON.stringify(readerSettings)); } catch { /* Keep session settings. */ }
+  }
+}
+document.addEventListener('click', event => {
+  if (event.target.closest('[data-reader-toggle]')) {
+    readerSettings.enabled = !readerSettings.enabled;
+    applyReaderSettings(true);
+  }
+  const step = event.target.closest('[data-font-step]');
+  if (step) {
+    readerSettings.size = Math.max(16,Math.min(24,readerSettings.size+Number(step.dataset.fontStep)));
+    applyReaderSettings(true);
+  }
+});
+document.addEventListener('change', event => {
+  if (event.target.matches('[data-reader-width]') && Object.hasOwn(readerWidths,event.target.value)) {
+    readerSettings.width = event.target.value;
+    applyReaderSettings(true);
+  }
+});
+applyReaderSettings();
 
 async function catalog() {
   if (!entries) {
@@ -96,6 +142,7 @@ async function displayPanel(path) {
     panel.showModal();
     document.documentElement.classList.add('panel-open');
   }
+  panelPathBar.replaceChildren();
   panelContent.textContent = 'Загружаем страницу…';
   panelContent.setAttribute('aria-busy', 'true');
   try {
@@ -110,7 +157,9 @@ async function displayPanel(path) {
     const parsed = new DOMParser().parseFromString(source, 'text/html');
     const main = parsed.querySelector('main');
     if (!main?.querySelector('h1')) throw new Error('Invalid page');
-    main.querySelector('.back')?.remove();
+    const breadcrumbsNode = main.querySelector('.back');
+    panelPathBar.replaceChildren(...(breadcrumbsNode ? [breadcrumbsNode.cloneNode(true)] : []));
+    breadcrumbsNode?.remove();
     panelContent.replaceChildren(...Array.from(main.childNodes, node => document.importNode(node, true)));
     const heading = panelContent.querySelector('h1');
     heading.id = 'panel-title';
@@ -195,11 +244,12 @@ const fullImage = document.querySelector('#image-full');
 document.querySelector('#image-close').addEventListener('click', () => imageDialog.close());
 imageDialog.addEventListener('click', event => { if (event.target === imageDialog) imageDialog.close(); });
 function showImage(image) {
-  fullImage.src = image.currentSrc || image.src;
+  fullImage.src = image.dataset.fullSrc || image.currentSrc || image.src;
   fullImage.alt = image.alt;
   imageDialog.showModal();
 }
 function setupContent(root) {
+  updateReaderControls(root);
   root.querySelectorAll('img').forEach(image => {
     const failed = () => {
       if (image.closest('article') && !image.closest('a')) {

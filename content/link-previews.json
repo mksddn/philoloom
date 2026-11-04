@@ -1,0 +1,425 @@
+{
+  "http://www.vphil.ru/": {
+    "description": "Сайт журнала \"Вопросы философии\", журнал \"Вопросы философии\" - академическое научное издание, философия",
+    "title": "Журнал \"Вопросы философии\" - Главная"
+  },
+  "https://app.notion.com": {
+    "description": "A collaborative AI workspace, built on your company context. Build and orchestrate agents right alongside your team's projects, meetings, and connected apps.",
+    "image": "https://app.notion.com/images/meta/default.png",
+    "local_image": "previews/bd53b3827712139dce66ca0e.png",
+    "title": "Notion | Where teams and agents work together"
+  },
+  "https://en.wikipedia.org/wiki/Steven_Shaviro": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/13/Steven_Shaviro_05A.jpg/960px-Steven_Shaviro_05A.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/c83701e76aa099067a24e843.jpg",
+    "title": "Steven Shaviro - Wikipedia"
+  },
+  "https://flsf.maxdudin.ru/": {
+    "description": "Статьи об истории философии,ее разделах и областях. Публикации на основе практических работ при обучении на философа.",
+    "title": "Блог о философии"
+  },
+  "https://flsf.maxdudin.ru/germenevticheskij-analiz-na-primere-tolkovaniya-fragmenta-iz-alisy-v-strane-chudes.html": {
+    "description": "3 разных философских трактовки фрагмента произведения Льюиса Кэрролла",
+    "title": "Герменевтика на примере толкования фрагмента из «Алисы в стране чудес»"
+  },
+  "https://iphlib.ru/library": {
+    "description": "Это новая версия электронной библиотеки Института философии РАН, которая в данный момент находится в разработке.",
+    "image": "",
+    "title": "Электронная библиотека Института философии РАН"
+  },
+  "https://logosjournal.ru/": {
+    "description": "",
+    "title": "Журнал Логос"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%90%D0%B2%D1%80%D0%B5%D0%BB%D0%B8%D0%B9_%D0%90%D0%B2%D0%B3%D1%83%D1%81%D1%82%D0%B8%D0%BD": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Champaigne%2C_Philippe_de_-_Saint_Augustin_-_1645-1650.jpg/1280px-Champaigne%2C_Philippe_de_-_Saint_Augustin_-_1645-1650.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/93ba6de63e58917e37acd811.jpg",
+    "title": "Аврелий Августин — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%90%D1%80%D0%B8%D1%81%D1%82%D0%BE%D1%82%D0%B5%D0%BB%D1%8C": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Aristotle_Altemps_Inv8575.jpg/960px-Aristotle_Altemps_Inv8575.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/0b6afab5d7a5e5aec7701a49.jpg",
+    "title": "Аристотель — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%91%D0%B0%D0%B4%D1%8C%D1%8E,_%D0%90%D0%BB%D0%B5%D0%BD": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/Alain_Badiou-2.jpg/960px-Alain_Badiou-2.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/917b4d91b346712a316b06d1.jpg",
+    "title": "Бадью, Ален — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%91%D0%B0%D1%80%D1%82,_%D0%A0%D0%BE%D0%BB%D0%B0%D0%BD": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/ru/1/16/%D0%91%D0%B0%D1%80%D1%82%D0%A0%D0%BE%D0%BB%D0%B0%D0%BD.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "local_image": "previews/380b18029952538ab60ec80d.jpg",
+    "title": "Барт, Ролан — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%91%D0%B5%D1%80%D0%B3%D1%81%D0%BE%D0%BD,_%D0%90%D0%BD%D1%80%D0%B8": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/0/02/Henri_Bergson.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "local_image": "previews/b64982723c2b400bb1ea3018.jpg",
+    "title": "Бергсон, Анри — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%91%D0%B5%D1%80%D0%B4%D1%8F%D0%B5%D0%B2,_%D0%9D%D0%B8%D0%BA%D0%BE%D0%BB%D0%B0%D0%B9_%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B0%D0%BD%D0%B4%D1%80%D0%BE%D0%B2%D0%B8%D1%87": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/a/a9/NBerdyaev.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "local_image": "previews/241d22404c1a03e2486da928.jpg",
+    "title": "Бердяев, Николай Александрович — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%91%D0%B5%D1%80%D0%BA%D0%BB%D0%B8,_%D0%94%D0%B6%D0%BE%D1%80%D0%B4%D0%B6": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/32/George_Berkeley_by_John_Smibert.jpg/960px-George_Berkeley_by_John_Smibert.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/a51c69df593025641c6c96cd.jpg",
+    "title": "Беркли, Джордж — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%91%D0%BE%D0%B4%D1%80%D0%B8%D0%B9%D1%8F%D1%80,_%D0%96%D0%B0%D0%BD": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/e/ef/WikipediaBaudrillard20040612-cropped.png?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "local_image": "previews/955c1b9122fad757d5009f6e.png",
+    "title": "Бодрийяр, Жан — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%91%D1%83%D0%BB%D0%B3%D0%B0%D0%BA%D0%BE%D0%B2,_%D0%A1%D0%B5%D1%80%D0%B3%D0%B5%D0%B9_%D0%9D%D0%B8%D0%BA%D0%BE%D0%BB%D0%B0%D0%B5%D0%B2%D0%B8%D1%87": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/b/bb/Sbulgakov.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Булгаков, Сергей Николаевич — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%91%D1%8D%D0%BA%D0%BE%D0%BD,_%D0%A4%D1%80%D1%8D%D0%BD%D1%81%D0%B8%D1%81": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/11/Francis_Bacon%2C_Viscount_St_Alban_from_NPG_%282%29.jpg/1280px-Francis_Bacon%2C_Viscount_St_Alban_from_NPG_%282%29.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/50384585a035f084abee1d6e.jpg",
+    "title": "Бэкон, Фрэнсис — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D1%82%D0%B3%D0%B5%D0%BD%D1%88%D1%82%D0%B5%D0%B9%D0%BD,_%D0%9B%D1%8E%D0%B4%D0%B2%D0%B8%D0%B3": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Ludwig_Wittgenstein.jpg/960px-Ludwig_Wittgenstein.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/e549e2eff9a60b789e397fc7.jpg",
+    "title": "Витгенштейн, Людвиг — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%93%D0%B0%D0%B4%D0%B0%D0%BC%D0%B5%D1%80,_%D0%A5%D0%B0%D0%BD%D1%81-%D0%93%D0%B5%D0%BE%D1%80%D0%B3": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9f/Hans-Georg_Gadamer.jpg/960px-Hans-Georg_Gadamer.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/e5cd02ce2b70e3cdb8b2e351.jpg",
+    "title": "Гадамер, Ханс-Георг — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%93%D0%B5%D0%B3%D0%B5%D0%BB%D1%8C,_%D0%93%D0%B5%D0%BE%D1%80%D0%B3_%D0%92%D0%B8%D0%BB%D1%8C%D0%B3%D0%B5%D0%BB%D1%8C%D0%BC_%D0%A4%D1%80%D0%B8%D0%B4%D1%80%D0%B8%D1%85": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ce/Hegel_by_Schlesinger.jpg/960px-Hegel_by_Schlesinger.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/4bdf4e22200b533bf7a66700.jpg",
+    "title": "Гегель, Георг Вильгельм Фридрих — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%93%D0%BE%D0%B1%D0%B1%D1%81,_%D0%A2%D0%BE%D0%BC%D0%B0%D1%81": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Thomas_Hobbes._Line_engraving_by_W._Faithorne%2C_1668._Wellcome_V0002798_%28cropped%29.jpg/1280px-Thomas_Hobbes._Line_engraving_by_W._Faithorne%2C_1668._Wellcome_V0002798_%28cropped%29.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/22f94597390a531118590fee.jpg",
+    "title": "Гоббс, Томас — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%94%D0%B0%D0%BD%D1%82%D0%B5_%D0%90%D0%BB%D0%B8%D0%B3%D1%8C%D0%B5%D1%80%D0%B8": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/6/6f/Portrait_de_Dante.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Данте Алигьери — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%94%D0%B5%D0%BA%D0%B0%D1%80%D1%82,_%D0%A0%D0%B5%D0%BD%D0%B5": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/7/73/Frans_Hals_-_Portret_van_Ren%C3%A9_Descartes.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Декарт, Рене — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%94%D0%B5%D0%BD%D0%BD%D0%B5%D1%82,_%D0%94%D1%8D%D0%BD%D0%B8%D0%B5%D0%BB": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/Daniel_Dennett.jpg/960px-Daniel_Dennett.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/e64e9319be6f8971a5854565.jpg",
+    "title": "Деннет, Дэниел — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%98%D0%BB%D1%8C%D0%B8%D0%BD,_%D0%98%D0%B2%D0%B0%D0%BD_%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B0%D0%BD%D0%B4%D1%80%D0%BE%D0%B2%D0%B8%D1%87": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/Iljin02.jpg/1280px-Iljin02.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/91ed6de543d90b98612ce13f.jpg",
+    "title": "Ильин, Иван Александрович — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9A%D0%B0%D0%BC%D1%8E,_%D0%90%D0%BB%D1%8C%D0%B1%D0%B5%D1%80": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/0/08/Albert_Camus%2C_gagnant_de_prix_Nobel%2C_portrait_en_buste%2C_pos%C3%A9_au_bureau%2C_faisant_face_%C3%A0_gauche%2C_cigarette_de_tabagisme.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Камю, Альбер — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9A%D0%B0%D0%BD%D1%82,_%D0%98%D0%BC%D0%BC%D0%B0%D0%BD%D1%83%D0%B8%D0%BB": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Immanuel_Kant_-_Gemaelde_1.jpg/960px-Immanuel_Kant_-_Gemaelde_1.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/a86cd8eb2b05108d44a3fb8f.jpg",
+    "title": "Кант, Иммануил — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9A%D0%B8%D1%80%D0%B5%D0%B5%D0%B2%D1%81%D0%BA%D0%B8%D0%B9,_%D0%98%D0%B2%D0%B0%D0%BD_%D0%92%D0%B0%D1%81%D0%B8%D0%BB%D1%8C%D0%B5%D0%B2%D0%B8%D1%87": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/1/1c/Kireevsky.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Киреевский, Иван Васильевич — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9A%D1%80%D0%B8%D0%BF%D0%BA%D0%B5,_%D0%A1%D0%BE%D0%BB": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/d/d4/Kripke.JPG?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Крипке, Сол — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9A%D1%8C%D0%B5%D1%80%D0%BA%D0%B5%D0%B3%D0%BE%D1%80,_%D0%A1%D1%91%D1%80%D0%B5%D0%BD": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/d/d4/S%C3%B8ren_Kierkegaard_%281813-1855%29_-_%28cropped%29.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Кьеркегор, Сёрен — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9B%D0%B0%D0%BA%D0%B0%D0%BD,_%D0%96%D0%B0%D0%BA": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/0/03/Jacques_Lacan.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Лакан, Жак — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9B%D0%B0%D1%82%D1%83%D1%80,_%D0%91%D1%80%D1%83%D0%BD%D0%BE": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5d/Bruno_Latour_in_Taiwan_P1250394_%28cropped%29.jpg/960px-Bruno_Latour_in_Taiwan_P1250394_%28cropped%29.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/3921c27f74203403dda0055b.jpg",
+    "title": "Латур, Бруно — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9B%D0%B5%D0%B2%D0%B8-%D0%A1%D1%82%D1%80%D0%BE%D1%81%D1%81,_%D0%9A%D0%BB%D0%BE%D0%B4": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Levi-strauss_260_%28cropped2%29.jpg/960px-Levi-strauss_260_%28cropped2%29.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/6c130e0c3f74c1a2bec1addf.jpg",
+    "title": "Леви-Стросс, Клод — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9B%D0%B5%D0%B9%D0%B1%D0%BD%D0%B8%D1%86,_%D0%93%D0%BE%D1%82%D1%84%D1%80%D0%B8%D0%B4_%D0%92%D0%B8%D0%BB%D1%8C%D0%B3%D0%B5%D0%BB%D1%8C%D0%BC": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8d/Christoph_Bernhard_Francke_-_Bildnis_des_Philosophen_Leibniz_%28ca._1695%29.jpg/1280px-Christoph_Bernhard_Francke_-_Bildnis_des_Philosophen_Leibniz_%28ca._1695%29.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/3b9f4be57c45befec3323b42.jpg",
+    "title": "Лейбниц, Готфрид Вильгельм — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9B%D0%B8%D0%BE%D1%82%D0%B0%D1%80,_%D0%96%D0%B0%D0%BD-%D0%A4%D1%80%D0%B0%D0%BD%D1%81%D1%83%D0%B0": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/4/46/Jean-Francois_Lyotard_cropped.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "local_image": "previews/1dc5907706185731bc856f33.jpg",
+    "title": "Лиотар, Жан-Франсуа — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9B%D0%BE%D0%BA%D0%BA,_%D0%94%D0%B6%D0%BE%D0%BD": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/d/d1/JohnLocke.png?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "local_image": "previews/2d09e980122d5b53f8424b7b.png",
+    "title": "Локк, Джон — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9C%D0%B0%D1%80%D0%BA%D1%81,_%D0%9A%D0%B0%D1%80%D0%BB": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Karl_Marx_by_John_Jabez_Edwin_Mayall_1875_-_Restored_%28cropped%29.png/960px-Karl_Marx_by_John_Jabez_Edwin_Mayall_1875_-_Restored_%28cropped%29.png?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/bdf0f2ffad83b9e93c514b53.png",
+    "title": "Маркс, Карл — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9C%D0%B0%D1%80%D0%BA%D1%83%D0%B7%D0%B5,_%D0%93%D0%B5%D1%80%D0%B1%D0%B5%D1%80%D1%82": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/6/69/Herbert_Marcuse_in_Newton%2C_Massachusetts_1955.jpeg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Маркузе, Герберт — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9C%D0%B5%D1%80%D0%BB%D0%BE-%D0%9F%D0%BE%D0%BD%D1%82%D0%B8,_%D0%9C%D0%BE%D1%80%D0%B8%D1%81": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/9/98/Maurice_Merleau-Ponty.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Мерло-Понти, Морис — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9D%D0%B8%D1%86%D1%88%D0%B5,_%D0%A4%D1%80%D0%B8%D0%B4%D1%80%D0%B8%D1%85": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Nietzsche187a.jpg/960px-Nietzsche187a.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/9e86585485a2b56e17551aa0.jpg",
+    "title": "Ницше, Фридрих — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9E%D1%80%D1%82%D0%B5%D0%B3%D0%B0-%D0%B8-%D0%93%D0%B0%D1%81%D1%81%D0%B5%D1%82,_%D0%A5%D0%BE%D1%81%D0%B5": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Jose_Ortega_y_Gasset.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Ортега-и-Гассет, Хосе — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9F%D0%B8%D1%84%D0%B0%D0%B3%D0%BE%D1%80": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e0/Pythagoras_in_the_Roman_Forum%2C_Colosseum.jpg/960px-Pythagoras_in_the_Roman_Forum%2C_Colosseum.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/80c9ddfc3127575d5e1d3121.jpg",
+    "title": "Пифагор — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9F%D0%BB%D0%B0%D1%82%D0%BE%D0%BD": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/88/Plato_Silanion_Musei_Capitolini_MC1377.jpg/960px-Plato_Silanion_Musei_Capitolini_MC1377.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/0c8cbedbbaab2cb42d3e9abd.jpg",
+    "title": "Платон — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9F%D1%80%D0%BE%D1%82%D0%B0%D0%B3%D0%BE%D1%80": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/Salvator_Rosa_-_D%C3%A9mocrite_et_Protagoras.jpg/960px-Salvator_Rosa_-_D%C3%A9mocrite_et_Protagoras.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/4d210bf844005b7e5a1d4659.jpg",
+    "title": "Протагор — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%9F%D1%8C%D0%B5%D1%80_%D0%90%D0%B1%D0%B5%D0%BB%D1%8F%D1%80": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Abelard.jpg/960px-Abelard.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/b4d1a03ffaa566add466c444.jpg",
+    "title": "Пьер Абеляр — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A0%D0%BE%D0%B7%D0%B0%D0%BD%D0%BE%D0%B2,_%D0%92%D0%B0%D1%81%D0%B8%D0%BB%D0%B8%D0%B9_%D0%92%D0%B0%D1%81%D0%B8%D0%BB%D1%8C%D0%B5%D0%B2%D0%B8%D1%87": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Vasily_Rozanov_04.jpg/960px-Vasily_Rozanov_04.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/dbd3520e123dedefc9ce641e.jpg",
+    "title": "Розанов, Василий Васильевич — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A1%D0%B0%D1%80%D1%82%D1%80,_%D0%96%D0%B0%D0%BD-%D0%9F%D0%BE%D0%BB%D1%8C": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/e/ef/Sartre_1967_crop.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "local_image": "previews/d13877b20b5bb5675ac61356.jpg",
+    "title": "Сартр, Жан-Поль — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BA%D1%80%D0%B0%D1%82": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a4/Socrates_Louvre.jpg/960px-Socrates_Louvre.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/3acff93f607defb1352bceaa.jpg",
+    "title": "Сократ — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BB%D0%BE%D0%B2%D1%8C%D1%91%D0%B2,_%D0%92%D0%BB%D0%B0%D0%B4%D0%B8%D0%BC%D0%B8%D1%80_%D0%A1%D0%B5%D1%80%D0%B3%D0%B5%D0%B5%D0%B2%D0%B8%D1%87": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/04/V.S.Solovyov_1890s_photo_by_P.S.Zhukov.jpg/960px-V.S.Solovyov_1890s_photo_by_P.S.Zhukov.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/3fe1587c35654197ee60bc68.jpg",
+    "title": "Соловьёв, Владимир Сергеевич — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A1%D0%BF%D0%B8%D0%BD%D0%BE%D0%B7%D0%B0,_%D0%91%D0%B5%D0%BD%D0%B5%D0%B4%D0%B8%D0%BA%D1%82": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/Spinoza.jpg/1280px-Spinoza.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/6b3fd1184fef97a4bce8d41c.jpg",
+    "title": "Спиноза, Бенедикт — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A1%D1%91%D1%80%D0%BB,_%D0%94%D0%B6%D0%BE%D0%BD": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/John_searle2.jpg/960px-John_searle2.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/79dc5f8a75812458f464f5ae.jpg",
+    "title": "Сёрл, Джон — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A2%D0%BE%D0%BB%D1%81%D1%82%D0%BE%D0%B9,_%D0%9B%D0%B5%D0%B2_%D0%9D%D0%B8%D0%BA%D0%BE%D0%BB%D0%B0%D0%B5%D0%B2%D0%B8%D1%87": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/9/94/L.N.Tolstoy_Prokudin-Gorsky_%28cropped%29.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Толстой, Лев Николаевич — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A3%D0%BD%D0%B0%D0%BC%D1%83%D0%BD%D0%BE,_%D0%9C%D0%B8%D0%B3%D0%B5%D0%BB%D1%8C_%D0%B4%D0%B5": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/Miguel_de_Unamuno_Meurisse_1925.jpg/1280px-Miguel_de_Unamuno_Meurisse_1925.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/3b0b45861a3e0591f1a20bcb.jpg",
+    "title": "Унамуно, Мигель де — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A4%D0%B8%D1%85%D1%82%D0%B5,_%D0%98%D0%BE%D0%B3%D0%B0%D0%BD%D0%BD_%D0%93%D0%BE%D1%82%D0%BB%D0%B8%D0%B1": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/8/8d/Johann_Gottlieb_Fichte.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Фихте, Иоганн Готлиб — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A4%D0%BB%D0%BE%D1%80%D0%B5%D0%BD%D1%81%D0%BA%D0%B8%D0%B9,_%D0%9F%D0%B0%D0%B2%D0%B5%D0%BB_%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B0%D0%BD%D0%B4%D1%80%D0%BE%D0%B2%D0%B8%D1%87": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/3/34/Pavel_Florensky.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Флоренский, Павел Александрович — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A4%D0%BE%D0%BC%D0%B0_%D0%90%D0%BA%D0%B2%D0%B8%D0%BD%D1%81%D0%BA%D0%B8%D0%B9": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0a/St-thomas-aquinasFXD.jpg/960px-St-thomas-aquinasFXD.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/a8dc785b1d080e82c88c8ca2.jpg",
+    "title": "Фома Аквинский — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A4%D1%80%D0%B0%D0%BD%D0%BA,_%D0%A1%D0%B5%D0%BC%D1%91%D0%BD_%D0%9B%D1%8E%D0%B4%D0%B2%D0%B8%D0%B3%D0%BE%D0%B2%D0%B8%D1%87": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/ru/b/bb/Semyon_Lyudvigovich_Franck.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "local_image": "previews/eb311c62c0ea88ec00abe9b9.jpg",
+    "title": "Франк, Семён Людвигович — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A4%D1%80%D0%B0%D0%BD%D1%87%D0%B5%D1%81%D0%BA%D0%BE_%D0%9F%D0%B5%D1%82%D1%80%D0%B0%D1%80%D0%BA%D0%B0": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/8/89/Francesco_Petrarch_by_Justo_de_Gante.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Петрарка, Франческо — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A4%D1%83%D0%BA%D0%BE,_%D0%9C%D0%B8%D1%88%D0%B5%D0%BB%D1%8C": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/c/ca/Photo_of_Michel_Foucault_on_1970_dustjacket_of_The_Order_of_Things.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Фуко, Мишель — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A4%D1%91%D0%B4%D0%BE%D1%80%D0%BE%D0%B2,_%D0%9D%D0%B8%D0%BA%D0%BE%D0%BB%D0%B0%D0%B9_%D0%A4%D1%91%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%B8%D1%87": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/0/0f/Pasternak_fedorov.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Фёдоров, Николай Фёдорович — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A5%D0%B0%D0%B9%D0%B4%D0%B5%D0%B3%D0%B3%D0%B5%D1%80,_%D0%9C%D0%B0%D1%80%D1%82%D0%B8%D0%BD": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/6/64/Heidegger_2_%281960%29.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "local_image": "previews/229d8025ba890ee9b36a7b8d.jpg",
+    "title": "Хайдеггер, Мартин — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A5%D0%B0%D1%80%D0%BC%D0%B0%D0%BD,_%D0%93%D1%80%D1%8D%D0%BC": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Graham_Harman_at_MACBA.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Харман, Грэм — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A5%D0%BE%D0%BC%D1%8F%D0%BA%D0%BE%D0%B2,_%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9_%D0%A1%D1%82%D0%B5%D0%BF%D0%B0%D0%BD%D0%BE%D0%B2%D0%B8%D1%87": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8e/KhomyakovA_AvtoportretABR.jpg/960px-KhomyakovA_AvtoportretABR.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/0c953507483f03fd9c0597b9.jpg",
+    "title": "Хомяков, Алексей Степанович — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A7%D0%B0%D0%B0%D0%B4%D0%B0%D0%B5%D0%B2,_%D0%9F%D1%91%D1%82%D1%80_%D0%AF%D0%BA%D0%BE%D0%B2%D0%BB%D0%B5%D0%B2%D0%B8%D1%87": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/c/c0/Chaadaev_portrait.jpeg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Чаадаев, Пётр Яковлевич — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A8%D0%B5%D0%BB%D0%BB%D0%B8%D0%BD%D0%B3,_%D0%A4%D1%80%D0%B8%D0%B4%D1%80%D0%B8%D1%85_%D0%92%D0%B8%D0%BB%D1%8C%D0%B3%D0%B5%D0%BB%D1%8C%D0%BC_%D0%99%D0%BE%D0%B7%D0%B5%D1%84": {
+    "description": "",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Friedrich_Wilhelm_Joseph_Schelling%2C_1848_daguerreotype_-_cropped.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled",
+    "title": "Шеллинг, Фридрих Вильгельм Йозеф — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%A8%D0%BE%D0%BF%D0%B5%D0%BD%D0%B3%D0%B0%D1%83%D1%8D%D1%80,_%D0%90%D1%80%D1%82%D1%83%D1%80": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/Arthur_Schopenhauer_Portrait_by_Ludwig_Sigismund_Ruhl_1815.jpeg/960px-Arthur_Schopenhauer_Portrait_by_Ludwig_Sigismund_Ruhl_1815.jpeg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/7cddb18020cf11804d14fd31.jpg",
+    "title": "Шопенгауэр, Артур — Википедия"
+  },
+  "https://ru.wikipedia.org/wiki/%D0%AE%D0%BC,_%D0%94%D1%8D%D0%B2%D0%B8%D0%B4": {
+    "description": "",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/David_Hume_Ramsay.jpg/1280px-David_Hume_Ramsay.jpg?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+    "local_image": "previews/52c6b7e9c39d84486b969c32.jpg",
+    "title": "Юм, Дэвид — Википедия"
+  },
+  "https://spb.hse.ru/ixtati/": {
+    "description": "Студенческая платформа самообразования НИУ ВШЭ.",
+    "image": "https://www.hse.ru/images/fb/hse_ru_thumb.jpg",
+    "local_image": "previews/f3cb6bd5a61611f2af0ab58a.jpg",
+    "title": "Научно-популярный журнал \"ИКСТАТИ\""
+  },
+  "https://www.phisci.info/jour": {
+    "description": "Научный рецензируемый журнал",
+    "title": "Философские науки"
+  },
+  "https://www.socionauki.ru/journal/fio/": {
+    "description": "Информация о журнале «Философия и общество», где публикуются статьи как философской, так и исторической тематики, материалы по социологическим и экономическим проблемам, философии истории, герменевтике и структурализму, гносеологии и онтологии, глобальным проблемам современности, в том числе архив журнала, подписные индексы, бланк подписки, авторы, общественный совет редакции журнала.",
+    "title": "Философия и общество"
+  },
+  "https://www.youtube.com/playlist?list=PLpw8PgE7cNnc_or9_i0mFfN2C9xwaec0S": {
+    "description": "Делитесь видео с близкими и друзьями по всему миру",
+    "image": "https://i.ytimg.com/vi/q7GOvepUY6o/hqdefault.jpg?sqp=-oaymwEXCOADEI4CSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLDci5G7ATb87m-O4zc76DLHm-WdmA&days_since_epoch=20761",
+    "local_image": "previews/a4f45e8add98b7668f1524c2.jpg",
+    "title": "Хронология"
+  },
+  "https://www.youtube.com/playlist?list=PLpw8PgE7cNnd9omaweu-tA9qJYwAYbpgE": {
+    "description": "Делитесь видео с близкими и друзьями по всему миру",
+    "image": "https://i.ytimg.com/vi/xDhGITumzYM/hqdefault.jpg?sqp=-oaymwEXCOADEI4CSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLDVm-DyoSw3ZPOTLQ0CVjDXPHeR0A&days_since_epoch=20761",
+    "local_image": "previews/74b8b28ff9b8091aa1898cce.jpg",
+    "title": "Нарратив"
+  },
+  "https://www.youtube.com/playlist?list=PLpw8PgE7cNne19vdKhihgcmpoo9Bk3XDZ": {
+    "description": "Делитесь видео с близкими и друзьями по всему миру",
+    "image": "https://i.ytimg.com/vi/q7GOvepUY6o/hqdefault.jpg?sqp=-oaymwEXCOADEI4CSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLDci5G7ATb87m-O4zc76DLHm-WdmA&days_since_epoch=20761",
+    "local_image": "previews/a4f45e8add98b7668f1524c2.jpg",
+    "title": "ΦΙΛΟΣΟΦΙΑ"
+  },
+  "https://www.youtube.com/playlist?list=PLxeLu0sglTQ9a1_hdQ9Kt8wMwz3OeNJEF": {
+    "description": "Делитесь видео с близкими и друзьями по всему миру",
+    "image": "https://i.ytimg.com/vi/3MnbWxShS48/hqdefault.jpg?sqp=-oaymwEXCOADEI4CSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLAVIvlKzg4v53r2eqeqteVUsC6ftw&days_since_epoch=20761",
+    "local_image": "previews/b715e384fe6de096a9626cd3.jpg",
+    "title": "Философия"
+  },
+  "https://youtu.be/Jp70djCb1AQ?si=tIWdGKy0aH9K7EUb": {
+    "description": "Коротко о том, что такое идеи Платона, откуда берутся два мира и что такое припоминание.#философия #ликбез #историяНаше философское сообщество на Патреоне: h...",
+    "image": "https://i.ytimg.com/vi/Jp70djCb1AQ/maxresdefault.jpg",
+    "local_image": "previews/76429f01e0a354fd08cfc0b8.jpg",
+    "title": "Платон и его идеи"
+  },
+  "https://youtu.be/PAxcJrjLamQ?si=UVxbkrozCGxf71--": {
+    "description": "Каким должен быть лучший человек? Почему людям необходимо отвергнуть всю старую мораль и этику? И чем же так губительна рабская мораль для человека? На все э...",
+    "image": "https://i.ytimg.com/vi/PAxcJrjLamQ/maxresdefault.jpg",
+    "local_image": "previews/e567d29cb0de77799e12e491.jpg",
+    "title": "Кто такой сверхчеловек? Философия Ницше"
+  }
+}

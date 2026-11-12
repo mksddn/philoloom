@@ -574,7 +574,7 @@ footer { margin-top: 70px; background: var(--surface); border-top: 1px solid var
 footer .site-container { padding-block: 26px; font-size: 13px; }
 footer a { text-decoration-color: var(--muted); }
 
-/* The masthead contains only text: no mark/monogram is introduced. */
+/* The masthead preserves the editorial composition. */
 .hero-cover {
   position: relative;
   isolation: isolate;
@@ -1643,3 +1643,75 @@ html.tabs-ready .section-heading {
   .hero-cover-content h1 { font-size: 33px; }
   .hero-artwork { height: 65%; background-position: 80% top; }
 }
+
+/* Approved philoloom identity. A large, genuinely vector tree (not an upscaled
+   224px WebP) is intentionally clipped by the Hero. Lettering traces the
+   approved custom wordmark, including the infinity-shaped 'oo' ligature. */
+.hero-cover { isolation: isolate; }
+.hero-brand-watermark {
+  position: absolute;
+  z-index: 0;
+  left: clamp(-720px, -33vw, -290px);
+  top: 50%;
+  width: clamp(1100px, 100vw, 1850px);
+  aspect-ratio: 875 / 835;
+  transform: translateY(-50%);
+  opacity: .1;
+  pointer-events: none;
+}
+/* Keep the left side crisp; progressively blend into a softened version
+   towards Descartes. Blur is applied only to the tree, never the portrait. */
+.hero-brand-watermark::before,
+.hero-brand-watermark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("ui/philoloom-tree-hero.svg") center / contain no-repeat;
+}
+.hero-brand-watermark::before {
+  -webkit-mask-image: linear-gradient(to right, #000 0%, #000 65%, transparent 95%);
+  mask-image: linear-gradient(to right, #000 0%, #000 65%, transparent 95%);
+}
+.hero-brand-watermark::after {
+  filter: blur(8px);
+  -webkit-mask-image: linear-gradient(to right, transparent 65%, #000 95%);
+  mask-image: linear-gradient(to right, transparent 65%, #000 95%);
+}
+.hero-cover-content { position: relative; z-index: 1; }
+.hero-project-name {
+  display: block;
+  width: fit-content;
+  margin-bottom: 13px;
+  font: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+}
+.hero-wordmark {
+  display: block;
+  width: clamp(220px, 20vw, 285px);
+  aspect-ratio: 898 / 204;
+  background-color: var(--hero-quote-author);
+  -webkit-mask: url("ui/philoloom-wordmark.svg") center / contain no-repeat;
+  mask: url("ui/philoloom-wordmark.svg") center / contain no-repeat;
+}
+.brand-accessible-name {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0);
+  clip-path: inset(50%); white-space: nowrap;
+  border: 0;
+}
+@media (max-width: 850px) {
+  .hero-brand-watermark { width: 1250px; left: -475px; top: 47%; }
+}
+@media (max-width: 650px) {
+  .hero-brand-watermark { width: 980px; left: -395px; top: 56%; }
+  .hero-project-name { margin-bottom: 10px; }
+  .hero-wordmark { width: 205px; }
+}
+@media (max-width: 360px) {
+  .hero-brand-watermark { width: 920px; left: -375px; top: 54%; }
+  .hero-wordmark { width: 185px; }
+}
+@media print { .hero-brand-watermark { display: none; } }

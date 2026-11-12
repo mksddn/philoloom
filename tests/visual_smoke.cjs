@@ -43,13 +43,63 @@ async function assertThemeArtwork(page, theme) {
   let browser;
   try {
     await waitForServer();
-    browser = await chromium.launch({ headless: true });
+    // CI reuses the Google Chrome installed on its GitHub-hosted runner.
+    // Without the env override, local development retains Playwright Chromium.
+    const channel = process.env.PLAYWRIGHT_BROWSER_CHANNEL;
+    browser = await chromium.launch({ headless: true, ...(channel ? { channel } : {}) });
     const desktop = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark' });
     const home = await desktop.newPage();
     const errors = [];
     home.on('pageerror', error => errors.push(error.message));
     await home.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
-    assert.equal((await home.locator('.hero-cover h1').textContent()).replace(/\s+/g, ' ').trim(), 'PhiloLoom Философия как искусство мышления');
+    assert.equal((await home.locator('.hero-cover h1').textContent()).replace(/\s+/g, ' ').trim(), 'philoloom Философия как искусство мышления');
+    assert.equal(await home.locator('.hero-brand-watermark').count(), 1);
+    assert.equal(await home.locator('.hero-brand-mark').count(), 0);
+    // Both visual layers share an SVG: a sharp left half smoothly transitions
+    // to the blurred right half without touching the Descartes portrait.
+    const watermarkAsset = await home.locator('.hero-brand-watermark').evaluate(async element => {
+      const style = getComputedStyle(element);
+      const crisp = getComputedStyle(element, '::before');
+      const blurred = getComputedStyle(element, '::after');
+      const match = crisp.backgroundImage.match(/url\(["']?(.*?)["']?\)/);
+      if (!match) return { ok: false };
+      const response = await fetch(match[1]);
+      return {
+        ok: response.ok, type: response.headers.get('content-type'),
+        opacity: style.opacity,
+        blurred: blurred.filter.includes('blur(8px)'),
+        transitionStartsLate: crisp.maskImage.includes('65%') && blurred.maskImage.includes('65%'),
+        crispMask: crisp.maskImage !== 'none' || crisp.webkitMaskImage !== 'none',
+        blurredMask: blurred.maskImage !== 'none' || blurred.webkitMaskImage !== 'none',
+        sharedImage: crisp.backgroundImage === blurred.backgroundImage,
+      };
+    });
+    assert.ok(watermarkAsset.ok && watermarkAsset.type?.includes('svg'), 'Vector tree background must load');
+    assert.equal(watermarkAsset.opacity, '0.1', 'Hero logo opacity must be 0.1');
+    assert.ok(watermarkAsset.blurred && watermarkAsset.transitionStartsLate && watermarkAsset.crispMask && watermarkAsset.blurredMask && watermarkAsset.sharedImage,
+      'Sharp-to-blurred tree blend must use the same SVG on both layers');
+    const visualBrand = await home.locator('.hero-cover').evaluate(async hero => {
+      const tree = hero.querySelector('.hero-brand-watermark');
+      const word = hero.querySelector('.hero-wordmark');
+      const treeBounds = tree.getBoundingClientRect();
+      const heroBounds = hero.getBoundingClientRect();
+      const wordStyle = getComputedStyle(word);
+      const mask = wordStyle.maskImage !== 'none' ? wordStyle.maskImage : wordStyle.webkitMaskImage;
+      const response = mask?.includes('philoloom-wordmark.svg')
+        ? await fetch(new URL('ui/philoloom-wordmark.svg', location.href))
+        : null;
+      return {
+        treeWidth: treeBounds.width,
+        heroHeight: heroBounds.height,
+        wordWidth: word.getBoundingClientRect().width,
+        maskLoaded: !!response?.ok,
+        maskType: response?.headers.get('content-type'),
+      };
+    });
+    assert.ok(visualBrand.treeWidth > visualBrand.heroHeight * 1.6,
+      'Tree must be oversize for deliberate crop: ' + JSON.stringify(visualBrand));
+    assert.ok(visualBrand.wordWidth >= 180 && visualBrand.maskLoaded && visualBrand.maskType?.includes('svg'),
+      'Approved vector wordmark must load visibly: ' + JSON.stringify(visualBrand));
     assert.equal(await home.locator('#theme-toggle').count(), 0);
     assert.equal(await home.locator('.catalog-toolbar #search-open').count(), 1);
     assert.equal(await home.locator('.section-nav a').count(), 4);
@@ -98,6 +148,7 @@ async function assertThemeArtwork(page, theme) {
     await home.emulateMedia({ colorScheme: 'light' });
     await home.waitForFunction(() => document.documentElement.dataset.theme === 'light');
     assert.equal(await home.locator('html').getAttribute('data-theme'), 'light');
+    assert.equal(await home.locator('.hero-brand-watermark').evaluate(el => getComputedStyle(el).opacity), '0.1');
     const lightAppearance = await assertThemeArtwork(home, 'light');
     for (const token of ['heroBackground', 'headingColor', 'quoteColor']) {
       assert.notEqual(darkAppearance[token], lightAppearance[token],
@@ -142,6 +193,7 @@ async function assertThemeArtwork(page, theme) {
     small.on('pageerror', error => mobileErrors.push(error.message));
     await small.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
     assert.equal(await small.locator('html').getAttribute('data-theme'), 'dark');
+    assert.equal(await small.locator('.hero-brand-watermark').evaluate(el => getComputedStyle(el).opacity), '0.1');
     await assertNoOverflow(small, '390px home');
     assert.ok(await small.locator('.hero-cover').evaluate(el => el.getBoundingClientRect().height <= 550));
     assert.ok(await small.locator('.catalog-toolbar #search-open').isVisible());
@@ -156,6 +208,7 @@ async function assertThemeArtwork(page, theme) {
     await small.emulateMedia({ colorScheme: 'light' });
     await small.waitForFunction(() => document.documentElement.dataset.theme === 'light');
     assert.equal(await small.locator('html').getAttribute('data-theme'), 'light');
+    assert.equal(await small.locator('.hero-brand-watermark').evaluate(el => getComputedStyle(el).opacity), '0.1');
     await assertThemeArtwork(small, 'light');
     assert.ok(await small.locator('.hero-cover-content .featured-quote').evaluate(el =>
       el.getBoundingClientRect().bottom <= document.querySelector('.hero-cover').getBoundingClientRect().bottom),

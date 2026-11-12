@@ -7,3 +7,6 @@
 # Original generated PhiloLoom Hero backgrounds are committed directly, not stored in LFS.
 site/assets/descartes-hero-dark.webp -filter -diff -merge binary
 site/assets/descartes-hero-light.webp -filter -diff -merge binary
+# Approved Philoloom identity is committed as normal WebP blobs (not Git LFS pointers).
+site/assets/philoloom-tree.webp -filter -diff -merge binary
+site/assets/philoloom-approved.webp -filter -diff -merge binary

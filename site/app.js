@@ -164,7 +164,7 @@ async function displayPanel(path) {
     heading.id = 'panel-title';
     heading.tabIndex = -1;
     panel.setAttribute('aria-labelledby', 'panel-title');
-    document.title = `${heading.textContent} · PhiloLoom`;
+    document.title = `${heading.textContent} · philoloom`;
     panelContent.scrollTop = 0;
     setupContent(panelContent);
     heading.focus({preventScroll:true});

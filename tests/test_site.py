@@ -98,6 +98,30 @@ class SiteTests(unittest.TestCase):
             record = (OUT / item['url']).read_text()
             self.assertNotIn('<dt>Моя работа</dt>', record, item['title'])
 
+    def test_approved_visual_shell_and_reading_remain_static(self):
+        home = (OUT / 'index.html').read_text(encoding='utf-8')
+        detail = (OUT / '89ecf3804396453cbc4256966e24aa27.html').read_text(encoding='utf-8')
+        css = (OUT / 'style.css').read_text(encoding='utf-8')
+        self.assertIn('<h1>PhiloLoom</h1>', home)
+        self.assertEqual(home.count('<h1>'), 1)
+        self.assertIn('class="hero-artwork"', home)
+        self.assertIn('Zeno_of_Citium_Ny_Carlsberg_Glyptotek_IN606', home)
+        self.assertIn('Wikimedia Commons, CC BY 4.0', home)
+        self.assertIn('id="theme-toggle"', home)
+        self.assertEqual(home.count('id="theme-toggle"'), 1)
+        self.assertIn('id="reference-nav"', home)
+        self.assertIn('aria-label="Разделы"', home)
+        self.assertIn('class="detail-masthead site-container"', detail)
+        self.assertIn('id="theme-toggle"', detail)
+        self.assertIn('data-reader-toggle', detail)
+        self.assertIn('<article>', detail)
+        self.assertIn('name="description"', detail)
+        self.assertNotIn('class="hero-cover"', detail)
+        self.assertIn(':root[data-theme="light"]', css)
+        self.assertIn('@media (max-width: 650px)', css)
+        self.assertIn('@media (prefers-reduced-motion: reduce)', css)
+        self.assertIn(':focus-visible', css)
+
     def test_only_optimized_local_rasters_are_published(self):
         images = [p for p in OUT.rglob('*') if p.suffix.lower() in {'.jpg', '.jpeg', '.png', '.webp', '.gif'}]
         self.assertTrue(images)

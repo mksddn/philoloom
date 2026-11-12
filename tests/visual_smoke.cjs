@@ -49,7 +49,7 @@ async function assertThemeArtwork(page, theme) {
     const errors = [];
     home.on('pageerror', error => errors.push(error.message));
     await home.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
-    assert.equal((await home.locator('.hero-cover h1').textContent()).replace(/\s+/g, ' ').trim(), 'PhiloLoom Философия как искусство мышления');
+    assert.equal((await home.locator('.hero-cover h1').textContent()).replace(/\s+/g, ' ').trim(), 'philoloom Философия как искусство мышления');
     assert.equal(await home.locator('#theme-toggle').count(), 0);
     assert.equal(await home.locator('.catalog-toolbar #search-open').count(), 1);
     assert.equal(await home.locator('.section-nav a').count(), 4);

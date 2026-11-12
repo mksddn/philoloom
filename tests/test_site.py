@@ -63,8 +63,8 @@ class SiteTests(unittest.TestCase):
 
     def test_home_navigation_and_search(self):
         home = (OUT / 'index.html').read_text(encoding='utf-8')
-        # The source-backed quote and three study resources appear once, below Hero,
-        # without introducing a second global menu or editorial spotlight.
+        # The original quotation is part of Hero; three resources follow it,
+        # ahead of the single tab menu, without a duplicate editorial block.
         self.assertEqual(home.count('data-resource-open='), 2)
         self.assertIn('id="resource-dialog"', home)
         self.assertEqual(home.count('class="resource-cards"'), 2)
@@ -87,8 +87,11 @@ class SiteTests(unittest.TestCase):
         self.assertIn('class="resource-tile resource-tile-blog"', home)
         self.assertIn('class="resource-tile-cover"', home)
         self.assertLess(home.index('class="hero-cover"'), home.index('class="featured-quote"'))
-        self.assertLess(home.index('class="featured-quote"'), home.index('class="resource-tiles"'))
+        self.assertLess(home.index('class="featured-quote"'), home.index('class="hero-credit"'))
+        self.assertLess(home.index('class="hero-credit"'), home.index('class="resource-tiles"'))
         self.assertLess(home.index('class="resource-tiles"'), home.index('class="section-nav"'))
+        self.assertIn('class="hero-cover-content"', home.split('class="featured-quote"', 1)[0])
+        self.assertNotIn('class="featured-quote"', home.split('class="home-source-strip"', 1)[1])
         self.assertNotIn('class="footer-resources"', home)
         self.assertNotIn('Философский справочник: темы, история мысли, личности и цитаты.', home)
         self.assertNotIn('class="hero-summary"', home)

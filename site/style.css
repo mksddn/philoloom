@@ -1170,6 +1170,7 @@ main.home-page { max-width: none; padding: 0; margin: 0 auto 95px; }
   text-wrap: balance;
 }
 .hero-cover-content h1 em { font-weight: 400; color: #d6c8b7; }
+.hero-cover-content:has(.featured-quote) h1 { margin-bottom: 27px; }
 .hero-summary {
   max-width: 355px;
   margin: 0;
@@ -1291,52 +1292,45 @@ html.tabs-ready .section-heading {
 .entity-links .properties { margin-bottom: 12px; }
 .discovered-links li a:hover { background: var(--surface); color: var(--accent); }
 
-/* From the original introduction: a literary quotation and three equally
-   weighted source blocks, directly below Hero, as in the approved direction. */
+/* The exact original Descartes quote belongs to the image-led Hero, not
+   another editorial section between the cover and reference resources. */
 .home-source-strip {
-  padding: 27px 0 23px;
+  padding: 23px 0 22px;
 }
-.home-source-strip .featured-quote {
+.hero-cover-content .featured-quote {
   position: relative;
-  max-width: none;
-  margin: 0 0 20px;
-  padding: 16px 28px 16px 64px;
   display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 8px 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: min(100%, 480px);
+  max-width: 480px;
+  margin: 0;
+  padding: 0 0 0 19px;
   border: 0;
-  border-left: 2px solid var(--accent);
+  border-left: 1px solid #baa07e;
   border-radius: 0;
   background: transparent;
 }
-.home-source-strip .featured-quote .quote-ornament {
-  top: 7px;
-  left: 17px;
-  font: normal 54px/1 var(--serif);
-  color: var(--accent);
-  opacity: .8;
-}
-.home-source-strip .featured-quote blockquote {
-  flex: 1 1 400px;
-  max-width: 860px;
-  padding: 0;
+.hero-cover-content .featured-quote .quote-ornament { display: none; }
+.hero-cover-content .featured-quote blockquote {
+  flex: initial;
+  max-width: 100%;
   margin: 0;
+  padding: 0;
   border: 0;
 }
-.home-source-strip .featured-quote blockquote p {
+.hero-cover-content .featured-quote blockquote p {
   margin: 0;
-  font: italic 400 clamp(19px, 2.15vw, 27px)/1.45 var(--serif);
+  font: italic 400 clamp(17px, 1.7vw, 23px)/1.52 var(--serif);
   letter-spacing: 0;
-  color: var(--text);
-  text-wrap: balance;
+  color: #e4dbd0;
+  text-wrap: pretty;
 }
-.home-source-strip .featured-quote figcaption {
-  flex: 0 0 auto;
-  margin-left: auto;
-  font: 500 13px/1.5 var(--sans);
-  color: var(--muted);
-  white-space: nowrap;
+.hero-cover-content .featured-quote figcaption {
+  margin: 0;
+  color: #c7b294;
+  font: 500 12px/1.5 var(--sans);
 }
 .resource-tiles {
   display: grid;
@@ -1432,8 +1426,6 @@ html.tabs-ready .section-heading {
 @media (max-width: 850px) {
   .resource-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .resource-tile-blog { grid-column: 1 / -1; }
-  .home-source-strip .featured-quote { gap: 7px 15px; }
-  .home-source-strip .featured-quote figcaption { margin-left: 0; }
   .hero-cover-content { padding-top: 90px; padding-bottom: 90px; }
   .hero-cover-content h1 { max-width: 500px; font-size: clamp(43px,6.5vw,60px); }
   .hero-artwork { left: 28%; width: 84%; }
@@ -1441,15 +1433,9 @@ html.tabs-ready .section-heading {
 }
 @media (max-width: 650px) {
   .home-source-strip { padding: 19px 0 15px; }
-  .home-source-strip .featured-quote {
-    padding: 10px 6px 11px 43px;
-    margin-bottom: 16px;
-    gap: 10px;
-  }
-  .home-source-strip .featured-quote .quote-ornament { top: 6px; left: 10px; font-size: 40px; }
-  .home-source-strip .featured-quote blockquote { flex-basis: 100%; }
-  .home-source-strip .featured-quote blockquote p { font-size: 20px; line-height: 1.48; }
-  .home-source-strip .featured-quote figcaption { font-size: 12px; margin: 0 0 0 auto; }
+  .hero-cover-content .featured-quote { padding-left: 13px; gap: 8px; max-width: 330px; }
+  .hero-cover-content .featured-quote blockquote p { font-size: clamp(15px, 4vw, 18px); line-height: 1.48; }
+  .hero-cover-content .featured-quote figcaption { font-size: 11px; }
   .resource-tiles { grid-template-columns: 1fr; gap: 9px; margin-bottom: 10px; }
   .resource-tiles .resource-trigger { min-height: 86px; padding: 15px 39px 15px 18px; }
   .resource-tile-blog { grid-column: auto; min-height: 88px; grid-template-columns: 94px minmax(0, 1fr); padding: 9px 37px 9px 9px; gap: 12px; }
@@ -1476,6 +1462,7 @@ html.tabs-ready .section-heading {
     padding: 55px 22px 80px;
   }
   .hero-cover-content h1 { font-size: clamp(37px,9.2vw,53px); max-width: 490px; margin-bottom: 19px; }
+  .hero-cover-content:has(.featured-quote) h1 { margin-bottom: 21px; }
   .hero-summary { font-size: 13px; line-height: 1.5; max-width: 300px; }
   .hero-orbit { width: 460px; top: -185px; right: -235px; }
   .hero-credit { right: 12px; bottom: 7px; max-width: 280px; font-size: 9px; }

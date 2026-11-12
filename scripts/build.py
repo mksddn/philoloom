@@ -207,6 +207,7 @@ for group,_ in SOURCE_GROUPS:
 nav = ''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}">{label}</a>' for g,label in GROUPS)
 
 def shell(title, body, group=''):
+    search_action = '<div class="detail-search site-container"><button id="search-open" class="search-trigger" type="button" aria-haspopup="dialog" aria-controls="search-dialog">⌕ Поиск по справочнику</button></div>' if group else ''
     cover = f'<div class="hero-cover">{image_html("ui/forest-cover.jpg", sizes="100vw", priority=True)}</div>' if not group else ''
     return f'''<!doctype html>
 <html lang="ru">
@@ -222,7 +223,7 @@ def shell(title, body, group=''):
 </head>
 <body>
 <a class="skip" href="#main">К содержимому</a>
-{cover}<main id="main" class="{'home-page' if not group else 'detail-page'}">{body}</main>
+{cover}{search_action}<main id="main" class="{'home-page' if not group else 'detail-page'}">{body}</main>
 <footer><div class="site-container">PhiloLoom · Философский справочник · <a href="https://mksddn.ru/" rel="author">Автор: Макс Дудин</a></div></footer>
 <dialog id="page-panel" aria-label="Подробности страницы">
 <div class="panel-toolbar">
@@ -306,7 +307,7 @@ def related_records(page, props):
     explicit = set()
     for key, value in props:
         if key in ('Личности', 'Темы', 'История философии', 'Связь', 'Связанные записи'):
-            explicit.update(re.findall(r'([a-f0-9]{32})\\.md', unquote(value)))
+            explicit.update(re.findall(r'([a-f0-9]{32})\.md', unquote(value)))
     linked = sorted((pages[pid] for pid in connections[page['id']] if pid not in explicit
                      and pages[pid]['group'] != 'Самостоятельная работа'),
                     key=lambda p: (p['group'] != 'Темы', p['group'], p['title'].casefold()))
@@ -353,13 +354,13 @@ for p in pages.values():
     (OUT / (p['id'] + '.html')).write_text(shell(p['title'],body,p['group']),encoding='utf-8')
 
 # Build four consistent hero tiles from the original introduction (source unchanged).
-intro = home['text'].split('\\n## ')[0]
+intro = home['text'].split('\n## ')[0]
 quote_source = intro.split('- Посмотреть', 1)[0].splitlines()[1:]
-quote_html = render('\\n'.join(quote_source), home)
+quote_html = render('\n'.join(quote_source), home)
 def hero_links(markdown_text):
     return '<ul>' + ''.join(
         f'<li><a href="{escape(url,quote=True)}">{escape(label)}</a></li>'
-        for label, url in re.findall(r'\\[([^]]+)\\]\\((https?://[^)]+)\\)', markdown_text)
+        for label, url in re.findall(r'\[([^]]+)\]\((https?://[^)]+)\)', markdown_text)
         if safe_url(url)
     ) + '</ul>'
 

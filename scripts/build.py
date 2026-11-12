@@ -221,26 +221,26 @@ EDITORIAL_ART = {
     ),
     'Онтология': (
         COMMONS_THUMB + '2/24/Roman_Marble_Statue_Head_(28204833482).jpg/'
-        '640px-Roman_Marble_Statue_Head_(28204833482).jpg',
+        '960px-Roman_Marble_Statue_Head_(28204833482).jpg',
         'https://commons.wikimedia.org/wiki/File:Roman_Marble_Statue_Head_(28204833482).jpg',
     ),
     'Стоицизм': (
-        COMMONS_THUMB + 'b/b3/Aristotle_bust.jpg/640px-Aristotle_bust.jpg',
+        'https://upload.wikimedia.org/wikipedia/commons/b/b3/Aristotle_bust.jpg',
         'https://commons.wikimedia.org/wiki/File:Aristotle_bust.jpg',
     ),
     'Эстетика': (
         COMMONS_THUMB + '7/7b/Ancient_Greece_Marble_Relief_Fragment_of_Female_Head%2C_Probably_Aphrodite%2C_from_Melos%2C_c._460-450_BC.jpg/'
-        '640px-Ancient_Greece_Marble_Relief_Fragment_of_Female_Head%2C_Probably_Aphrodite%2C_from_Melos%2C_c._460-450_BC.jpg',
+        '500px-Ancient_Greece_Marble_Relief_Fragment_of_Female_Head%2C_Probably_Aphrodite%2C_from_Melos%2C_c._460-450_BC.jpg',
         'https://commons.wikimedia.org/wiki/File:Ancient_Greece_Marble_Relief_Fragment_of_Female_Head%2C_Probably_Aphrodite%2C_from_Melos%2C_c._460-450_BC.jpg',
     ),
     'Экзистенциализм': (
         COMMONS_THUMB + '8/8d/Ancient_Greece_Marble_Statue_Head_(28384794702).jpg/'
-        '640px-Ancient_Greece_Marble_Statue_Head_(28384794702).jpg',
+        '500px-Ancient_Greece_Marble_Statue_Head_(28384794702).jpg',
         'https://commons.wikimedia.org/wiki/File:Ancient_Greece_Marble_Statue_Head_(28384794702).jpg',
     ),
     'Герменевтика': (
         COMMONS_THUMB + 'c/ce/Marble_Herm_of_Plato_from_the_Academy%2C_3rd_C._AD%2C_Roman_Copy_of_Original_of_340_BC_which_was_Oldest_Displayed_Portrait_of_Plato_(28117624014).jpg/'
-        '640px-Marble_Herm_of_Plato_from_the_Academy%2C_3rd_C._AD%2C_Roman_Copy_of_Original_of_340_BC_which_was_Oldest_Displayed_Portrait_of_Plato_(28117624014).jpg',
+        '500px-Marble_Herm_of_Plato_from_the_Academy%2C_3rd_C._AD%2C_Roman_Copy_of_Original_of_340_BC_which_was_Oldest_Displayed_Portrait_of_Plato_(28117624014).jpg',
         'https://commons.wikimedia.org/wiki/File:Marble_Herm_of_Plato_from_the_Academy%2C_3rd_C._AD%2C_Roman_Copy_of_Original_of_340_BC_which_was_Oldest_Displayed_Portrait_of_Plato_(28117624014).jpg',
     ),
 }

@@ -62,11 +62,11 @@ class SiteTests(unittest.TestCase):
         self.assertIn('89ecf3804396453cbc4256966e24aa27.html', gadamer.split('class="entity-links"', 1)[1])
 
     def test_home_navigation_and_search(self):
-        home = (OUT / 'index.html').read_text()
-        self.assertEqual(home.count('class="resource-trigger"'), 2)
-        self.assertIn('class="featured-quote"', home)
-        self.assertIn('<figcaption>— Рене Декарт</figcaption>', home)
-        self.assertNotIn('<h2>Цитата</h2>', home)
+        home = (OUT / 'index.html').read_text(encoding='utf-8')
+        # External study materials are available unobtrusively in the footer,
+        # without repeating the four encyclopedia sections or promoting any entry.
+        self.assertEqual(home.count('data-resource-open='), 2)
+        self.assertIn('id="resource-dialog"', home)
         self.assertEqual(home.count('class="resource-cards"'), 2)
         self.assertEqual(home.count('class="resource-card"'), 11)
         self.assertIn('class="resource-card-image"', home)
@@ -74,16 +74,14 @@ class SiteTests(unittest.TestCase):
         self.assertIn('homeHeaderTitleImage_ru_RU.png', read_cards)
         self.assertIn('resource-card-placeholder', read_cards)
         self.assertIn('target="_blank" rel="noopener noreferrer"', read_cards)
-        self.assertEqual(home.count('class="resource-trigger"'), 2)
         self.assertIn('<h1>Философия <em>как искусство</em> мышления</h1>', home)
-        self.assertIn('id="resource-dialog"', home)
-        self.assertIn('data-resource-open="watch"', home)
-        self.assertIn('data-resource-open="read"', home)
         self.assertIn('Автор: <a href="https://mksddn.ru/" target="_blank"', home)
         self.assertIn('href="https://flsf.maxdudin.ru/" target="_blank"', home)
-        self.assertIn('src="https://flsf.maxdudin.ru/img/imagehome.jpg"', home)
-        self.assertNotIn('<header>', home)
         self.assertIn('id="search-open"', home)
+        self.assertEqual(home.count('id="search-open"'), 1)
+        self.assertNotIn('class="featured-quote"', home)
+        self.assertNotIn('class="resource-trigger"', home)
+        self.assertNotIn('<header>', home)
 
     def test_detail_excludes_private_assignment_metadata(self):
         entries = json.loads((OUT / 'search.json').read_text())
@@ -104,20 +102,25 @@ class SiteTests(unittest.TestCase):
         css = (OUT / 'style.css').read_text(encoding='utf-8')
         self.assertIn('<h1>Философия <em>как искусство</em> мышления</h1>', home)
         self.assertEqual(home.count('<h1>'), 1)
+        self.assertIn('class="museum-stage"', home)
+        self.assertIn('class="museum-head"', home)
         self.assertIn('class="hero-artwork"', home)
         self.assertIn('Marble_Bust_of_Marcus_Aurelius_', home)
         self.assertIn('Wikimedia Commons</a>', home)
         self.assertIn('CC0</a>', home)
         self.assertIn('id="theme-toggle"', home)
         self.assertEqual(home.count('id="theme-toggle"'), 1)
+        self.assertEqual(home.count('class="section-nav"'), 1)
         self.assertIn('id="reference-nav"', home)
-        self.assertIn('class="museum-head"', home)
-        self.assertIn('class="museum-shortcuts"', home)
-        self.assertEqual(home.count('class="editorial-topic"'), 5)
-        self.assertIn('class="editorial-spotlight"', home)
-        self.assertIn('id="about-philoloom"', home)
-        self.assertIn('class="editorial-lead"', home)
         self.assertIn('aria-label="Разделы"', home)
+        # No sales-like CTAs, cards framing the hero or duplicated navigation.
+        for fragment in ('class="museum-frame"', 'class="museum-shortcuts"',
+                         'class="museum-top-nav"', 'class="hero-explore"',
+                         'class="editorial-spotlight"', 'class="editorial-topic"',
+                         'class="editorial-shelf"', 'class="editorial-lead"',
+                         'id="about-philoloom"', 'КОЛЛЕКЦИЯ / ТЕМЫ',
+                         'Начните с этих идей', 'Исследуйте философию'):
+            self.assertNotIn(fragment, home)
         self.assertIn('class="detail-masthead site-container"', detail)
         self.assertIn('id="theme-toggle"', detail)
         self.assertIn('data-reader-toggle', detail)
@@ -125,6 +128,7 @@ class SiteTests(unittest.TestCase):
         self.assertIn('name="description"', detail)
         self.assertNotIn('class="hero-cover"', detail)
         self.assertIn(':root[data-theme="light"]', css)
+        self.assertIn('html.tabs-ready .section-heading', css)
         self.assertIn('@media (max-width: 650px)', css)
         self.assertIn('@media (prefers-reduced-motion: reduce)', css)
         self.assertIn(':focus-visible', css)

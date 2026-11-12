@@ -13,8 +13,8 @@ import markdown
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'notion'
 OUT = ROOT / 'dist'
-GROUPS = [('Темы', '📌 Темы'), ('История философии', '🕰️ История философии'),
-          ('Цитаты', '💬 Цитаты'), ('Личности', '🗂️ Личности')]
+GROUPS = [('Темы', 'Темы'), ('История философии', 'История философии'),
+          ('Цитаты', 'Цитаты'), ('Личности', 'Личности')]
 # Retain exported homework metadata for direct article URLs, but no public section.
 SOURCE_GROUPS = GROUPS + [('Самостоятельная работа', '💪 Мои статьи')]
 ID = re.compile(r'([a-f0-9]{32})(?:_all)?\.(?:md|csv)$')
@@ -206,24 +206,54 @@ for group,_ in SOURCE_GROUPS:
 
 nav = ''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}">{label}</a>' for g,label in GROUPS)
 
-def shell(title, body, group=''):
-    search_action = '<div class="detail-search site-container"><button id="search-open" class="search-trigger" type="button" aria-haspopup="dialog" aria-controls="search-dialog">⌕ Поиск по справочнику</button></div>' if group else ''
-    cover = f'<div class="hero-cover">{image_html("ui/forest-cover.jpg", sizes="100vw", priority=True)}</div>' if not group else ''
+# The visual identity is a presentation layer; content remains sourced from Notion.
+THEME_BUTTON = ('<button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" '
+                'aria-label="Переключить цветовую тему"><span aria-hidden="true">◐</span>'
+                '<span class="theme-label">Светлая тема</span></button>')
+# Theme-specific illustrations of René Descartes were approved for this Hero.
+# They are artistic interpretations, not photographs of historical objects.
+# Their local WebP files are referenced through theme-aware CSS.
+
+
+def shell(title, body, group='', hero_quote=''):
+    search_button = ('<button id="search-open" class="museum-search" type="button" '
+                     'aria-label="Открыть поиск по справочнику" aria-haspopup="dialog" '
+                     'aria-controls="search-dialog"><span aria-hidden="true">⌕</span></button>')
+    # The sole section navigation is the tab row directly below the hero.
+    # Detail pages use breadcrumbs back to the appropriate section.
+    search_action = (f'<div class="detail-masthead site-container">'
+                     f'<a class="detail-brand" href="index.html" aria-label="PhiloLoom — на главную">PhiloLoom</a>'
+                     f'<div class="detail-actions">{search_button}{THEME_BUTTON}</div></div>') if group else ''
+    cover = (f'<div class="museum-stage">'
+             f'<div class="museum-head">'
+             f'<div class="museum-head-inner">'
+             f'<span class="museum-wordmark">PHILOLOOM</span>'
+             f'<div class="museum-actions">{search_button}{THEME_BUTTON}</div>'
+             f'</div></div>'
+             f'<div class="hero-cover">'
+             f'<div class="hero-artwork" role="img" '
+             f'aria-label="Художественный образ Рене Декарта"></div>'
+             f'<div class="hero-orbit" aria-hidden="true"></div>'
+             f'<div class="hero-cover-content">'
+             f'<h1>Философия <em>как искусство</em> мышления</h1>'
+             f'{hero_quote}</div>'
+             f'</div></div>') if not group else ''
     return f'''<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0f0f0f">
 <title>{escape(title)} · PhiloLoom</title>
-<meta name="description" content="PhiloLoom — личный философский справочник">
+<meta name="description" content="{escape(title, quote=True)} — история философии, направления и мыслители в справочнике PhiloLoom.">
+<script>try{{document.documentElement.dataset.theme=localStorage.getItem('philoloom:theme')==='light'?'light':'dark'}}catch(e){{document.documentElement.dataset.theme='dark'}}</script>
 <link rel="stylesheet" href="style.css">
-<script src="app.js" defer>
-</script>
+<script src="app.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">К содержимому</a>
-{cover}{search_action}<main id="main" class="{'home-page' if not group else 'detail-page'}">{body}</main>
+{search_action}<main id="main" class="{'home-page' if not group else 'detail-page'}">{cover + '<div class="site-container home-inner">' + body + '</div>' if not group else body}</main>
 <footer><div class="site-container">PhiloLoom · Философский справочник · Автор: <a href="https://mksddn.ru/" target="_blank" rel="author noopener noreferrer">Макс Дудин</a></div></footer>
 <dialog id="page-panel" aria-label="Подробности страницы">
 <div class="panel-toolbar">
@@ -241,16 +271,14 @@ def shell(title, body, group=''):
 <img id="image-full" alt="">
 </dialog>
 {resource_dialog if not group else ""}
-<dialog id="search-dialog">
+<dialog id="search-dialog" aria-label="Поиск по справочнику">
 <form method="dialog">
 <label for="query">Поиск по справочнику</label>
 <button aria-label="Закрыть поиск">×</button>
 </form>
 <input id="query" type="search" placeholder="Тема, философ или фрагмент текста…" autocomplete="off">
-<p id="search-status" role="status">
-</p>
-<ul id="results">
-</ul>
+<p id="search-status" role="status"></p>
+<ul id="results"></ul>
 </dialog>
 </body>
 </html>'''
@@ -356,12 +384,15 @@ for p in pages.values():
     body = f'{breadcrumbs(p)}<h1{quote_class}>{escape(p["title"])}</h1>{connections_html}{READING_CONTROLS}<article>{render(body_text,p)}</article>'
     (OUT / (p['id'] + '.html')).write_text(shell(p['title'],body,p['group']),encoding='utf-8')
 
-# Landing content is drawn from the untouched Notion introduction.
+# Preserve the exact published quotation and resources from the untouched
+# Notion introduction; none of these are newly authored philosophical claims.
 intro = home['text'].split('\n## ')[0]
 quote_source = intro.split('- Посмотреть', 1)[0].splitlines()[1:]
 quote_lines = [line.strip() for line in quote_source if line.strip() and line.strip() != '>']
 quote_text = next((re.sub(r'^>\s*|\*\*', '', line) for line in quote_lines if line.startswith('>')), '')
 quote_author = next((line for line in quote_lines if not line.startswith('>')), '')
+if not quote_text or not quote_author:
+    raise ValueError('The original Descartes quotation is missing from the source introduction')
 quote_html = (f'<figure class="featured-quote"><span class="quote-ornament" aria-hidden="true">“</span>'
               f'<blockquote><p>{escape(quote_text)}</p></blockquote>'
               f'<figcaption>— {escape(quote_author)}</figcaption></figure>')
@@ -377,10 +408,8 @@ def resource_cards(markdown_text):
         media = (f'<span class="resource-card-media">{image_html(image, "resource-card-image", sizes="(max-width: 650px) 88px, 160px")}</span>'
                  if image and safe_url(image) else
                  f'<span class="resource-card-media resource-card-placeholder" aria-hidden="true">{escape(domain[:1].upper())}</span>')
-        # Labels come from the curated source; generic OG titles must not replace them.
         description = (meta.get('description') or '').strip()
-        generic = ('Делитесь видео с близкими', 'Share your videos')
-        if description.startswith(generic):
+        if description.startswith(('Делитесь видео с близкими', 'Share your videos')):
             description = ''
         description_html = f'<span class="resource-card-description">{escape(description[:155])}</span>' if description else ''
         cards.append(f'<li><a class="resource-card" href="{escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">'
@@ -391,24 +420,42 @@ def resource_cards(markdown_text):
 
 watch = intro.split('- Посмотреть', 1)[1].split('- 📗', 1)[0] if '- Посмотреть' in intro else ''
 read = intro.split('- 📗', 1)[1].split('[Блог о философии]', 1)[0] if '- 📗' in intro else ''
-blog = 'https://flsf.maxdudin.ru/'
-# OG image is optional: the local metadata cache does not currently contain it.
-blog_meta = previews.get(blog, {})
-blog_image = blog_meta.get('local_image') or blog_meta.get('image') or ''
-blog_media = (f'<span class="blog-image">{image_html(blog_image, "blog-cover")}</span>'
-              if blog_image and safe_url(blog_image) else '')
-hero = (f'<div class="hero-intro">{quote_html}'
-        f'<div class="hero-resources">'
-        f'<button type="button" class="resource-trigger" data-resource-open="watch" aria-haspopup="dialog" aria-controls="resource-dialog"><span>Смотреть</span><small>Видеоматериалы о философии</small><span aria-hidden="true">↗</span></button>'
-        f'<button type="button" class="resource-trigger" data-resource-open="read" aria-haspopup="dialog" aria-controls="resource-dialog"><span>Читать</span><small>Статьи, журналы и библиотеки</small><span aria-hidden="true">↗</span></button>'
-        f'<a class="blog-feature" href="{blog}" target="_blank" rel="noopener noreferrer">{blog_media}<span class="blog-feature-copy"><strong>Блог о философии</strong><small>Статьи об истории и разделах философии</small></span><span class="blog-arrow" aria-hidden="true">↗</span></a>'
-        f'</div></div>')
 resource_dialog = ('<dialog id="resource-dialog" aria-labelledby="resource-title">'
                    '<div class="resource-toolbar"><h2 id="resource-title">Материалы</h2><button type="button" id="resource-close" aria-label="Закрыть">×</button></div>'
                    f'<div id="resource-watch" class="resource-list" hidden>{resource_cards(watch)}</div>'
                    f'<div id="resource-read" class="resource-list" hidden>{resource_cards(read)}</div>'
                    '</dialog>')
-body = f'<div class="home-heading"><h1>PhiloLoom</h1><button id="search-open" class="search-trigger" type="button" aria-haspopup="dialog" aria-controls="search-dialog">⌕ Найти в справочнике <span>⌘ K</span></button></div>{hero}<nav class="section-nav" aria-label="Разделы">{nav}</nav>'
+# Resource tiles live immediately below Hero; the original quotation is shown
+# inside the Hero, ahead of the single encyclopedia tab menu.
+blog_url = 'https://flsf.maxdudin.ru/'
+blog_meta = previews.get(blog_url, {})
+blog_image = blog_meta.get('local_image') or blog_meta.get('image') or ''
+blog_media = (f'<span class="resource-tile-art">{image_html(blog_image, "resource-tile-cover", sizes="(max-width: 650px) 100px, 200px")}</span>'
+              if blog_image and safe_url(blog_image) else '')
+watch_count = len(re.findall(r'\[[^]]+\]\(https?://[^)]+\)', watch))
+read_count = len(re.findall(r'\[[^]]+\]\(https?://[^)]+\)', read))
+resources = (
+    '<div class="resource-tiles" aria-label="Дополнительные материалы">'
+    '<button type="button" class="resource-trigger resource-tile" data-resource-open="watch" '
+    'aria-haspopup="dialog" aria-controls="resource-dialog">'
+    f'<span class="resource-tile-title">Видео</span>'
+    f'<small>{watch_count} подборки</small>'
+    '<span class="resource-tile-arrow" aria-hidden="true">↗</span></button>'
+    '<button type="button" class="resource-trigger resource-tile" data-resource-open="read" '
+    'aria-haspopup="dialog" aria-controls="resource-dialog">'
+    f'<span class="resource-tile-title">Библиотека</span>'
+    f'<small>{read_count} источников</small>'
+    '<span class="resource-tile-arrow" aria-hidden="true">↗</span></button>'
+    f'<a class="resource-tile resource-tile-blog" href="{blog_url}" target="_blank" rel="noopener noreferrer">'
+    f'{blog_media}<span class="resource-tile-description">'
+    f'<span class="resource-tile-title">Блог о философии</span>'
+    f'<small>flsf.maxdudin.ru</small></span>'
+    '<span class="resource-tile-arrow" aria-hidden="true">↗</span></a>'
+    '</div>'
+)
+body = (f'<div class="home-source-strip" aria-label="Дополнительные материалы">'
+        f'{resources}</div>'
+        f'<nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>')
 
 class MediaLinks(HTMLParser):
     def __init__(self, text):
@@ -425,8 +472,11 @@ class MediaLinks(HTMLParser):
 
 def page_image(page):
     media = MediaLinks(page['text'])
-    # Prefer saved portraits for people; preserve original embedded illustrations for articles.
-    if page['group'] != 'Личности' and media.images:
+    # Only display an explicitly embedded portrait for a person: an arbitrary
+    # OpenGraph thumbnail from a linked website cannot verify their identity.
+    if page['group'] == 'Личности':
+        return resolve(media.images[0], page) if media.images else ''
+    if media.images:
         return resolve(media.images[0], page)
     for url in media.links:
         data = previews.get(url, {})
@@ -451,7 +501,8 @@ def gallery(group):
     for page in records(group):
         description = record_meta(group, rows_by_id[page['id']])
         image = page_image(page) if group not in ('Цитаты', 'Темы') else ''
-        cover = image_html(image, 'card-cover', '(max-width: 650px) 50vw, 320px') if image else ''
+        cover = (image_html(image, 'card-cover', '(max-width: 650px) 50vw, 320px') if image else
+                 '<span class="card-etching" aria-hidden="true"></span>' if group == 'Темы' else '')
         markup += f'<a class="card" href="{page["id"]}.html">{cover}<span>{escape(page["title"])}</span>' + (f'<small>{escape(description)}</small>' if description else '') + '</a>'
     return markup + '</div>'
 
@@ -479,16 +530,17 @@ def database_table(group):
 
 
 DEFAULT_VIEWS = {'Темы':'gallery','История философии':'table','Цитаты':'list','Личности':'table'}
-for group,label in GROUPS:
+for section_number, (group,label) in enumerate(GROUPS, start=1):
     dbid = next(i for i,name in db_ids.items() if name==group)
-    body += f'<section id="{dbid}" class="reference-section" aria-labelledby="heading-{dbid}"><h2 id="heading-{dbid}">{label}</h2>'
+    body += (f'<section id="{dbid}" class="reference-section" aria-labelledby="heading-{dbid}">'
+             f'<div class="section-heading"><h2 id="heading-{dbid}">{escape(label)}</h2></div>')
     default = DEFAULT_VIEWS[group]
     body += '<div class="view-controls" role="group" aria-label="Вид раздела">' + ''.join(f'<button type="button" data-view="{view}" aria-pressed="{str(view==default).lower()}">{view_label}</button>' for view,view_label in [('gallery','Галерея'),('list','Список'),('table','Таблица')]) + '</div>'
     for view,content in [('gallery',gallery(group)),('list',record_list(group)),('table',database_table(group))]:
         hidden = '' if view == default else ' hidden'
         body += f'<div data-view-content="{view}"{hidden}>{content}</div>'
     body += '</section>'
-(OUT / 'index.html').write_text(shell('Философия',body),encoding='utf-8')
+(OUT / 'index.html').write_text(shell('Философия',body,hero_quote=quote_html),encoding='utf-8')
 search = [dict(title=p['title'],group=p['group'],url=('index.html' if p==home else p['id']+'.html'),text=re.sub(r'^Конспект:.*(?:\n|$)', '', p['text'], flags=re.MULTILINE)) for p in pages.values() if p['group'] != 'Самостоятельная работа']
 (OUT / 'search.json').write_text(json.dumps(search,ensure_ascii=False),encoding='utf-8')
 print(f'Built {len(pages)} pages; {len(assets)} assets; '+', '.join(f'{g}: {len(ordered[g])}' for g,_ in GROUPS))

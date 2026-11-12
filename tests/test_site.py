@@ -62,11 +62,11 @@ class SiteTests(unittest.TestCase):
         self.assertIn('89ecf3804396453cbc4256966e24aa27.html', gadamer.split('class="entity-links"', 1)[1])
 
     def test_home_navigation_and_search(self):
-        home = (OUT / 'index.html').read_text()
-        self.assertEqual(home.count('class="resource-trigger"'), 2)
-        self.assertIn('class="featured-quote"', home)
-        self.assertIn('<figcaption>— Рене Декарт</figcaption>', home)
-        self.assertNotIn('<h2>Цитата</h2>', home)
+        home = (OUT / 'index.html').read_text(encoding='utf-8')
+        # The original quotation is part of Hero; three resources follow it,
+        # ahead of the single tab menu, without a duplicate editorial block.
+        self.assertEqual(home.count('data-resource-open='), 2)
+        self.assertIn('id="resource-dialog"', home)
         self.assertEqual(home.count('class="resource-cards"'), 2)
         self.assertEqual(home.count('class="resource-card"'), 11)
         self.assertIn('class="resource-card-image"', home)
@@ -74,16 +74,27 @@ class SiteTests(unittest.TestCase):
         self.assertIn('homeHeaderTitleImage_ru_RU.png', read_cards)
         self.assertIn('resource-card-placeholder', read_cards)
         self.assertIn('target="_blank" rel="noopener noreferrer"', read_cards)
-        self.assertEqual(home.count('class="resource-trigger"'), 2)
-        self.assertIn('<h1>PhiloLoom</h1>', home)
-        self.assertIn('id="resource-dialog"', home)
-        self.assertIn('data-resource-open="watch"', home)
-        self.assertIn('data-resource-open="read"', home)
+        self.assertIn('<h1>Философия <em>как искусство</em> мышления</h1>', home)
         self.assertIn('Автор: <a href="https://mksddn.ru/" target="_blank"', home)
         self.assertIn('href="https://flsf.maxdudin.ru/" target="_blank"', home)
-        self.assertIn('src="https://flsf.maxdudin.ru/img/imagehome.jpg"', home)
-        self.assertNotIn('<header>', home)
         self.assertIn('id="search-open"', home)
+        self.assertEqual(home.count('id="search-open"'), 1)
+        self.assertIn('class="featured-quote"', home)
+        self.assertIn('Человеку, исследующему истину, необходимо хоть один раз в жизни усомниться во всех вещах', home)
+        self.assertIn('<figcaption>— Рене Декарт</figcaption>', home)
+        self.assertIn('class="resource-tiles"', home)
+        self.assertEqual(home.count('class="resource-trigger resource-tile"'), 2)
+        self.assertIn('class="resource-tile resource-tile-blog"', home)
+        self.assertIn('class="resource-tile-cover"', home)
+        self.assertLess(home.index('class="hero-cover"'), home.index('class="featured-quote"'))
+        self.assertLess(home.index('class="featured-quote"'), home.index('class="resource-tiles"'))
+        self.assertLess(home.index('class="resource-tiles"'), home.index('class="section-nav"'))
+        self.assertIn('class="hero-cover-content"', home.split('class="featured-quote"', 1)[0])
+        self.assertNotIn('class="featured-quote"', home.split('class="home-source-strip"', 1)[1])
+        self.assertNotIn('class="footer-resources"', home)
+        self.assertNotIn('Философский справочник: темы, история мысли, личности и цитаты.', home)
+        self.assertNotIn('class="hero-summary"', home)
+        self.assertNotIn('<header>', home)
 
     def test_detail_excludes_private_assignment_metadata(self):
         entries = json.loads((OUT / 'search.json').read_text())
@@ -97,6 +108,56 @@ class SiteTests(unittest.TestCase):
         for item in entries:
             record = (OUT / item['url']).read_text()
             self.assertNotIn('<dt>Моя работа</dt>', record, item['title'])
+
+    def test_approved_visual_shell_and_reading_remain_static(self):
+        home = (OUT / 'index.html').read_text(encoding='utf-8')
+        detail = (OUT / '89ecf3804396453cbc4256966e24aa27.html').read_text(encoding='utf-8')
+        css = (OUT / 'style.css').read_text(encoding='utf-8')
+        self.assertIn('<h1>Философия <em>как искусство</em> мышления</h1>', home)
+        self.assertEqual(home.count('<h1>'), 1)
+        self.assertIn('class="museum-stage"', home)
+        self.assertIn('class="museum-head"', home)
+        self.assertIn('class="hero-artwork" role="img" aria-label="Художественный образ Рене Декарта"', home)
+        self.assertNotIn('Марк Аврелий', home)
+        self.assertNotIn('Wikimedia Commons</a>', home)
+        self.assertIn('url("ui/descartes-hero-dark.webp")', css)
+        self.assertIn('url("ui/descartes-hero-light.webp")', css)
+        self.assertIn('--hero-header-bg:', css)
+        self.assertIn('--hero-mobile-shade:', css)
+        for theme in ('dark', 'light'):
+            artwork = OUT / 'ui' / f'descartes-hero-{theme}.webp'
+            self.assertTrue(artwork.is_file())
+            self.assertLess(artwork.stat().st_size, 50_000)
+            with Image.open(artwork) as picture:
+                self.assertEqual(picture.format, 'WEBP')
+                self.assertEqual(picture.size, (1440, 810))
+        self.assertIn('id="theme-toggle"', home)
+        self.assertEqual(home.count('id="theme-toggle"'), 1)
+        self.assertEqual(home.count('class="section-nav"'), 1)
+        self.assertIn('id="reference-nav"', home)
+        self.assertEqual(home.count('class="featured-quote"'), 1)
+        self.assertEqual(home.count('data-resource-open='), 2)
+        self.assertIn('class="home-source-strip"', home)
+        self.assertIn('aria-label="Разделы"', home)
+        # No sales-like CTAs, cards framing the hero or duplicated navigation.
+        for fragment in ('class="museum-frame"', 'class="museum-shortcuts"',
+                         'class="museum-top-nav"', 'class="hero-explore"',
+                         'class="editorial-spotlight"', 'class="editorial-topic"',
+                         'class="editorial-shelf"', 'class="editorial-lead"',
+                         'id="about-philoloom"', 'КОЛЛЕКЦИЯ / ТЕМЫ',
+                         'Начните с этих идей', 'Исследуйте философию'):
+            self.assertNotIn(fragment, home)
+        self.assertIn('class="detail-masthead site-container"', detail)
+        self.assertIn('id="theme-toggle"', detail)
+        self.assertIn('data-reader-toggle', detail)
+        self.assertIn('<article>', detail)
+        self.assertIn('name="description"', detail)
+        self.assertNotIn('class="hero-cover"', detail)
+        self.assertIn(':root[data-theme="light"]', css)
+        self.assertIn('html.tabs-ready .section-heading', css)
+        self.assertIn('@media (max-width: 650px)', css)
+        self.assertIn('@media (prefers-reduced-motion: reduce)', css)
+        self.assertIn(':focus-visible', css)
 
     def test_only_optimized_local_rasters_are_published(self):
         images = [p for p in OUT.rglob('*') if p.suffix.lower() in {'.jpg', '.jpeg', '.png', '.webp', '.gif'}]

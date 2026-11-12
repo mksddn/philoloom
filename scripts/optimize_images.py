@@ -8,10 +8,15 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / 'content' / 'optimized'
 MANIFEST = ROOT / 'content' / 'image-manifest.json'
 SUFFIXES = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
-# These two already-optimized Hero WebPs are served directly from dist/ui/.
+# These pre-optimized UI assets are served directly from dist/ui/.
 # Recompressing them would move them into hashed media/ URLs and break
-# CSS theme switching. Original Notion and legacy UI images still use the pipeline.
-PREOPTIMIZED_UI = {'descartes-hero-dark.webp', 'descartes-hero-light.webp'}
+# direct CSS and HTML references. Original Notion images still use the pipeline.
+PREOPTIMIZED_UI = {
+    'descartes-hero-dark.webp',
+    'descartes-hero-light.webp',
+    'philoloom-tree.webp',
+    'philoloom-approved.webp',
+}
 VERSION = 'webp-v1-quality82-lossless-diagrams'
 
 

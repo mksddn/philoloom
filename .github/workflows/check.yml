@@ -38,11 +38,3 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Verify desktop, mobile, reading and navigation
         run: node tests/visual_smoke.cjs
-      - name: Publish review screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: philoloom-visual-review
-          path: screenshots/
-          if-no-files-found: ignore
-          retention-days: 14

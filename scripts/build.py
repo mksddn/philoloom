@@ -224,7 +224,7 @@ def shell(title, body, group=''):
 <body>
 <a class="skip" href="#main">К содержимому</a>
 {cover}{search_action}<main id="main" class="{'home-page' if not group else 'detail-page'}">{body}</main>
-<footer><div class="site-container">PhiloLoom · Философский справочник · <a href="https://mksddn.ru/" rel="author">Автор: Макс Дудин</a></div></footer>
+<footer><div class="site-container">PhiloLoom · Философский справочник · Автор: <a href="https://mksddn.ru/" target="_blank" rel="author noopener noreferrer">Макс Дудин</a></div></footer>
 <dialog id="page-panel" aria-label="Подробности страницы">
 <div class="panel-toolbar">
 <button id="panel-back" aria-label="Назад в панели">←</button>
@@ -240,6 +240,7 @@ def shell(title, body, group=''):
 <button id="image-close" aria-label="Закрыть изображение">×</button>
 <img id="image-full" alt="">
 </dialog>
+{resource_dialog if not group else ""}
 <dialog id="search-dialog">
 <form method="dialog">
 <label for="query">Поиск по справочнику</label>
@@ -345,35 +346,47 @@ for p in pages.values():
     row = rows_by_id.get(p['id'])
     if row:
         props = [(k,v) for k,v in row.items() if k != 'Name']
-    props = [(k,v) for k,v in props if v.strip() and k not in ('Конспект', 'Задание', 'Зачтено', 'Связанные записи', 'Связь') and not k.startswith('Самостоятельная работа')]
+    hidden_meta = {'Конспект', 'Задание', 'Зачтено', 'Моя работа', 'Связанные записи'}
+    props = [(k,v) for k,v in props if v.strip() and k not in hidden_meta and not k.startswith('Самостоятельная работа')]
+    # Keep explicit relations including "Связь"; these are meaningful public navigation.
     table = '<dl class="properties">' + ''.join(f'<dt>{escape(k)}</dt><dd>{property_html(v,p)}</dd>' for k,v in props) + '</dl>' if props else ''
     extra = related_records(p, props)
-    connections_html = f'<section class="entity-links" aria-label="Связи и упоминания"><h2>Связи и упоминания</h2>{table}{extra}</section>' if table or extra else ''
+    connections_html = f'<section class="entity-links" aria-label="Связи и упоминания">{table}{extra}</section>' if table or extra else ''
     quote_class = ' class="quote-heading"' if p['group'] == 'Цитаты' else ''
-    body = f'{breadcrumbs(p)}<h1{quote_class}>{escape(p["title"])}</h1>{READING_CONTROLS}<article>{render(body_text,p)}</article>{connections_html}'
+    body = f'{breadcrumbs(p)}<h1{quote_class}>{escape(p["title"])}</h1>{connections_html}{READING_CONTROLS}<article>{render(body_text,p)}</article>'
     (OUT / (p['id'] + '.html')).write_text(shell(p['title'],body,p['group']),encoding='utf-8')
 
-# Build four consistent hero tiles from the original introduction (source unchanged).
+# Landing content is drawn from the untouched Notion introduction.
 intro = home['text'].split('\n## ')[0]
 quote_source = intro.split('- Посмотреть', 1)[0].splitlines()[1:]
 quote_html = render('\n'.join(quote_source), home)
 def hero_links(markdown_text):
     return '<ul>' + ''.join(
-        f'<li><a href="{escape(url,quote=True)}">{escape(label)}</a></li>'
+        f'<li><a href="{escape(url,quote=True)}" target="_blank" rel="noopener noreferrer">{escape(label)}</a></li>'
         for label, url in re.findall(r'\[([^]]+)\]\((https?://[^)]+)\)', markdown_text)
         if safe_url(url)
     ) + '</ul>'
 
-watch = intro.split('- Посмотреть',1)[1].split('- 📗',1)[0] if '- Посмотреть' in intro else ''
-read = intro.split('- 📗',1)[1].split('[Блог о философии]',1)[0] if '- 📗' in intro else ''
+watch = intro.split('- Посмотреть', 1)[1].split('- 📗', 1)[0] if '- Посмотреть' in intro else ''
+read = intro.split('- 📗', 1)[1].split('[Блог о философии]', 1)[0] if '- 📗' in intro else ''
 blog = 'https://flsf.maxdudin.ru/'
-hero = (f'<div class="hero-tiles">'
-        f'<section class="hero-tile hero-quote"><h2>Цитата</h2>{quote_html}</section>'
-        f'<section class="hero-tile"><h2>Что посмотреть</h2>{hero_links(watch)}</section>'
-        f'<section class="hero-tile"><h2>Что почитать</h2>{hero_links(read)}</section>'
-        f'<section class="hero-tile hero-blog"><h2>Блог о философии</h2><p>Авторские размышления и статьи о философии.</p><a href="{blog}">Читать блог</a></section>'
-        f'</div>')
-body = f'<div class="home-heading"><div class="page-icon">📜</div><h1>Философия</h1><button id="search-open" class="search-trigger" type="button" aria-haspopup="dialog" aria-controls="search-dialog">⌕ Найти в справочнике <span>⌘ K</span></button></div>{hero}<nav class="section-nav" aria-label="Разделы">{nav}</nav>'
+# OG image is optional: the local metadata cache does not currently contain it.
+blog_meta = previews.get(blog, {})
+blog_image = blog_meta.get('local_image') or blog_meta.get('image') or ''
+blog_media = (f'<span class="blog-image">{image_html(blog_image, "blog-cover")}</span>'
+              if blog_image and safe_url(blog_image) else '')
+hero = (f'<div class="hero-intro"><div class="hero-quote">{quote_html}</div>'
+        f'<div class="hero-resources">'
+        f'<button type="button" class="resource-trigger" data-resource-open="watch" aria-haspopup="dialog" aria-controls="resource-dialog"><span>Смотреть</span><small>Видеоматериалы о философии</small><span aria-hidden="true">↗</span></button>'
+        f'<button type="button" class="resource-trigger" data-resource-open="read" aria-haspopup="dialog" aria-controls="resource-dialog"><span>Читать</span><small>Статьи, журналы и библиотеки</small><span aria-hidden="true">↗</span></button>'
+        f'<a class="blog-feature" href="{blog}" target="_blank" rel="noopener noreferrer">{blog_media}<span class="blog-feature-copy"><strong>Блог о философии</strong><small>{escape(blog_meta.get("description", "Авторские статьи о философии."))}</small></span><span aria-hidden="true">↗</span></a>'
+        f'</div></div>')
+resource_dialog = ('<dialog id="resource-dialog" aria-labelledby="resource-title">'
+                   '<div class="resource-toolbar"><h2 id="resource-title">Материалы</h2><button type="button" id="resource-close" aria-label="Закрыть">×</button></div>'
+                   f'<div id="resource-watch" class="resource-list" hidden>{hero_links(watch)}</div>'
+                   f'<div id="resource-read" class="resource-list" hidden>{hero_links(read)}</div>'
+                   '</dialog>')
+body = f'<div class="home-heading"><h1>PhiloLoom</h1><button id="search-open" class="search-trigger" type="button" aria-haspopup="dialog" aria-controls="search-dialog">⌕ Найти в справочнике <span>⌘ K</span></button></div>{hero}<nav class="section-nav" aria-label="Разделы">{nav}</nav>'
 
 class MediaLinks(HTMLParser):
     def __init__(self, text):

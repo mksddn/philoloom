@@ -1644,29 +1644,41 @@ html.tabs-ready .section-heading {
   .hero-artwork { height: 65%; background-position: 80% top; }
 }
 
-/* Philoloom identity: approved neural tree emblem with lowercase wordmark. */
+/* Philoloom identity: the neural knowledge tree is woven into the Hero,
+   never shown as a separate inline icon or an opaque background square. */
+.hero-cover { isolation: isolate; }
+.hero-brand-watermark {
+  position: absolute;
+  z-index: 0;
+  left: clamp(-125px, -7vw, -55px);
+  top: 52%;
+  width: clamp(390px, 42vw, 610px);
+  aspect-ratio: 1;
+  transform: translateY(-50%);
+  background: url("ui/philoloom-tree.webp") center / contain no-repeat;
+  opacity: .19;
+  pointer-events: none;
+}
+:root[data-theme="light"] .hero-brand-watermark { opacity: .13; }
+.hero-cover-content { position: relative; z-index: 1; }
 .hero-project-name {
-  display: inline-flex;
-  align-items: center;
-  gap: clamp(10px, 1.3vw, 16px);
-  margin-bottom: 16px;
+  display: block;
+  margin-bottom: 12px;
   color: var(--hero-main-text);
-  font: 500 clamp(24px, 2.15vw, 31px)/1.1 var(--serif);
+  font: 500 clamp(23px, 2.2vw, 31px)/1.15 var(--serif);
   letter-spacing: -.035em;
   text-transform: none;
 }
-.hero-brand-mark {
-  display: block;
-  width: clamp(62px, 6.5vw, 82px);
-  height: auto;
-  aspect-ratio: 1;
-  flex: none;
-  object-fit: contain;
+@media (max-width: 850px) {
+  .hero-brand-watermark { left: -120px; top: 54%; width: 490px; opacity: .15; }
 }
 @media (max-width: 650px) {
-  .hero-project-name { gap: 9px; margin-bottom: 11px; font-size: 24px; }
-  .hero-brand-mark { width: 54px; height: 54px; }
+  .hero-brand-watermark { left: -95px; top: 65%; width: 370px; opacity: .13; }
+  :root[data-theme="light"] .hero-brand-watermark { opacity: .095; }
+  .hero-project-name { margin-bottom: 9px; font-size: 24px; }
 }
 @media (max-width: 360px) {
-  .hero-brand-mark { width: 48px; height: 48px; }
+  .hero-brand-watermark { left: -85px; width: 330px; top: 64%; }
+  .hero-project-name { font-size: 22px; }
 }
+@media print { .hero-brand-watermark { display: none; } }

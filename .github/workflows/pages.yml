@@ -22,8 +22,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true
-      - name: Ensure LFS assets are downloaded
-        run: git lfs pull
       - name: Set up Python
         uses: actions/setup-python@v5
         with:

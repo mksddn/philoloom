@@ -43,7 +43,10 @@ async function assertThemeArtwork(page, theme) {
   let browser;
   try {
     await waitForServer();
-    browser = await chromium.launch({ headless: true });
+    // CI reuses the Google Chrome installed on its GitHub-hosted runner.
+    // Without the env override, local development retains Playwright Chromium.
+    const channel = process.env.PLAYWRIGHT_BROWSER_CHANNEL;
+    browser = await chromium.launch({ headless: true, ...(channel ? { channel } : {}) });
     const desktop = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark' });
     const home = await desktop.newPage();
     const errors = [];

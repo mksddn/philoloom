@@ -1291,39 +1291,171 @@ html.tabs-ready .section-heading {
 .entity-links .properties { margin-bottom: 12px; }
 .discovered-links li a:hover { background: var(--surface); color: var(--accent); }
 
-/* Source links are intentionally tucked into the footer, not promoted into the hero. */
-footer .site-container {
+/* From the original introduction: a literary quotation and three equally
+   weighted source blocks, directly below Hero, as in the approved direction. */
+.home-source-strip {
+  padding: 27px 0 23px;
+}
+.home-source-strip .featured-quote {
+  position: relative;
+  max-width: none;
+  margin: 0 0 20px;
+  padding: 16px 28px 16px 64px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: baseline;
   flex-wrap: wrap;
-  gap: 12px 28px;
-}
-.footer-resources { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 18px; }
-.footer-resources button,
-.footer-resources a {
-  background: transparent;
-  color: var(--muted);
+  gap: 8px 24px;
   border: 0;
+  border-left: 2px solid var(--accent);
   border-radius: 0;
-  text-decoration: underline;
-  text-decoration-color: var(--line);
-  text-underline-offset: 3px;
-  font-size: 13px;
-  line-height: 1.4;
-  padding: 0;
+  background: transparent;
 }
-.footer-resources button:hover,
-.footer-resources a:hover { color: var(--text); background: transparent; text-decoration-color: var(--accent); }
+.home-source-strip .featured-quote .quote-ornament {
+  top: 7px;
+  left: 17px;
+  font: normal 54px/1 var(--serif);
+  color: var(--accent);
+  opacity: .8;
+}
+.home-source-strip .featured-quote blockquote {
+  flex: 1 1 400px;
+  max-width: 860px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.home-source-strip .featured-quote blockquote p {
+  margin: 0;
+  font: italic 400 clamp(19px, 2.15vw, 27px)/1.45 var(--serif);
+  letter-spacing: 0;
+  color: var(--text);
+  text-wrap: balance;
+}
+.home-source-strip .featured-quote figcaption {
+  flex: 0 0 auto;
+  margin-left: auto;
+  font: 500 13px/1.5 var(--sans);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.resource-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr minmax(0, 1.32fr);
+  gap: 12px;
+  margin-bottom: 15px;
+}
+.resource-tiles .resource-tile {
+  position: relative;
+  min-width: 0;
+  min-height: 126px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: none;
+  text-decoration: none;
+  text-align: left;
+  overflow: hidden;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.resource-tiles .resource-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+  height: auto;
+  padding: 20px 44px 20px 24px;
+}
+.resource-tiles .resource-tile:hover {
+  border-color: var(--accent);
+  background: var(--hover);
+}
+.resource-tiles .resource-tile-title {
+  display: block;
+  font: 500 clamp(22px,2.2vw,27px)/1.25 var(--serif);
+  color: var(--text);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.resource-tiles .resource-tile small {
+  display: block;
+  font: 400 12px/1.5 var(--sans);
+  color: var(--muted);
+  margin: 0;
+}
+.resource-tiles .resource-tile-arrow {
+  position: absolute;
+  right: 18px;
+  top: 16px;
+  font: 400 16px/1 var(--sans);
+  color: var(--accent);
+}
+.resource-tile-blog {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: 17px;
+  padding: 12px 44px 12px 12px;
+}
+.resource-tile-blog:not(:has(.resource-tile-art)) {
+  grid-template-columns: 1fr;
+  padding: 20px 44px 20px 24px;
+}
+.resource-tile-art {
+  display: block;
+  width: 116px;
+  height: 99px;
+  background: var(--hover);
+  overflow: hidden;
+}
+.resource-tile-cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(.8) sepia(.12);
+}
+.resource-tile-description {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.resource-tiles .resource-trigger:focus-visible,
+.resource-tiles .resource-tile-blog:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+}
 .detail-masthead .museum-search { color: var(--text); border: 1px solid var(--line); }
 .detail-masthead .museum-search:hover { background: var(--hover); }
 @media (max-width: 850px) {
+  .resource-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .resource-tile-blog { grid-column: 1 / -1; }
+  .home-source-strip .featured-quote { gap: 7px 15px; }
+  .home-source-strip .featured-quote figcaption { margin-left: 0; }
   .hero-cover-content { padding-top: 90px; padding-bottom: 90px; }
   .hero-cover-content h1 { max-width: 500px; font-size: clamp(43px,6.5vw,60px); }
   .hero-artwork { left: 28%; width: 84%; }
   .hero-cover::after { background: linear-gradient(90deg,#141311ef 0%,#141311ba 49%,#14131145 100%),linear-gradient(0deg,#151311 0%,transparent 31%); }
 }
 @media (max-width: 650px) {
+  .home-source-strip { padding: 19px 0 15px; }
+  .home-source-strip .featured-quote {
+    padding: 10px 6px 11px 43px;
+    margin-bottom: 16px;
+    gap: 10px;
+  }
+  .home-source-strip .featured-quote .quote-ornament { top: 6px; left: 10px; font-size: 40px; }
+  .home-source-strip .featured-quote blockquote { flex-basis: 100%; }
+  .home-source-strip .featured-quote blockquote p { font-size: 20px; line-height: 1.48; }
+  .home-source-strip .featured-quote figcaption { font-size: 12px; margin: 0 0 0 auto; }
+  .resource-tiles { grid-template-columns: 1fr; gap: 9px; margin-bottom: 10px; }
+  .resource-tiles .resource-trigger { min-height: 86px; padding: 15px 39px 15px 18px; }
+  .resource-tile-blog { grid-column: auto; min-height: 88px; grid-template-columns: 94px minmax(0, 1fr); padding: 9px 37px 9px 9px; gap: 12px; }
+  .resource-tile-art { width: 94px; height: 70px; }
+  .resource-tiles .resource-tile-title { font-size: 22px; }
+  .resource-tiles .resource-tile-arrow { top: 13px; right: 12px; }
   .museum-head-inner { min-height: 60px; padding: 9px 18px; }
   .museum-wordmark { font-size: 17px; letter-spacing: .19em; }
   .museum-actions { gap: 4px; }

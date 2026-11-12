@@ -207,37 +207,24 @@ for group,_ in SOURCE_GROUPS:
 nav = ''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}">{label}</a>' for g,label in GROUPS)
 
 # The visual identity is a presentation layer; content remains sourced from Notion.
-THEME_BUTTON = ('<button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" '
-                'aria-label="Переключить цветовую тему"><span aria-hidden="true">◐</span>'
-                '<span class="theme-label">Светлая тема</span></button>')
+SEARCH_BUTTON = ('<button id="search-open" class="museum-search" type="button" '
+                 'aria-label="Открыть поиск по справочнику" aria-haspopup="dialog" '
+                 'aria-controls="search-dialog" title="Поиск"><span aria-hidden="true">⌕</span></button>')
 # Theme-specific illustrations of René Descartes were approved for this Hero.
 # They are artistic interpretations, not photographs of historical objects.
 # Their local WebP files are referenced through theme-aware CSS.
 
 
 def shell(title, body, group='', hero_quote=''):
-    search_button = ('<button id="search-open" class="museum-search" type="button" '
-                     'aria-label="Открыть поиск по справочнику" aria-haspopup="dialog" '
-                     'aria-controls="search-dialog"><span aria-hidden="true">⌕</span></button>')
-    # The sole section navigation is the tab row directly below the hero.
-    # Detail pages use breadcrumbs back to the appropriate section.
-    search_action = (f'<div class="detail-masthead site-container">'
-                     f'<a class="detail-brand" href="index.html" aria-label="PhiloLoom — на главную">PhiloLoom</a>'
-                     f'<div class="detail-actions">{search_button}{THEME_BUTTON}</div></div>') if group else ''
-    cover = (f'<div class="museum-stage">'
-             f'<div class="museum-head">'
-             f'<div class="museum-head-inner">'
-             f'<span class="museum-wordmark">PHILOLOOM</span>'
-             f'<div class="museum-actions">{search_button}{THEME_BUTTON}</div>'
-             f'</div></div>'
-             f'<div class="hero-cover">'
+    # Project identity belongs inside the home page's main heading.
+    cover = (f'<div class="museum-stage"><div class="hero-cover">'
              f'<div class="hero-artwork" role="img" '
              f'aria-label="Художественный образ Рене Декарта"></div>'
              f'<div class="hero-orbit" aria-hidden="true"></div>'
              f'<div class="hero-cover-content">'
-             f'<h1>Философия <em>как искусство</em> мышления</h1>'
-             f'{hero_quote}</div>'
-             f'</div></div>') if not group else ''
+             f'<h1><span class="hero-project-name">PhiloLoom</span>'
+             f'<span class="hero-title-text">Философия <em>как искусство</em> мышления</span></h1>'
+             f'{hero_quote}</div></div></div>') if not group else ''
     return f'''<!doctype html>
 <html lang="ru">
 <head>
@@ -247,13 +234,13 @@ def shell(title, body, group='', hero_quote=''):
 <meta name="theme-color" content="#0f0f0f">
 <title>{escape(title)} · PhiloLoom</title>
 <meta name="description" content="{escape(title, quote=True)} — история философии, направления и мыслители в справочнике PhiloLoom.">
-<script>try{{document.documentElement.dataset.theme=localStorage.getItem('philoloom:theme')==='light'?'light':'dark'}}catch(e){{document.documentElement.dataset.theme='dark'}}</script>
+<script>document.documentElement.dataset.theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';</script>
 <link rel="stylesheet" href="style.css">
 <script src="app.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">К содержимому</a>
-{search_action}<main id="main" class="{'home-page' if not group else 'detail-page'}">{cover + '<div class="site-container home-inner">' + body + '</div>' if not group else body}</main>
+<main id="main" class="{'home-page' if not group else 'detail-page'}">{cover + '<div class="site-container home-inner">' + body + '</div>' if not group else body}</main>
 <footer><div class="site-container">PhiloLoom · Философский справочник · Автор: <a href="https://mksddn.ru/" target="_blank" rel="author noopener noreferrer">Макс Дудин</a></div></footer>
 <dialog id="page-panel" aria-label="Подробности страницы">
 <div class="panel-toolbar">
@@ -358,14 +345,6 @@ def breadcrumbs(page):
             f'<span aria-current="page" title="{escape(page["title"],quote=True)}">{escape(page["title"])}</span></nav>')
 
 
-READING_CONTROLS = ('<div class="reading-controls"><button type="button" data-reader-toggle aria-pressed="false">Режим чтения</button>'
-                    '<div class="reader-options" hidden><span>Размер текста</span>'
-                    '<button type="button" data-font-step="-1" aria-label="Уменьшить размер текста">A-</button>'
-                    '<output data-reader-output aria-label="Размер текста">18 px</output>'
-                    '<button type="button" data-font-step="1" aria-label="Увеличить размер текста">A+</button>'
-                    '<label>Ширина <select data-reader-width><option value="narrow">Узкая</option><option value="normal" selected>Обычная</option><option value="wide">Широкая</option></select></label>'
-                    '</div></div>')
-
 
 for p in pages.values():
     if p == home:
@@ -381,7 +360,8 @@ for p in pages.values():
     extra = related_records(p, props)
     connections_html = f'<section class="entity-links" aria-label="Связи и упоминания">{table}{extra}</section>' if table or extra else ''
     quote_class = ' class="quote-heading"' if p['group'] == 'Цитаты' else ''
-    body = f'{breadcrumbs(p)}<h1{quote_class}>{escape(p["title"])}</h1>{connections_html}{READING_CONTROLS}<article>{render(body_text,p)}</article>'
+    body = (f'<div class="detail-navigation">{breadcrumbs(p)}{SEARCH_BUTTON}</div>'
+            f'<h1{quote_class}>{escape(p["title"])}</h1>{connections_html}<article>{render(body_text,p)}</article>')
     (OUT / (p['id'] + '.html')).write_text(shell(p['title'],body,p['group']),encoding='utf-8')
 
 # Preserve the exact published quotation and resources from the untouched
@@ -455,7 +435,7 @@ resources = (
 )
 body = (f'<div class="home-source-strip" aria-label="Дополнительные материалы">'
         f'{resources}</div>'
-        f'<nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>')
+        f'<div class="catalog-toolbar"><nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>{SEARCH_BUTTON}</div>')
 
 class MediaLinks(HTMLParser):
     def __init__(self, text):

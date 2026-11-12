@@ -1,21 +1,12 @@
-// Both themes remain available; dark is the default presentation, light is saved per browser.
-const themeToggle = document.querySelector('#theme-toggle');
-if (themeToggle) {
-  const themeLabel = themeToggle.querySelector('.theme-label');
-  const syncTheme = () => {
-    const light = document.documentElement.dataset.theme === 'light';
-    themeToggle.setAttribute('aria-pressed', String(light));
-    themeLabel.textContent = light ? 'Тёмная тема' : 'Светлая тема';
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', light ? '#f5f2eb' : '#111110');
-  };
-  syncTheme();
-  themeToggle.addEventListener('click', () => {
-    const light = document.documentElement.dataset.theme !== 'light';
-    document.documentElement.dataset.theme = light ? 'light' : 'dark';
-    try { localStorage.setItem('philoloom:theme', light ? 'light' : 'dark'); } catch (_) { /* storage may be unavailable */ }
-    syncTheme();
-  });
-}
+// Follow the device's system color scheme, including changes while the page is open.
+const systemColorScheme = matchMedia('(prefers-color-scheme: light)');
+const syncTheme = () => {
+  const light = systemColorScheme.matches;
+  document.documentElement.dataset.theme = light ? 'light' : 'dark';
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', light ? '#f5f2eb' : '#111110');
+};
+syncTheme();
+systemColorScheme.addEventListener('change', syncTheme);
 
 const dialog = document.querySelector('#search-dialog');
 const query = document.querySelector('#query');
@@ -110,51 +101,6 @@ let panelPath;
 let panelDepth = 0;
 let requestController;
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-const readerWidths = {narrow:'48ch', normal:'64ch', wide:'76ch'};
-let readerSettings = {enabled:false, size:18, width:'normal'};
-try {
-  const saved = JSON.parse(localStorage.getItem('philoloom:reader') || 'null');
-  if (saved && typeof saved === 'object') {
-    readerSettings.enabled = saved.enabled === true;
-    readerSettings.size = Number.isFinite(saved.size) ? Math.max(16, Math.min(24, saved.size)) : 18;
-    readerSettings.width = Object.hasOwn(readerWidths, saved.width) ? saved.width : 'normal';
-  }
-} catch { /* Reading still works when storage is unavailable. */ }
-function updateReaderControls(root = document) {
-  root.querySelectorAll('[data-reader-toggle]').forEach(button => button.setAttribute('aria-pressed',String(readerSettings.enabled)));
-  root.querySelectorAll('.reader-options').forEach(options => { options.hidden = !readerSettings.enabled; });
-  root.querySelectorAll('[data-reader-output]').forEach(output => { output.textContent = `${readerSettings.size} px`; });
-  root.querySelectorAll('[data-reader-width]').forEach(select => { select.value = readerSettings.width; });
-  root.querySelectorAll('[data-font-step]').forEach(button => { button.disabled = Number(button.dataset.fontStep)<0 ? readerSettings.size<=16 : readerSettings.size>=24; });
-}
-function applyReaderSettings(remember = false) {
-  document.body.classList.toggle('reader-mode', readerSettings.enabled);
-  document.body.style.setProperty('--reader-size', `${readerSettings.size}px`);
-  document.body.style.setProperty('--reader-width', readerWidths[readerSettings.width]);
-  updateReaderControls();
-  if (remember) {
-    try { localStorage.setItem('philoloom:reader', JSON.stringify(readerSettings)); } catch { /* Keep session settings. */ }
-  }
-}
-document.addEventListener('click', event => {
-  if (event.target.closest('[data-reader-toggle]')) {
-    readerSettings.enabled = !readerSettings.enabled;
-    applyReaderSettings(true);
-  }
-  const step = event.target.closest('[data-font-step]');
-  if (step) {
-    readerSettings.size = Math.max(16,Math.min(24,readerSettings.size+Number(step.dataset.fontStep)));
-    applyReaderSettings(true);
-  }
-});
-document.addEventListener('change', event => {
-  if (event.target.matches('[data-reader-width]') && Object.hasOwn(readerWidths,event.target.value)) {
-    readerSettings.width = event.target.value;
-    applyReaderSettings(true);
-  }
-});
-applyReaderSettings();
 
 async function catalog() {
   if (!entries) {
@@ -302,7 +248,6 @@ function showImage(image) {
   imageDialog.showModal();
 }
 function setupContent(root) {
-  updateReaderControls(root);
   root.querySelectorAll('img').forEach(image => {
     const failed = () => {
       if (image.closest('article') && !image.closest('a')) {

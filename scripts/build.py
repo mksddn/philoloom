@@ -379,7 +379,7 @@ hero = (f'<div class="hero-intro"><div class="hero-quote">{quote_html}</div>'
         f'<div class="hero-resources">'
         f'<button type="button" class="resource-trigger" data-resource-open="watch" aria-haspopup="dialog" aria-controls="resource-dialog"><span>Смотреть</span><small>Видеоматериалы о философии</small><span aria-hidden="true">↗</span></button>'
         f'<button type="button" class="resource-trigger" data-resource-open="read" aria-haspopup="dialog" aria-controls="resource-dialog"><span>Читать</span><small>Статьи, журналы и библиотеки</small><span aria-hidden="true">↗</span></button>'
-        f'<a class="blog-feature" href="{blog}" target="_blank" rel="noopener noreferrer">{blog_media}<span class="blog-feature-copy"><strong>Блог о философии</strong><small>{escape(blog_meta.get("description", "Авторские статьи о философии."))}</small></span><span aria-hidden="true">↗</span></a>'
+        f'<a class="blog-feature" href="{blog}" target="_blank" rel="noopener noreferrer">{blog_media}<span class="blog-feature-copy"><strong>Блог о философии</strong><small>Статьи об истории и разделах философии</small></span><span class="blog-arrow" aria-hidden="true">↗</span></a>'
         f'</div></div>')
 resource_dialog = ('<dialog id="resource-dialog" aria-labelledby="resource-title">'
                    '<div class="resource-toolbar"><h2 id="resource-title">Материалы</h2><button type="button" id="resource-close" aria-label="Закрыть">×</button></div>'

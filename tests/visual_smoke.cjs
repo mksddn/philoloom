@@ -18,6 +18,28 @@ async function assertNoOverflow(page, label) {
   }));
   assert.ok(sizes.content <= sizes.viewport + 1, label + ': horizontal overflow ' + JSON.stringify(sizes));
 }
+async function assertThemeArtwork(page, theme) {
+  const result = await page.evaluate(async (expected) => {
+    const art = document.querySelector('.hero-artwork');
+    const background = getComputedStyle(art).backgroundImage;
+    const imageUrl = background.match(/url\(["']?(.*?)["']?\)/)?.[1];
+    if (!imageUrl) return { background, loaded: false };
+    const image = new Image();
+    image.src = imageUrl;
+    await image.decode();
+    return {
+      background, loaded: image.naturalWidth === 1440 && image.naturalHeight === 810,
+      heroBackground: getComputedStyle(document.querySelector('.hero-cover')).backgroundColor,
+      headerBackground: getComputedStyle(document.querySelector('.museum-head')).backgroundColor,
+      headingColor: getComputedStyle(document.querySelector('.hero-cover h1')).color,
+      quoteColor: getComputedStyle(document.querySelector('.hero-cover blockquote p')).color,
+    };
+  }, theme);
+  assert.ok(result.background.includes('descartes-hero-' + theme + '.webp'),
+    'Expected theme-specific Hero artwork: ' + JSON.stringify(result));
+  assert.ok(result.loaded, 'Local theme-specific image must be available and decoded');
+  return result;
+}
 (async () => {
   let browser;
   try {
@@ -59,12 +81,9 @@ async function assertNoOverflow(page, label) {
     assert.ok(await home.locator('html').evaluate(element => element.classList.contains('tabs-ready')));
     assert.ok(await home.locator('.reference-section:not([hidden]) .cards .card').count() > 20);
 
-    await home.waitForFunction(() => {
-      const artwork = document.querySelector('.hero-artwork img');
-      return artwork.complete;
-    }, null, { timeout: 20000 });
-    assert.ok(await home.locator('.hero-artwork img').evaluate(image => image.naturalWidth > 0),
-      'Full-bleed sculpture must load');
+    const darkAppearance = await assertThemeArtwork(home, 'dark');
+    assert.equal(await home.locator('.hero-artwork').getAttribute('aria-label'),
+      'Художественный образ Рене Декарта');
     const heroDimensions = await home.locator('.hero-cover').evaluate(element => ({
       left: element.getBoundingClientRect().left,
       width: element.getBoundingClientRect().width,
@@ -76,6 +95,11 @@ async function assertNoOverflow(page, label) {
 
     await home.locator('#theme-toggle').click();
     assert.equal(await home.locator('html').getAttribute('data-theme'), 'light');
+    const lightAppearance = await assertThemeArtwork(home, 'light');
+    for (const token of ['heroBackground', 'headerBackground', 'headingColor', 'quoteColor']) {
+      assert.notEqual(darkAppearance[token], lightAppearance[token],
+        token + ' must change between dark and light theme');
+    }
 
     await home.reload({ waitUntil: 'domcontentloaded' });
     assert.equal(await home.locator('html').getAttribute('data-theme'), 'light');
@@ -122,8 +146,13 @@ async function assertNoOverflow(page, label) {
     assert.ok(await small.locator('.hero-cover').evaluate(element =>
       Math.abs(element.getBoundingClientRect().width - document.documentElement.clientWidth) <= 1));
 
+    await assertThemeArtwork(small, 'dark');
     await small.locator('#theme-toggle').click();
     assert.equal(await small.locator('html').getAttribute('data-theme'), 'light');
+    await assertThemeArtwork(small, 'light');
+    assert.ok(await small.locator('.hero-cover-content .featured-quote').evaluate(el =>
+      el.getBoundingClientRect().bottom <= document.querySelector('.hero-cover').getBoundingClientRect().bottom),
+      'Quotation must remain inside 390px Hero');
 
     await small.goto(base + '/89ecf3804396453cbc4256966e24aa27.html', { waitUntil: 'domcontentloaded' });
     assert.ok(await small.locator('article').isVisible());
@@ -138,6 +167,10 @@ async function assertNoOverflow(page, label) {
     const narrowPage = await narrow.newPage();
     await narrowPage.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
     await assertNoOverflow(narrowPage, '320px home');
+    await assertThemeArtwork(narrowPage, 'dark');
+    assert.ok(await narrowPage.locator('.hero-cover-content .featured-quote').evaluate(el =>
+      el.getBoundingClientRect().bottom <= document.querySelector('.hero-cover').getBoundingClientRect().bottom),
+      'Quotation must remain inside 320px Hero');
     await narrowPage.goto(base + '/89ecf3804396453cbc4256966e24aa27.html', { waitUntil: 'domcontentloaded' });
     await assertNoOverflow(narrowPage, '320px article');
 

@@ -96,6 +96,7 @@ async function assertThemeArtwork(page, theme) {
     await assertNoOverflow(home, 'desktop home');
 
     await home.emulateMedia({ colorScheme: 'light' });
+    await home.waitForFunction(() => document.documentElement.dataset.theme === 'light');
     assert.equal(await home.locator('html').getAttribute('data-theme'), 'light');
     const lightAppearance = await assertThemeArtwork(home, 'light');
     for (const token of ['heroBackground', 'headingColor', 'quoteColor']) {
@@ -153,6 +154,7 @@ async function assertThemeArtwork(page, theme) {
 
     await assertThemeArtwork(small, 'dark');
     await small.emulateMedia({ colorScheme: 'light' });
+    await small.waitForFunction(() => document.documentElement.dataset.theme === 'light');
     assert.equal(await small.locator('html').getAttribute('data-theme'), 'light');
     await assertThemeArtwork(small, 'light');
     assert.ok(await small.locator('.hero-cover-content .featured-quote').evaluate(el =>

@@ -30,10 +30,13 @@ async function assertNoOverflow(page, label) {
     const errors = [];
     home.on('pageerror', error => errors.push(error.message));
     await home.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
-    assert.equal(await home.locator('.hero-cover h1').textContent(), 'PhiloLoom');
+    assert.equal((await home.locator('.hero-cover h1').textContent()).replace(/\\s+/g, ' ').trim(), 'Философия как искусство мышления');
     assert.equal(await home.locator('#theme-toggle').getAttribute('aria-pressed'), 'false');
     assert.equal(await home.locator('.section-nav a').count(), 4);
     assert.equal(await home.locator('.reference-section').count(), 4);
+    assert.equal(await home.locator('.museum-shortcuts a').count(), 4);
+    assert.equal(await home.locator('.editorial-topic').count(), 5);
+    assert.ok(await home.locator('.editorial-spotlight').isVisible());
     await assertNoOverflow(home, 'desktop home');
     await home.screenshot({ path: 'screenshots/01-home-desktop-dark.png', fullPage: true });
     await home.locator('#theme-toggle').click();

@@ -574,7 +574,7 @@ footer { margin-top: 70px; background: var(--surface); border-top: 1px solid var
 footer .site-container { padding-block: 26px; font-size: 13px; }
 footer a { text-decoration-color: var(--muted); }
 
-/* The masthead contains only text: no mark/monogram is introduced. */
+/* The masthead preserves the editorial composition. */
 .hero-cover {
   position: relative;
   isolation: isolate;
@@ -1642,4 +1642,31 @@ html.tabs-ready .section-heading {
   .hero-cover-content { padding: 44px 17px 48px; }
   .hero-cover-content h1 { font-size: 33px; }
   .hero-artwork { height: 65%; background-position: 80% top; }
+}
+
+/* Philoloom identity: approved neural tree emblem with lowercase wordmark. */
+.hero-project-name {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(10px, 1.3vw, 16px);
+  margin-bottom: 16px;
+  color: var(--hero-main-text);
+  font: 500 clamp(24px, 2.15vw, 31px)/1.1 var(--serif);
+  letter-spacing: -.035em;
+  text-transform: none;
+}
+.hero-brand-mark {
+  display: block;
+  width: clamp(62px, 6.5vw, 82px);
+  height: auto;
+  aspect-ratio: 1;
+  flex: none;
+  object-fit: contain;
+}
+@media (max-width: 650px) {
+  .hero-project-name { gap: 9px; margin-bottom: 11px; font-size: 24px; }
+  .hero-brand-mark { width: 54px; height: 54px; }
+}
+@media (max-width: 360px) {
+  .hero-brand-mark { width: 48px; height: 48px; }
 }

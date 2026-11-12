@@ -28,25 +28,3 @@ jobs:
         run: |
           python scripts/audit_content.py --report editorial-report.json
           make check
-      - name: Probe blog OG image
-        continue-on-error: true
-        run: |
-          python - <<'PY'
-          import sys
-          from pathlib import Path
-          sys.path.insert(0, str(Path('scripts').resolve()))
-          # Probe in isolation; no content is modified.
-          import urllib.request
-          from html.parser import HTMLParser
-          class OG(HTMLParser):
-              def handle_starttag(self, tag, attrs):
-                  attrs = dict(attrs)
-                  if tag == 'meta' and attrs.get('property') == 'og:image':
-                      print('BLOG_OG_IMAGE=' + attrs.get('content', ''))
-          try:
-              req = urllib.request.Request('https://flsf.maxdudin.ru/', headers={'User-Agent': 'Mozilla/5.0'})
-              with urllib.request.urlopen(req, timeout=12) as response:
-                  OG().feed(response.read(1000000).decode('utf-8', 'replace'))
-          except Exception as error:
-              print('BLOG_OG_PROBE_ERROR=' + str(error))
-          PY

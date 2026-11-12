@@ -1,3 +1,22 @@
+// Both themes remain available; dark is the default presentation, light is saved per browser.
+const themeToggle = document.querySelector('#theme-toggle');
+if (themeToggle) {
+  const themeLabel = themeToggle.querySelector('.theme-label');
+  const syncTheme = () => {
+    const light = document.documentElement.dataset.theme === 'light';
+    themeToggle.setAttribute('aria-pressed', String(light));
+    themeLabel.textContent = light ? 'Тёмная тема' : 'Светлая тема';
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', light ? '#f5f2eb' : '#111110');
+  };
+  syncTheme();
+  themeToggle.addEventListener('click', () => {
+    const light = document.documentElement.dataset.theme !== 'light';
+    document.documentElement.dataset.theme = light ? 'light' : 'dark';
+    try { localStorage.setItem('philoloom:theme', light ? 'light' : 'dark'); } catch (_) { /* storage may be unavailable */ }
+    syncTheme();
+  });
+}
+
 const dialog = document.querySelector('#search-dialog');
 const query = document.querySelector('#query');
 const results = document.querySelector('#results');

@@ -210,35 +210,96 @@ nav = ''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}"
 THEME_BUTTON = ('<button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" '
                 'aria-label="Переключить цветовую тему"><span aria-hidden="true">◐</span>'
                 '<span class="theme-label">Светлая тема</span></button>')
-HERO_ART = ('https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/'
-            'Zeno_of_Citium_Ny_Carlsberg_Glyptotek_IN606.jpg/'
-            '800px-Zeno_of_Citium_Ny_Carlsberg_Glyptotek_IN606.jpg')
-HERO_ART_SOURCE = 'https://commons.wikimedia.org/wiki/File:Zeno_of_Citium_Ny_Carlsberg_Glyptotek_IN606.jpg'
-
+# CC0 photos of classical sculpture from Wikimedia Commons; not portraits of
+# the named concepts, and never used to claim a historical identification.
+COMMONS_THUMB = 'https://upload.wikimedia.org/wikipedia/commons/thumb/'
+EDITORIAL_ART = {
+    'hero': (
+        COMMONS_THUMB + 'd/d4/Marble_Bust_of_Marcus_Aurelius_(Roman_Emperor_161-180_AD)_(28273837396).jpg/'
+        '960px-Marble_Bust_of_Marcus_Aurelius_(Roman_Emperor_161-180_AD)_(28273837396).jpg',
+        'https://commons.wikimedia.org/wiki/File:Marble_Bust_of_Marcus_Aurelius_(Roman_Emperor_161-180_AD)_(28273837396).jpg',
+    ),
+    'Онтология': (
+        COMMONS_THUMB + '2/24/Roman_Marble_Statue_Head_(28204833482).jpg/'
+        '640px-Roman_Marble_Statue_Head_(28204833482).jpg',
+        'https://commons.wikimedia.org/wiki/File:Roman_Marble_Statue_Head_(28204833482).jpg',
+    ),
+    'Стоицизм': (
+        COMMONS_THUMB + 'b/b3/Aristotle_bust.jpg/640px-Aristotle_bust.jpg',
+        'https://commons.wikimedia.org/wiki/File:Aristotle_bust.jpg',
+    ),
+    'Эстетика': (
+        COMMONS_THUMB + '7/7b/Ancient_Greece_Marble_Relief_Fragment_of_Female_Head%2C_Probably_Aphrodite%2C_from_Melos%2C_c._460-450_BC.jpg/'
+        '640px-Ancient_Greece_Marble_Relief_Fragment_of_Female_Head%2C_Probably_Aphrodite%2C_from_Melos%2C_c._460-450_BC.jpg',
+        'https://commons.wikimedia.org/wiki/File:Ancient_Greece_Marble_Relief_Fragment_of_Female_Head%2C_Probably_Aphrodite%2C_from_Melos%2C_c._460-450_BC.jpg',
+    ),
+    'Экзистенциализм': (
+        COMMONS_THUMB + '8/8d/Ancient_Greece_Marble_Statue_Head_(28384794702).jpg/'
+        '640px-Ancient_Greece_Marble_Statue_Head_(28384794702).jpg',
+        'https://commons.wikimedia.org/wiki/File:Ancient_Greece_Marble_Statue_Head_(28384794702).jpg',
+    ),
+    'Герменевтика': (
+        COMMONS_THUMB + 'c/ce/Marble_Herm_of_Plato_from_the_Academy%2C_3rd_C._AD%2C_Roman_Copy_of_Original_of_340_BC_which_was_Oldest_Displayed_Portrait_of_Plato_(28117624014).jpg/'
+        '640px-Marble_Herm_of_Plato_from_the_Academy%2C_3rd_C._AD%2C_Roman_Copy_of_Original_of_340_BC_which_was_Oldest_Displayed_Portrait_of_Plato_(28117624014).jpg',
+        'https://commons.wikimedia.org/wiki/File:Marble_Herm_of_Plato_from_the_Academy%2C_3rd_C._AD%2C_Roman_Copy_of_Original_of_340_BC_which_was_Oldest_Displayed_Portrait_of_Plato_(28117624014).jpg',
+    ),
+}
 
 def shell(title, body, group=''):
-    search_button = ('<button id="search-open" class="search-trigger" type="button" '
-                     'aria-haspopup="dialog" aria-controls="search-dialog">'
-                     'Поиск по справочнику <span aria-hidden="true">⌘ K</span></button>')
+    search_button = ('<button id="search-open" class="museum-search" type="button" '
+                     'aria-label="Открыть поиск по справочнику" aria-haspopup="dialog" '
+                     'aria-controls="search-dialog"><span aria-hidden="true">⌕</span></button>')
     search_action = (f'<div class="detail-masthead site-container">'
                      f'<a class="detail-brand" href="index.html" aria-label="PhiloLoom — на главную">PhiloLoom</a>'
                      f'<div class="detail-actions">{search_button}{THEME_BUTTON}</div></div>') if group else ''
-    cover = (f'<div class="hero-cover">'
-             f'<div class="hero-artwork"><img src="{HERO_ART}" '
-             f'alt="Мраморный бюст философа Зенона Китийского, римская копия" '
-             f'width="533" height="800" decoding="async" fetchpriority="high"></div>'
-             f'<div class="site-container hero-cover-content">'
-             f'<div class="hero-topline"><span>Философский справочник</span>{THEME_BUTTON}</div>'
-             f'<div class="hero-copy"><p class="hero-overline">01 — ПРОСТРАНСТВО МЫСЛИ</p>'
-             f'<h1>PhiloLoom</h1><p class="hero-statement">Философия как искусство мышления</p>'
-             f'<p class="hero-summary">История, понятия и мыслители — в пространстве, '
-             f'созданном для исследования идей.</p>'
-             f'<a class="hero-explore" href="#reference-nav">Исследовать справочник <span aria-hidden="true">↘</span></a>'
-             f'</div></div><p class="hero-credit">Зенон Китийский · фото: Marie-Lan Nguyen · '
-             f'<a href="{HERO_ART_SOURCE}" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> · '
-             f'<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · '
-             f'<span>тональная обработка: CSS</span></p>'
-             f'</div>') if not group else ''
+    menu = ''.join(
+        f'<a href="index.html#{next(i for i,n in db_ids.items() if n==group_name)}">{escape(menu_label)}</a>'
+        for group_name, menu_label in [
+            ('Темы', 'Темы'),
+            ('История философии', 'История'),
+            ('Личности', 'Мыслители'),
+            ('Цитаты', 'Цитаты'),
+        ]
+    )
+    shortcuts = ''.join(
+        f'<a href="index.html#{next(i for i,n in db_ids.items() if n==group_name)}">'
+        f'<strong>{escape(label)}</strong><small>{escape(description)}</small>'
+        f'<span aria-hidden="true">↗</span></a>'
+        for group_name, label, description in [
+            ('История философии', 'История философии', 'Эпохи, школы, ключевые фигуры'),
+            ('Темы', 'Философские темы', 'Понятия, направления, идеи'),
+            ('Личности', 'Мыслители', 'Биографии, труды, связи'),
+            ('Цитаты', 'Цитаты', 'Высказывания и авторы'),
+        ]
+    )
+    hero_image, hero_source = EDITORIAL_ART['hero']
+    cover = (f'<div class="museum-stage"><div class="museum-frame">'
+             f'<div class="museum-head">'
+             f'<a class="museum-wordmark" href="index.html" aria-label="PhiloLoom — на главную">PHILOLOOM</a>'
+             f'<nav class="museum-top-nav" aria-label="Навигация по справочнику">{menu}'
+             f'<a href="https://flsf.maxdudin.ru/" target="_blank" rel="noopener noreferrer">Статьи</a>'
+             f'<a href="#about-philoloom">О проекте</a></nav>'
+             f'<div class="museum-actions"><a class="museum-mobile-nav" href="#museum-shortcuts">Разделы</a>'
+             f'{search_button}{THEME_BUTTON}</div></div>'
+             f'<div class="hero-cover">'
+             f'<div class="hero-artwork"><img src="{escape(hero_image, quote=True)}" '
+             f'alt="Мраморный бюст Марка Аврелия" width="640" height="960" '
+             f'fetchpriority="high" decoding="async"></div>'
+             f'<div class="hero-orbit" aria-hidden="true"></div>'
+             f'<div class="hero-cover-content">'
+             f'<p class="hero-overline">Публичный философский справочник</p>'
+             f'<h1>Философия <em>как искусство</em> мышления</h1>'
+             f'<span class="hero-divider" aria-hidden="true"></span>'
+             f'<p class="hero-summary">Идеи, мыслители, тексты и контексты — '
+             f'пространство для исследования философии.</p>'
+             f'<a class="hero-explore" href="#reference-nav">Перейти к темам '
+             f'<span aria-hidden="true">⟶</span></a></div>'
+             f'<p class="hero-credit">Мраморный бюст Марка Аврелия · '
+             f'<a href="{escape(hero_source, quote=True)}" target="_blank" rel="noopener noreferrer">'
+             f'Wikimedia Commons</a> · <a href="https://creativecommons.org/publicdomain/zero/1.0/" '
+             f'target="_blank" rel="noopener noreferrer">CC0</a></p></div>'
+             f'<nav id="museum-shortcuts" class="museum-shortcuts" aria-label="Основные направления">'
+             f'{shortcuts}</nav></div></div>') if not group else ''
     return f'''<!doctype html>
 <html lang="ru">
 <head>
@@ -426,22 +487,70 @@ blog_meta = previews.get(blog, {})
 blog_image = blog_meta.get('local_image') or blog_meta.get('image') or ''
 blog_media = (f'<span class="blog-image">{image_html(blog_image, "blog-cover")}</span>'
               if blog_image and safe_url(blog_image) else '')
-hero = (f'<div class="hero-intro">{quote_html}'
-        f'<div class="hero-resources">'
-        f'<button type="button" class="resource-trigger" data-resource-open="watch" aria-haspopup="dialog" aria-controls="resource-dialog"><span>Смотреть</span><small>Видеоматериалы о философии</small><span aria-hidden="true">↗</span></button>'
-        f'<button type="button" class="resource-trigger" data-resource-open="read" aria-haspopup="dialog" aria-controls="resource-dialog"><span>Читать</span><small>Статьи, журналы и библиотеки</small><span aria-hidden="true">↗</span></button>'
-        f'<a class="blog-feature" href="{blog}" target="_blank" rel="noopener noreferrer">{blog_media}<span class="blog-feature-copy"><strong>Блог о философии</strong><small>Статьи об истории и разделах философии</small></span><span class="blog-arrow" aria-hidden="true">↗</span></a>'
-        f'</div></div>')
 resource_dialog = ('<dialog id="resource-dialog" aria-labelledby="resource-title">'
                    '<div class="resource-toolbar"><h2 id="resource-title">Материалы</h2><button type="button" id="resource-close" aria-label="Закрыть">×</button></div>'
                    f'<div id="resource-watch" class="resource-list" hidden>{resource_cards(watch)}</div>'
                    f'<div id="resource-read" class="resource-list" hidden>{resource_cards(read)}</div>'
                    '</dialog>')
-body = (f'<div class="home-heading"><p class="home-index"><span>НАВИГАЦИЯ ПО ЗНАНИЯМ</span>'
-        f'<strong>Исследуйте философию</strong></p><button id="search-open" class="search-trigger" '
-        f'type="button" aria-haspopup="dialog" aria-controls="search-dialog">Поиск по справочнику '
-        f'<span aria-hidden="true">⌘ K</span></button></div>{hero}'
-        f'<nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>')
+# All editorial entry points target original, unchanged pages.
+def topic_page(title):
+    return next((p for p in ordered['Темы'] if p['title'] == title), None)
+
+
+spotlight = topic_page('Антропоцентризм')
+if spotlight is None:
+    raise ValueError('The editorial spotlight requires the existing Антропоцентризм page')
+spotlight_image, _ = EDITORIAL_ART['hero']
+lead = (f'<div class="editorial-headline"><span>ПУТЕВОДИТЕЛЬ ПО ИДЕЯМ</span>'
+        f'<p>Исследуйте философию</p></div>'
+        f'<div class="editorial-lead"><a class="editorial-spotlight" href="{spotlight["id"]}.html">'
+        f'<span class="editorial-spotlight-media"><img src="{escape(spotlight_image, quote=True)}" '
+        f'alt="" width="640" height="960" loading="lazy" decoding="async"></span>'
+        f'<span class="editorial-spotlight-copy"><small>ИЗБРАННАЯ ТЕМА</small>'
+        f'<strong>{escape(spotlight["title"])}</strong>'
+        f'<span>Человек и его восприятие как центр размышлений о мире.</span>'
+        f'<span class="editorial-spotlight-arrow" aria-hidden="true">↗</span></span></a>'
+        f'{quote_html}</div>')
+
+topic_titles = ['Онтология', 'Эстетика', 'Стоицизм', 'Герменевтика', 'Экзистенциализм']
+selected_topics = [topic_page(title) for title in topic_titles]
+if any(page is None for page in selected_topics):
+    raise ValueError('Editorial shelf requires five existing public topic pages')
+topic_tiles = []
+for page in selected_topics:
+    cover_url, _ = EDITORIAL_ART[page['title']]
+    topic_tiles.append(
+        f'<a class="editorial-topic" href="{page["id"]}.html">'
+        f'<img src="{escape(cover_url, quote=True)}" alt="" width="480" height="640" '
+        f'loading="lazy" decoding="async">'
+        f'<span class="editorial-topic-title">{escape(page["title"])}</span>'
+        f'<span class="editorial-topic-line" aria-hidden="true"></span></a>'
+    )
+shelf = (f'<section class="editorial-shelf" aria-labelledby="shelf-heading">'
+         f'<div class="editorial-kicker"><span>КОЛЛЕКЦИЯ / ТЕМЫ</span><h2 id="shelf-heading">'
+         f'Начните с этих идей</h2></div>'
+         f'<div class="editorial-topic-grid">{"".join(topic_tiles)}</div>'
+         f'</section>')
+resources = (f'<section class="editorial-resources" aria-labelledby="resources-heading">'
+             f'<div class="editorial-kicker"><span>ИСТОЧНИКИ И МАТЕРИАЛЫ</span>'
+             f'<h2 id="resources-heading">Продолжить исследование</h2></div>'
+             f'<div class="hero-resources">'
+             f'<button type="button" class="resource-trigger" data-resource-open="watch" '
+             f'aria-haspopup="dialog" aria-controls="resource-dialog"><span>Смотреть</span>'
+             f'<small>Видеоматериалы о философии</small><span aria-hidden="true">↗</span></button>'
+             f'<button type="button" class="resource-trigger" data-resource-open="read" '
+             f'aria-haspopup="dialog" aria-controls="resource-dialog"><span>Читать</span>'
+             f'<small>Статьи, журналы и библиотеки</small><span aria-hidden="true">↗</span></button>'
+             f'<a class="blog-feature" href="{blog}" target="_blank" rel="noopener noreferrer">'
+             f'{blog_media}<span class="blog-feature-copy"><strong>Блог о философии</strong>'
+             f'<small>Статьи об истории и разделах философии</small></span>'
+             f'<span class="blog-arrow" aria-hidden="true">↗</span></a>'
+             f'</div></section>')
+nav = nav  # Keep the original section targets and complete static index.
+body = (lead + shelf + resources
+        + '<div class="catalog-intro" id="reference-nav">'
+        '<span>СПРАВОЧНИК / ВСЕ МАТЕРИАЛЫ</span><h2>Каталог философии</h2></div>'
+        + f'<nav class="section-nav" aria-label="Разделы">{nav}</nav>')
 
 class MediaLinks(HTMLParser):
     def __init__(self, text):
@@ -527,6 +636,11 @@ for section_number, (group,label) in enumerate(GROUPS, start=1):
         hidden = '' if view == default else ' hidden'
         body += f'<div data-view-content="{view}"{hidden}>{content}</div>'
     body += '</section>'
+body += ('<section id="about-philoloom" class="editorial-about" aria-labelledby="about-heading">'
+         '<span>О ПРОЕКТЕ</span><h2 id="about-heading">Пространство для философских идей</h2>'
+         '<p>PhiloLoom — публичный справочник, в котором собраны философские темы, '
+         'история мысли, личности и цитаты. Материалы связаны между собой и доступны '
+         'для последовательного чтения и самостоятельного исследования.</p></section>')
 (OUT / 'index.html').write_text(shell('Философия',body),encoding='utf-8')
 search = [dict(title=p['title'],group=p['group'],url=('index.html' if p==home else p['id']+'.html'),text=re.sub(r'^Конспект:.*(?:\n|$)', '', p['text'], flags=re.MULTILINE)) for p in pages.values() if p['group'] != 'Самостоятельная работа']
 (OUT / 'search.json').write_text(json.dumps(search,ensure_ascii=False),encoding='utf-8')

@@ -63,7 +63,7 @@ class SiteTests(unittest.TestCase):
 
     def test_home_navigation_and_search(self):
         home = (OUT / 'index.html').read_text()
-        self.assertEqual(home.count('class="hero-tile'), 4)
+        self.assertEqual(home.count('<section class="hero-tile'), 4)
         self.assertIn('Что посмотреть', home)
         self.assertIn('Что почитать', home)
         self.assertIn('Автор: Макс Дудин', home)

@@ -58,8 +58,25 @@ class SiteTests(unittest.TestCase):
     def test_explicit_relation_is_bidirectional(self):
         hermeneutics = (OUT / '89ecf3804396453cbc4256966e24aa27.html').read_text()
         gadamer = (OUT / '8fdcb8310a88441da41bce0b8f4857c4.html').read_text()
-        self.assertIn('8fdcb8310a88441da41bce0b8f4857c4.html', hermeneutics.split('<aside', 1)[1])
-        self.assertIn('89ecf3804396453cbc4256966e24aa27.html', gadamer.split('<aside', 1)[1])
+        self.assertIn('8fdcb8310a88441da41bce0b8f4857c4.html', hermeneutics.split('class="entity-links"', 1)[1])
+        self.assertIn('89ecf3804396453cbc4256966e24aa27.html', gadamer.split('class="entity-links"', 1)[1])
+
+    def test_home_navigation_and_search(self):
+        home = (OUT / 'index.html').read_text()
+        self.assertEqual(home.count('class="hero-tile'), 4)
+        self.assertIn('Что посмотреть', home)
+        self.assertIn('Что почитать', home)
+        self.assertIn('Автор: Макс Дудин', home)
+        self.assertNotIn('<header>', home)
+        self.assertIn('id="search-open"', home)
+
+    def test_detail_excludes_private_assignment_metadata(self):
+        entries = json.loads((OUT / 'search.json').read_text())
+        entry = next(item for item in entries if item['group'] == 'Темы')
+        page = (OUT / entry['url']).read_text()
+        self.assertNotIn('<dt>Задание</dt>', page)
+        self.assertNotIn('<dt>Зачтено</dt>', page)
+        self.assertIn('id="search-open"', page)
 
     def test_only_optimized_local_rasters_are_published(self):
         images = [p for p in OUT.rglob('*') if p.suffix.lower() in {'.jpg', '.jpeg', '.png', '.webp', '.gif'}]

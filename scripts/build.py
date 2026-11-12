@@ -359,7 +359,11 @@ for p in pages.values():
 # Landing content is drawn from the untouched Notion introduction.
 intro = home['text'].split('\n## ')[0]
 quote_source = intro.split('- Посмотреть', 1)[0].splitlines()[1:]
-quote_html = render('\n'.join(quote_source), home)
+quote_lines = [line.strip() for line in quote_source if line.strip() and line.strip() != '>']
+quote_text = next((re.sub(r'^>\\s*|\\*\\*', '', line) for line in quote_lines if line.startswith('>')), '')
+quote_author = next((line for line in quote_lines if not line.startswith('>')), '')
+quote_html = (f'<blockquote><p>{escape(quote_text)}</p></blockquote>'
+              f'<cite>{escape(quote_author)}</cite>')
 def hero_links(markdown_text):
     return '<ul>' + ''.join(
         f'<li><a href="{escape(url,quote=True)}" target="_blank" rel="noopener noreferrer">{escape(label)}</a></li>'

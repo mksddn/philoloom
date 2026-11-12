@@ -34,16 +34,26 @@ async function assertNoOverflow(page, label) {
     assert.equal(await home.locator('#theme-toggle').getAttribute('aria-pressed'), 'false');
     assert.equal(await home.locator('.section-nav a').count(), 4);
     assert.equal(await home.locator('.reference-section').count(), 4);
-    assert.equal(await home.locator('.museum-shortcuts a').count(), 4);
-    assert.equal(await home.locator('.editorial-topic').count(), 5);
-    assert.ok(await home.locator('.editorial-spotlight').isVisible());
+    assert.equal(await home.locator('.museum-head').count(), 1);
+    assert.equal(await home.locator('.section-nav').count(), 1);
+    assert.equal(await home.locator('.museum-shortcuts, .editorial-spotlight, .editorial-shelf, .hero-explore').count(), 0);
+    assert.equal(await home.locator('.museum-frame, .museum-top-nav').count(), 0);
+    assert.ok(await home.locator('html').evaluate(element => element.classList.contains('tabs-ready')));
+    assert.ok(await home.locator('.reference-section:not([hidden]) .cards .card').count() > 20);
 
-    await home.waitForFunction(() => [...document.querySelectorAll('.hero-artwork img, .editorial-topic img')]
-      .every(image => image.complete), null, { timeout: 20000 });
-    const artworkStatus = await home.locator('.hero-artwork img, .editorial-topic img')
-      .evaluateAll(images => images.map(image => ({ url: image.src, loaded: image.naturalWidth > 0 })));
-    assert.ok(artworkStatus.every(image => image.loaded),
-      'All hero and editorial images must load: ' + JSON.stringify(artworkStatus));
+    await home.waitForFunction(() => {
+      const artwork = document.querySelector('.hero-artwork img');
+      return artwork.complete;
+    }, null, { timeout: 20000 });
+    assert.ok(await home.locator('.hero-artwork img').evaluate(image => image.naturalWidth > 0),
+      'Full-bleed sculpture must load');
+    const heroDimensions = await home.locator('.hero-cover').evaluate(element => ({
+      left: element.getBoundingClientRect().left,
+      width: element.getBoundingClientRect().width,
+      viewport: document.documentElement.clientWidth,
+    }));
+    assert.ok(Math.abs(heroDimensions.left) <= 1 && Math.abs(heroDimensions.width - heroDimensions.viewport) <= 1,
+      'Hero must span the entire viewport: ' + JSON.stringify(heroDimensions));
     await assertNoOverflow(home, 'desktop home');
     await home.screenshot({ path: 'screenshots/01-home-desktop-dark.png', fullPage: true });
     await home.locator('#theme-toggle').click();
@@ -62,6 +72,10 @@ async function assertNoOverflow(page, label) {
     assert.ok(await home.locator('#resource-dialog').evaluate(element => element.open));
     await home.locator('#resource-close').click();
     await home.locator('.section-nav a').first().click();
+    assert.equal(await home.locator('.reference-section:not([hidden])').count(), 1);
+    await home.locator('.section-nav a').nth(1).click();
+    assert.equal(await home.locator('.reference-section:not([hidden])').count(), 1);
+    await home.locator('.section-nav a').first().click();
     await home.locator('.reference-section:not([hidden]) [data-view="list"]').click();
     assert.ok(await home.locator('.reference-section:not([hidden]) .entry-list').isVisible());
     await home.locator('.reference-section:not([hidden]) [data-view="gallery"]').click();
@@ -78,6 +92,9 @@ async function assertNoOverflow(page, label) {
     await small.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
     assert.equal(await small.locator('html').getAttribute('data-theme'), 'dark');
     await assertNoOverflow(small, '390px home');
+    assert.equal(await small.locator('.section-nav').count(), 1);
+    assert.ok(await small.locator('.hero-cover').evaluate(element =>
+      Math.abs(element.getBoundingClientRect().width - document.documentElement.clientWidth) <= 1));
     await small.screenshot({ path: 'screenshots/03-home-mobile-dark.png', fullPage: true });
     await small.locator('#theme-toggle').click();
     assert.equal(await small.locator('html').getAttribute('data-theme'), 'light');

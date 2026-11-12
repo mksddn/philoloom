@@ -59,7 +59,28 @@ async function assertThemeArtwork(page, theme) {
       const response = await fetch(match[1]);
       return { ok: response.ok, type: response.headers.get('content-type') };
     });
-    assert.ok(watermarkAsset.ok, 'Neural tree background image must load successfully');
+    assert.ok(watermarkAsset.ok && watermarkAsset.type?.includes('svg'), 'Vector tree background must load');
+    const visualBrand = await home.locator('.hero-cover').evaluate(async hero => {
+      const tree = hero.querySelector('.hero-brand-watermark');
+      const word = hero.querySelector('.hero-wordmark');
+      const treeBounds = tree.getBoundingClientRect();
+      const heroBounds = hero.getBoundingClientRect();
+      const wordStyle = getComputedStyle(word);
+      const mask = wordStyle.maskImage !== 'none' ? wordStyle.maskImage : wordStyle.webkitMaskImage;
+      const match = mask?.match(/url\\(["']?(.*?)["']?\\)/);
+      const response = match ? await fetch(match[1]) : null;
+      return {
+        treeWidth: treeBounds.width,
+        heroHeight: heroBounds.height,
+        wordWidth: word.getBoundingClientRect().width,
+        maskLoaded: !!response?.ok,
+        maskType: response?.headers.get('content-type'),
+      };
+    });
+    assert.ok(visualBrand.treeWidth > visualBrand.heroHeight * 1.6,
+      'Tree must be oversize for deliberate crop: ' + JSON.stringify(visualBrand));
+    assert.ok(visualBrand.wordWidth >= 180 && visualBrand.maskLoaded && visualBrand.maskType?.includes('svg'),
+      'Approved vector wordmark must load visibly: ' + JSON.stringify(visualBrand));
     assert.equal(await home.locator('#theme-toggle').count(), 0);
     assert.equal(await home.locator('.catalog-toolbar #search-open').count(), 1);
     assert.equal(await home.locator('.section-nav a').count(), 4);

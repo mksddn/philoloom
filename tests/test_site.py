@@ -70,6 +70,10 @@ class SiteTests(unittest.TestCase):
         self.assertEqual(home.count('class="resource-cards"'), 2)
         self.assertEqual(home.count('class="resource-card"'), 11)
         self.assertIn('class="resource-card-image"', home)
+        read_cards = home.split('id="resource-read"', 1)[1].split('</div>', 1)[0]
+        self.assertIn('homeHeaderTitleImage_ru_RU.png', read_cards)
+        self.assertIn('resource-card-placeholder', read_cards)
+        self.assertIn('target="_blank" rel="noopener noreferrer"', read_cards)
         self.assertEqual(home.count('class="resource-trigger"'), 2)
         self.assertIn('<h1>PhiloLoom</h1>', home)
         self.assertIn('id="resource-dialog"', home)

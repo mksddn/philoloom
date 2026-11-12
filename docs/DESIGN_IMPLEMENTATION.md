@@ -81,7 +81,7 @@ node tests/visual_smoke.cjs
 | --- | --- | --- |
 | Герой и избранная тема | Мраморный бюст Марка Аврелия, фото Gary Todd | [Commons — Marble Bust of Marcus Aurelius](https://commons.wikimedia.org/wiki/File:Marble_Bust_of_Marcus_Aurelius_(Roman_Emperor_161-180_AD)_(28273837396).jpg) |
 | Онтология | Roman Marble Statue Head, фото Gary Todd | [Commons — Roman Marble Statue Head](https://commons.wikimedia.org/wiki/File:Roman_Marble_Statue_Head_(28204833482).jpg) |
-| Стоицизм | Aristotle bust, лицензия CC0, снимок не обозначает автора философской статьи | [Commons — Aristotle bust](https://commons.wikimedia.org/wiki/File:Aristotle_bust.jpg) |
+| Стоицизм | Мраморный бюст Марка Аврелия, фото Gary Todd, CC0 | [Commons — Roman Marble Bust of Marcus Aurelius](https://commons.wikimedia.org/wiki/File:Roman_Marble_Bust_of_Emperor_Marcus_Aurelius_(AD_161-180),_c._161_AD_(28204008722).jpg) |
 | Эстетика | Marble Relief Fragment of Female Head (probably Aphrodite), фото Gary Todd | [Commons — Ancient Greece Marble Relief](https://commons.wikimedia.org/wiki/File:Ancient_Greece_Marble_Relief_Fragment_of_Female_Head,_Probably_Aphrodite,_from_Melos,_c._460-450_BC.jpg) |
 | Экзистенциализм | Ancient Greece Marble Statue Head, фото Gary Todd | [Commons — Ancient Greece Marble Statue Head](https://commons.wikimedia.org/wiki/File:Ancient_Greece_Marble_Statue_Head_(28384794702).jpg) |
 | Герменевтика | Marble Herm of Plato from the Academy, фото Gary Todd | [Commons — Marble Herm of Plato](https://commons.wikimedia.org/wiki/File:Marble_Herm_of_Plato_from_the_Academy,_3rd_C._AD,_Roman_Copy_of_Original_of_340_BC_which_was_Oldest_Displayed_Portrait_of_Plato_(28117624014).jpg) |

@@ -28,3 +28,21 @@ jobs:
         run: |
           python scripts/audit_content.py --report editorial-report.json
           make check
+      - name: Set up Node.js for browser verification
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium browser tests
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Verify desktop, mobile, reading and navigation
+        run: node tests/visual_smoke.cjs
+      - name: Publish review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: philoloom-visual-review
+          path: screenshots/
+          if-no-files-found: ignore
+          retention-days: 14

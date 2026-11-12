@@ -37,6 +37,13 @@ async function assertNoOverflow(page, label) {
     assert.equal(await home.locator('.museum-shortcuts a').count(), 4);
     assert.equal(await home.locator('.editorial-topic').count(), 5);
     assert.ok(await home.locator('.editorial-spotlight').isVisible());
+
+    await home.waitForFunction(() => [...document.querySelectorAll('.hero-artwork img, .editorial-topic img')]
+      .every(image => image.complete), null, { timeout: 20000 });
+    const artworkStatus = await home.locator('.hero-artwork img, .editorial-topic img')
+      .evaluateAll(images => images.map(image => ({ url: image.src, loaded: image.naturalWidth > 0 })));
+    assert.ok(artworkStatus.every(image => image.loaded),
+      'All hero and editorial images must load: ' + JSON.stringify(artworkStatus));
     await assertNoOverflow(home, 'desktop home');
     await home.screenshot({ path: 'screenshots/01-home-desktop-dark.png', fullPage: true });
     await home.locator('#theme-toggle').click();

@@ -42,6 +42,14 @@ async function search() {
 document.querySelector('#search-open').addEventListener('click', () => { dialog.showModal(); query.focus(); search(); });
 query.addEventListener('input', search);
 dialog.addEventListener('close', () => { revision++; });
+dialog.addEventListener('click', event => {
+  // Native modal backdrops dispatch clicks on the dialog itself.
+  if (event.target !== dialog) return;
+  const bounds = dialog.getBoundingClientRect();
+  if (event.clientX < bounds.left || event.clientX > bounds.right ||
+      event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
+});
+
 
 const panel = document.querySelector('#page-panel');
 const panelContent = document.querySelector('#panel-content');

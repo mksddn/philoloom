@@ -1656,11 +1656,27 @@ html.tabs-ready .section-heading {
   width: clamp(1100px, 100vw, 1850px);
   aspect-ratio: 875 / 835;
   transform: translateY(-50%);
-  background: url("ui/philoloom-tree-hero.svg") center / contain no-repeat;
-  opacity: .14;
+  opacity: .05;
   pointer-events: none;
 }
-:root[data-theme="light"] .hero-brand-watermark { opacity: .11; }
+/* Keep the left side crisp; progressively blend into a softened version
+   towards Descartes. Blur is applied only to the tree, never the portrait. */
+.hero-brand-watermark::before,
+.hero-brand-watermark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("ui/philoloom-tree-hero.svg") center / contain no-repeat;
+}
+.hero-brand-watermark::before {
+  -webkit-mask-image: linear-gradient(to right, #000 0%, #000 30%, transparent 70%);
+  mask-image: linear-gradient(to right, #000 0%, #000 30%, transparent 70%);
+}
+.hero-brand-watermark::after {
+  filter: blur(18px);
+  -webkit-mask-image: linear-gradient(to right, transparent 30%, #000 70%);
+  mask-image: linear-gradient(to right, transparent 30%, #000 70%);
+}
 .hero-cover-content { position: relative; z-index: 1; }
 .hero-project-name {
   display: block;
@@ -1687,11 +1703,10 @@ html.tabs-ready .section-heading {
   border: 0;
 }
 @media (max-width: 850px) {
-  .hero-brand-watermark { width: 1250px; left: -475px; top: 47%; opacity: .12; }
+  .hero-brand-watermark { width: 1250px; left: -475px; top: 47%; }
 }
 @media (max-width: 650px) {
-  .hero-brand-watermark { width: 980px; left: -395px; top: 56%; opacity: .10; }
-  :root[data-theme="light"] .hero-brand-watermark { opacity: .08; }
+  .hero-brand-watermark { width: 980px; left: -395px; top: 56%; }
   .hero-project-name { margin-bottom: 10px; }
   .hero-wordmark { width: 205px; }
 }

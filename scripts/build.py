@@ -225,8 +225,9 @@ EDITORIAL_ART = {
         'https://commons.wikimedia.org/wiki/File:Roman_Marble_Statue_Head_(28204833482).jpg',
     ),
     'Стоицизм': (
-        'https://upload.wikimedia.org/wikipedia/commons/b/b3/Aristotle_bust.jpg',
-        'https://commons.wikimedia.org/wiki/File:Aristotle_bust.jpg',
+        COMMONS_THUMB + '3/32/Roman_Marble_Bust_of_Emperor_Marcus_Aurelius_(AD_161-180)%2C_c._161_AD_(28204008722).jpg/'
+        '960px-Roman_Marble_Bust_of_Emperor_Marcus_Aurelius_(AD_161-180)%2C_c._161_AD_(28204008722).jpg',
+        'https://commons.wikimedia.org/wiki/File:Roman_Marble_Bust_of_Emperor_Marcus_Aurelius_(AD_161-180)%2C_c._161_AD_(28204008722).jpg',
     ),
     'Эстетика': (
         COMMONS_THUMB + '7/7b/Ancient_Greece_Marble_Relief_Fragment_of_Female_Head%2C_Probably_Aphrodite%2C_from_Melos%2C_c._460-450_BC.jpg/'

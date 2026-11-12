@@ -61,6 +61,11 @@ async function search() {
 document.querySelector('#search-open').addEventListener('click', () => { dialog.showModal(); query.focus(); search(); });
 query.addEventListener('input', search);
 dialog.addEventListener('close', () => { revision++; });
+dialog.addEventListener('keydown', event => {
+  // Chromium can consume Escape to clear a focused type=search input.
+  // For an open modal, Escape must close the dialog consistently.
+  if (event.key === 'Escape') { event.preventDefault(); dialog.close(); }
+});
 dialog.addEventListener('click', event => {
   // Native modal backdrops dispatch clicks on the dialog itself.
   if (event.target !== dialog) return;

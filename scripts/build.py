@@ -360,16 +360,34 @@ for p in pages.values():
 intro = home['text'].split('\n## ')[0]
 quote_source = intro.split('- Посмотреть', 1)[0].splitlines()[1:]
 quote_lines = [line.strip() for line in quote_source if line.strip() and line.strip() != '>']
-quote_text = next((re.sub(r'^>\\s*|\\*\\*', '', line) for line in quote_lines if line.startswith('>')), '')
+quote_text = next((re.sub(r'^>\s*|\*\*', '', line) for line in quote_lines if line.startswith('>')), '')
 quote_author = next((line for line in quote_lines if not line.startswith('>')), '')
-quote_html = (f'<blockquote><p>{escape(quote_text)}</p></blockquote>'
-              f'<cite>{escape(quote_author)}</cite>')
-def hero_links(markdown_text):
-    return '<ul>' + ''.join(
-        f'<li><a href="{escape(url,quote=True)}" target="_blank" rel="noopener noreferrer">{escape(label)}</a></li>'
-        for label, url in re.findall(r'\[([^]]+)\]\((https?://[^)]+)\)', markdown_text)
-        if safe_url(url)
-    ) + '</ul>'
+quote_html = (f'<figure class="featured-quote"><span class="quote-ornament" aria-hidden="true">“</span>'
+              f'<blockquote><p>{escape(quote_text)}</p></blockquote>'
+              f'<figcaption>— {escape(quote_author)}</figcaption></figure>')
+
+def resource_cards(markdown_text):
+    cards = []
+    for label, url in re.findall(r'\[([^]]+)\]\((https?://[^)]+)\)', markdown_text):
+        if not safe_url(url):
+            continue
+        meta = previews.get(url, {})
+        domain = urlsplit(url).netloc.removeprefix('www.')
+        image = meta.get('local_image') or meta.get('image') or ''
+        media = (f'<span class="resource-card-media">{image_html(image, "resource-card-image", sizes="(max-width: 650px) 88px, 160px")}</span>'
+                 if image and safe_url(image) else
+                 f'<span class="resource-card-media resource-card-placeholder" aria-hidden="true">{escape(domain[:1].upper())}</span>')
+        # Labels come from the curated source; generic OG titles must not replace them.
+        description = (meta.get('description') or '').strip()
+        generic = ('Делитесь видео с близкими', 'Share your videos')
+        if description.startswith(generic):
+            description = ''
+        description_html = f'<span class="resource-card-description">{escape(description[:155])}</span>' if description else ''
+        cards.append(f'<li><a class="resource-card" href="{escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">'
+                     f'{media}<span class="resource-card-copy"><strong>{escape(label)}</strong>'
+                     f'{description_html}<small>{escape(domain)}</small></span>'
+                     f'<span class="resource-card-arrow" aria-hidden="true">↗</span></a></li>')
+    return '<ul class="resource-cards">' + ''.join(cards) + '</ul>'
 
 watch = intro.split('- Посмотреть', 1)[1].split('- 📗', 1)[0] if '- Посмотреть' in intro else ''
 read = intro.split('- 📗', 1)[1].split('[Блог о философии]', 1)[0] if '- 📗' in intro else ''
@@ -379,7 +397,7 @@ blog_meta = previews.get(blog, {})
 blog_image = blog_meta.get('local_image') or blog_meta.get('image') or ''
 blog_media = (f'<span class="blog-image">{image_html(blog_image, "blog-cover")}</span>'
               if blog_image and safe_url(blog_image) else '')
-hero = (f'<div class="hero-intro"><div class="hero-quote">{quote_html}</div>'
+hero = (f'<div class="hero-intro">{quote_html}'
         f'<div class="hero-resources">'
         f'<button type="button" class="resource-trigger" data-resource-open="watch" aria-haspopup="dialog" aria-controls="resource-dialog"><span>Смотреть</span><small>Видеоматериалы о философии</small><span aria-hidden="true">↗</span></button>'
         f'<button type="button" class="resource-trigger" data-resource-open="read" aria-haspopup="dialog" aria-controls="resource-dialog"><span>Читать</span><small>Статьи, журналы и библиотеки</small><span aria-hidden="true">↗</span></button>'
@@ -387,8 +405,8 @@ hero = (f'<div class="hero-intro"><div class="hero-quote">{quote_html}</div>'
         f'</div></div>')
 resource_dialog = ('<dialog id="resource-dialog" aria-labelledby="resource-title">'
                    '<div class="resource-toolbar"><h2 id="resource-title">Материалы</h2><button type="button" id="resource-close" aria-label="Закрыть">×</button></div>'
-                   f'<div id="resource-watch" class="resource-list" hidden>{hero_links(watch)}</div>'
-                   f'<div id="resource-read" class="resource-list" hidden>{hero_links(read)}</div>'
+                   f'<div id="resource-watch" class="resource-list" hidden>{resource_cards(watch)}</div>'
+                   f'<div id="resource-read" class="resource-list" hidden>{resource_cards(read)}</div>'
                    '</dialog>')
 body = f'<div class="home-heading"><h1>PhiloLoom</h1><button id="search-open" class="search-trigger" type="button" aria-haspopup="dialog" aria-controls="search-dialog">⌕ Найти в справочнике <span>⌘ K</span></button></div>{hero}<nav class="section-nav" aria-label="Разделы">{nav}</nav>'
 

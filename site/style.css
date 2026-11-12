@@ -1496,3 +1496,149 @@ html.tabs-ready .section-heading {
     border-bottom: 1px solid #ccc;
   }
 }
+
+
+/* Approved Hero artworks: the first Descartes composition belongs to the dark
+   theme, the second to the light one. No external images or text duplication.
+   Tokens cover header, portrait, headings, quote and decorative elements. */
+:root {
+  --hero-image: url("ui/descartes-hero-dark.webp");
+  --hero-header-bg: #1b1715;
+  --hero-header-line: #ae9a8259;
+  --hero-surface: #191613;
+  --hero-main-text: #eee8dc;
+  --hero-emphasis: #d4c4b1;
+  --hero-quote-text: #e3d9ce;
+  --hero-quote-author: #d3b995;
+  --hero-quote-rule: #aa8b61;
+  --hero-orbit-line: #bfa57b3f;
+  --hero-hover: #e8e4db16;
+  --hero-focus: #d9bd95;
+  --hero-cover-shade: linear-gradient(90deg, #191613d9 0%, #1916136e 35%, #1916130b 75%);
+  --hero-mobile-shade: linear-gradient(0deg, #191613 3%, #191613e3 28%, #19161366 57%, transparent 86%);
+}
+:root[data-theme="light"] {
+  --hero-image: url("ui/descartes-hero-light.webp");
+  --hero-header-bg: #f1eae0;
+  --hero-header-line: #aa998574;
+  --hero-surface: #eee5d8;
+  --hero-main-text: #292521;
+  --hero-emphasis: #51453b;
+  --hero-quote-text: #433b33;
+  --hero-quote-author: #775b3d;
+  --hero-quote-rule: #977951;
+  --hero-orbit-line: #816e5952;
+  --hero-hover: #2a211c10;
+  --hero-focus: #795c36;
+  --hero-cover-shade: linear-gradient(90deg, #f1e9dded 0%, #f1e9ddb8 32%, #f1e9dd0c 69%);
+  --hero-mobile-shade: linear-gradient(0deg, #eee5d8 3%, #eee5d8f2 30%, #eee5d88c 59%, transparent 86%);
+}
+.museum-stage { color: var(--hero-main-text); background: var(--hero-surface); }
+.museum-head { background: var(--hero-header-bg); border-bottom-color: var(--hero-header-line); }
+.museum-wordmark { color: var(--hero-main-text); }
+.museum-search {
+  color: var(--hero-main-text);
+  border-color: transparent;
+}
+.museum-search:hover {
+  color: var(--hero-main-text);
+  background: var(--hero-hover);
+  border-color: var(--hero-header-line);
+}
+.museum-head .theme-toggle {
+  color: var(--hero-main-text);
+  border-color: var(--hero-header-line);
+  background: transparent;
+}
+.museum-head .theme-toggle:hover {
+  color: var(--hero-main-text);
+  background: var(--hero-hover);
+  border-color: var(--hero-quote-rule);
+}
+.museum-search:focus-visible,
+.museum-head .theme-toggle:focus-visible {
+  outline: 2px solid var(--hero-focus);
+  outline-offset: 3px;
+}
+.hero-cover {
+  background: var(--hero-surface);
+  min-height: clamp(540px, 48vw, 710px);
+}
+.hero-cover::after {
+  background: var(--hero-cover-shade);
+}
+.hero-artwork {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  background-color: var(--hero-surface);
+  background-image: var(--hero-image);
+  background-size: cover;
+  background-position: 55% 44%;
+  background-repeat: no-repeat;
+}
+.hero-artwork::after { display: none; }
+.hero-cover-content {
+  min-height: clamp(540px, 48vw, 710px);
+  padding-top: 82px;
+  padding-bottom: 88px;
+}
+.hero-cover-content h1 { color: var(--hero-main-text); }
+.hero-cover-content h1 em { color: var(--hero-emphasis); }
+.hero-cover-content .featured-quote { border-left-color: var(--hero-quote-rule); }
+.hero-cover-content .featured-quote blockquote p { color: var(--hero-quote-text); }
+.hero-cover-content .featured-quote figcaption { color: var(--hero-quote-author); }
+.hero-orbit { border-color: var(--hero-orbit-line); opacity: .58; }
+.hero-orbit::before { border-color: var(--hero-orbit-line); opacity: .65; }
+@media (max-width: 850px) {
+  .hero-artwork { background-position: 68% 42%; }
+  .hero-cover::after {
+    background: linear-gradient(90deg,
+      color-mix(in srgb, var(--hero-surface) 92%, transparent) 0%,
+      color-mix(in srgb, var(--hero-surface) 57%, transparent) 45%,
+      transparent 95%);
+  }
+}
+@media (max-width: 650px) {
+  .hero-cover, .hero-cover-content { min-height: 580px; }
+  .hero-artwork {
+    inset: 0 0 auto;
+    width: 100%;
+    height: 68%;
+    background-size: auto 100%;
+    background-position: 79% top;
+    opacity: 1;
+  }
+  .hero-cover::after {
+    background: var(--hero-mobile-shade);
+  }
+  .hero-cover-content {
+    justify-content: flex-end;
+    padding: 58px 22px 60px;
+  }
+  .hero-cover-content h1 {
+    font-size: clamp(36px, 9.1vw, 48px);
+    color: var(--hero-main-text);
+    max-width: 480px;
+  }
+  .hero-cover-content .featured-quote {
+    max-width: 370px;
+  }
+  .hero-cover-content .featured-quote blockquote p {
+    color: var(--hero-quote-text);
+    font-size: clamp(15px, 4vw, 18px);
+  }
+  .hero-orbit { opacity: .33; top: -175px; }
+}
+@media (max-width: 360px) {
+  .hero-cover, .hero-cover-content { min-height: 590px; }
+  .hero-artwork { background-position: 82% top; height: 62%; }
+  .hero-cover-content { padding: 48px 17px 58px; }
+  .hero-cover-content h1 { font-size: 33px; }
+  .hero-cover-content .featured-quote { max-width: 290px; }
+}
+@media print {
+  .museum-stage { background: none; }
+  .hero-artwork { display: none !important; }
+}

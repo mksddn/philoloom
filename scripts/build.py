@@ -210,11 +210,9 @@ nav = ''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}"
 THEME_BUTTON = ('<button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" '
                 'aria-label="Переключить цветовую тему"><span aria-hidden="true">◐</span>'
                 '<span class="theme-label">Светлая тема</span></button>')
-# CC0 image of Marcus Aurelius: an art-direction element, not article content.
-HERO_IMAGE = ('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/'
-              'Marble_Bust_of_Marcus_Aurelius_(Roman_Emperor_161-180_AD)_(28273837396).jpg/'
-              '960px-Marble_Bust_of_Marcus_Aurelius_(Roman_Emperor_161-180_AD)_(28273837396).jpg')
-HERO_SOURCE = 'https://commons.wikimedia.org/wiki/File:Marble_Bust_of_Marcus_Aurelius_(Roman_Emperor_161-180_AD)_(28273837396).jpg'
+# Theme-specific illustrations of René Descartes were approved for this Hero.
+# They are artistic interpretations, not photographs of historical objects.
+# Their local WebP files are referenced through theme-aware CSS.
 
 
 def shell(title, body, group='', hero_quote=''):
@@ -233,17 +231,12 @@ def shell(title, body, group='', hero_quote=''):
              f'<div class="museum-actions">{search_button}{THEME_BUTTON}</div>'
              f'</div></div>'
              f'<div class="hero-cover">'
-             f'<div class="hero-artwork"><img src="{escape(HERO_IMAGE, quote=True)}" '
-             f'alt="Мраморный бюст Марка Аврелия" width="640" height="960" '
-             f'fetchpriority="high" decoding="async"></div>'
+             f'<div class="hero-artwork" role="img" '
+             f'aria-label="Художественный образ Рене Декарта"></div>'
              f'<div class="hero-orbit" aria-hidden="true"></div>'
              f'<div class="hero-cover-content">'
              f'<h1>Философия <em>как искусство</em> мышления</h1>'
              f'{hero_quote}</div>'
-             f'<p class="hero-credit">Мраморный бюст Марка Аврелия · '
-             f'<a href="{escape(HERO_SOURCE, quote=True)}" target="_blank" rel="noopener noreferrer">'
-             f'Wikimedia Commons</a> · <a href="https://creativecommons.org/publicdomain/zero/1.0/" '
-             f'target="_blank" rel="noopener noreferrer">CC0</a></p>'
              f'</div></div>') if not group else ''
     return f'''<!doctype html>
 <html lang="ru">

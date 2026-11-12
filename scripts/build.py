@@ -225,7 +225,8 @@ def shell(title, body, group='', hero_quote=''):
              f'aria-label="Художественный образ Рене Декарта"></div>'
              f'<div class="hero-orbit" aria-hidden="true"></div>'
              f'<div class="hero-cover-content">'
-             f'<h1><span class="hero-project-name">PhiloLoom</span> '
+             f'<h1><span class="hero-project-name"><img src="ui/philoloom-tree.webp" '
+              f'class="hero-brand-mark" alt="" width="72" height="72" decoding="async">philoloom</span> '
              f'<span class="hero-title-text">Философия <em>как искусство</em> мышления</span></h1>'
              f'{hero_quote}</div></div></div>') if not group else ''
     return f'''<!doctype html>
@@ -235,16 +236,18 @@ def shell(title, body, group='', hero_quote=''):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0f0f0f">
-<title>{escape(title)} · PhiloLoom</title>
-<meta name="description" content="{escape(title, quote=True)} — история философии, направления и мыслители в справочнике PhiloLoom.">
+<title>{escape(title)} · philoloom</title>
+<meta name="description" content="{escape(title, quote=True)} — история философии, направления и мыслители в справочнике philoloom.">
 <script>document.documentElement.dataset.theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';</script>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta property="og:site_name" content="philoloom">
 <link rel="stylesheet" href="style.css">
 <script src="app.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">К содержимому</a>
 <main id="main" class="{'home-page' if not group else 'detail-page'}">{cover + '<div class="site-container home-inner">' + body + '</div>' if not group else body}</main>
-<footer><div class="site-container">PhiloLoom · Философский справочник · Автор: <a href="https://mksddn.ru/" target="_blank" rel="author noopener noreferrer">Макс Дудин</a></div></footer>
+<footer><div class="site-container">philoloom · Философский справочник · Автор: <a href="https://mksddn.ru/" target="_blank" rel="author noopener noreferrer">Макс Дудин</a></div></footer>
 <dialog id="page-panel" aria-label="Подробности страницы">
 <div class="panel-toolbar">
 <button id="panel-back" aria-label="Назад в панели">←</button>
@@ -298,6 +301,7 @@ for folder, destination in [('site/assets', 'ui'), ('content/previews', 'preview
 for source, dest in assets.items():
     if source.relative_to(ROOT).as_posix() not in optimized_sources:
         copy_asset(source, OUT / dest)
+copy_asset(ROOT / 'site' / 'favicon.svg', OUT / 'favicon.svg')
 for name in ('style.css', 'app.js'):
     shutil.copyfile(ROOT / 'site' / name, OUT / name)
 
@@ -343,7 +347,7 @@ def related_records(page, props):
 def breadcrumbs(page):
     group_id = next((pid for pid, group in db_ids.items() if group == page['group']), '')
     group_link = f'<a href="index.html#{group_id}">{escape(page["group"])}</a>' if group_id else ''
-    return (f'<nav class="back page-breadcrumbs" aria-label="Путь по справочнику"><a href="index.html">PhiloLoom</a>'
+    return (f'<nav class="back page-breadcrumbs" aria-label="Путь по справочнику"><a href="index.html">philoloom</a>'
             f'<span aria-hidden="true">/</span>{group_link}<span aria-hidden="true">/</span>'
             f'<span aria-current="page" title="{escape(page["title"],quote=True)}">{escape(page["title"])}</span></nav>')
 

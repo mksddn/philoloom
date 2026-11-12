@@ -13,8 +13,8 @@ import markdown
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'notion'
 OUT = ROOT / 'dist'
-GROUPS = [('Темы', '📌 Темы'), ('История философии', '🕰️ История философии'),
-          ('Цитаты', '💬 Цитаты'), ('Личности', '🗂️ Личности')]
+GROUPS = [('Темы', 'Темы'), ('История философии', 'История философии'),
+          ('Цитаты', 'Цитаты'), ('Личности', 'Личности')]
 # Retain exported homework metadata for direct article URLs, but no public section.
 SOURCE_GROUPS = GROUPS + [('Самостоятельная работа', '💪 Мои статьи')]
 ID = re.compile(r'([a-f0-9]{32})(?:_all)?\.(?:md|csv)$')
@@ -206,20 +206,49 @@ for group,_ in SOURCE_GROUPS:
 
 nav = ''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}">{label}</a>' for g,label in GROUPS)
 
+# The visual identity is a presentation layer; content remains sourced from Notion.
+THEME_BUTTON = ('<button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" '
+                'aria-label="Переключить цветовую тему"><span aria-hidden="true">◐</span>'
+                '<span class="theme-label">Светлая тема</span></button>')
+HERO_ART = ('https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/'
+            'Zeno_of_Citium_Ny_Carlsberg_Glyptotek_IN606.jpg/'
+            '800px-Zeno_of_Citium_Ny_Carlsberg_Glyptotek_IN606.jpg')
+HERO_ART_SOURCE = 'https://commons.wikimedia.org/wiki/File:Zeno_of_Citium_Ny_Carlsberg_Glyptotek_IN606.jpg'
+
+
 def shell(title, body, group=''):
-    search_action = '<div class="detail-search site-container"><button id="search-open" class="search-trigger" type="button" aria-haspopup="dialog" aria-controls="search-dialog">⌕ Поиск по справочнику</button></div>' if group else ''
-    cover = f'<div class="hero-cover">{image_html("ui/forest-cover.jpg", sizes="100vw", priority=True)}</div>' if not group else ''
+    search_button = ('<button id="search-open" class="search-trigger" type="button" '
+                     'aria-haspopup="dialog" aria-controls="search-dialog">'
+                     'Поиск по справочнику <span aria-hidden="true">⌘ K</span></button>')
+    search_action = (f'<div class="detail-masthead site-container">'
+                     f'<a class="detail-brand" href="index.html" aria-label="PhiloLoom — на главную">PhiloLoom</a>'
+                     f'<div class="detail-actions">{search_button}{THEME_BUTTON}</div></div>') if group else ''
+    cover = (f'<div class="hero-cover">'
+             f'<div class="hero-artwork"><img src="{HERO_ART}" '
+             f'alt="Мраморный бюст философа Зенона Китийского, римская копия" '
+             f'width="533" height="800" decoding="async" fetchpriority="high"></div>'
+             f'<div class="site-container hero-cover-content">'
+             f'<div class="hero-topline"><span>Философский справочник</span>{THEME_BUTTON}</div>'
+             f'<div class="hero-copy"><p class="hero-overline">01 — ПРОСТРАНСТВО МЫСЛИ</p>'
+             f'<h1>PhiloLoom</h1><p class="hero-statement">Философия как искусство мышления</p>'
+             f'<p class="hero-summary">История, понятия и мыслители — в пространстве, '
+             f'созданном для исследования идей.</p>'
+             f'<a class="hero-explore" href="#reference-nav">Исследовать справочник <span aria-hidden="true">↘</span></a>'
+             f'</div></div><p class="hero-credit">Зенон Китийский · фото: Marie-Lan Nguyen · '
+             f'<a href="{HERO_ART_SOURCE}" target="_blank" rel="noopener noreferrer">Wikimedia Commons, CC BY 4.0</a></p>'
+             f'</div>') if not group else ''
     return f'''<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0f0f0f">
 <title>{escape(title)} · PhiloLoom</title>
-<meta name="description" content="PhiloLoom — личный философский справочник">
+<meta name="description" content="{escape(title, quote=True)} — история философии, направления и мыслители в справочнике PhiloLoom.">
+<script>try{{document.documentElement.dataset.theme=localStorage.getItem('philoloom:theme')==='light'?'light':'dark'}}catch(e){{document.documentElement.dataset.theme='dark'}}</script>
 <link rel="stylesheet" href="style.css">
-<script src="app.js" defer>
-</script>
+<script src="app.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">К содержимому</a>
@@ -241,16 +270,14 @@ def shell(title, body, group=''):
 <img id="image-full" alt="">
 </dialog>
 {resource_dialog if not group else ""}
-<dialog id="search-dialog">
+<dialog id="search-dialog" aria-label="Поиск по справочнику">
 <form method="dialog">
 <label for="query">Поиск по справочнику</label>
 <button aria-label="Закрыть поиск">×</button>
 </form>
 <input id="query" type="search" placeholder="Тема, философ или фрагмент текста…" autocomplete="off">
-<p id="search-status" role="status">
-</p>
-<ul id="results">
-</ul>
+<p id="search-status" role="status"></p>
+<ul id="results"></ul>
 </dialog>
 </body>
 </html>'''
@@ -408,7 +435,11 @@ resource_dialog = ('<dialog id="resource-dialog" aria-labelledby="resource-title
                    f'<div id="resource-watch" class="resource-list" hidden>{resource_cards(watch)}</div>'
                    f'<div id="resource-read" class="resource-list" hidden>{resource_cards(read)}</div>'
                    '</dialog>')
-body = f'<div class="home-heading"><h1>PhiloLoom</h1><button id="search-open" class="search-trigger" type="button" aria-haspopup="dialog" aria-controls="search-dialog">⌕ Найти в справочнике <span>⌘ K</span></button></div>{hero}<nav class="section-nav" aria-label="Разделы">{nav}</nav>'
+body = (f'<div class="home-heading"><p class="home-index"><span>НАВИГАЦИЯ ПО ЗНАНИЯМ</span>'
+        f'<strong>Исследуйте философию</strong></p><button id="search-open" class="search-trigger" '
+        f'type="button" aria-haspopup="dialog" aria-controls="search-dialog">Поиск по справочнику '
+        f'<span aria-hidden="true">⌘ K</span></button></div>{hero}'
+        f'<nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>')
 
 class MediaLinks(HTMLParser):
     def __init__(self, text):
@@ -451,7 +482,8 @@ def gallery(group):
     for page in records(group):
         description = record_meta(group, rows_by_id[page['id']])
         image = page_image(page) if group not in ('Цитаты', 'Темы') else ''
-        cover = image_html(image, 'card-cover', '(max-width: 650px) 50vw, 320px') if image else ''
+        cover = (image_html(image, 'card-cover', '(max-width: 650px) 50vw, 320px') if image else
+                 '<span class="card-etching" aria-hidden="true"></span>' if group == 'Темы' else '')
         markup += f'<a class="card" href="{page["id"]}.html">{cover}<span>{escape(page["title"])}</span>' + (f'<small>{escape(description)}</small>' if description else '') + '</a>'
     return markup + '</div>'
 
@@ -479,9 +511,11 @@ def database_table(group):
 
 
 DEFAULT_VIEWS = {'Темы':'gallery','История философии':'table','Цитаты':'list','Личности':'table'}
-for group,label in GROUPS:
+for section_number, (group,label) in enumerate(GROUPS, start=1):
     dbid = next(i for i,name in db_ids.items() if name==group)
-    body += f'<section id="{dbid}" class="reference-section" aria-labelledby="heading-{dbid}"><h2 id="heading-{dbid}">{label}</h2>'
+    body += (f'<section id="{dbid}" class="reference-section" aria-labelledby="heading-{dbid}">'
+             f'<div class="section-heading"><span aria-hidden="true">{section_number:02d} / 04</span>'
+             f'<h2 id="heading-{dbid}">{escape(label)}</h2></div>')
     default = DEFAULT_VIEWS[group]
     body += '<div class="view-controls" role="group" aria-label="Вид раздела">' + ''.join(f'<button type="button" data-view="{view}" aria-pressed="{str(view==default).lower()}">{view_label}</button>' for view,view_label in [('gallery','Галерея'),('list','Список'),('table','Таблица')]) + '</div>'
     for view,content in [('gallery',gallery(group)),('list',record_list(group)),('table',database_table(group))]:

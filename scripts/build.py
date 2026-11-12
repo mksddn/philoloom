@@ -209,7 +209,10 @@ nav = ''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}"
 # The visual identity is a presentation layer; content remains sourced from Notion.
 SEARCH_BUTTON = ('<button id="search-open" class="museum-search" type="button" '
                  'aria-label="Открыть поиск по справочнику" aria-haspopup="dialog" '
-                 'aria-controls="search-dialog" title="Поиск"><span aria-hidden="true">⌕</span></button>')
+                 'aria-controls="search-dialog" title="Поиск">'
+                 '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+                 'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'
+                 '<circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg></button>')
 # Theme-specific illustrations of René Descartes were approved for this Hero.
 # They are artistic interpretations, not photographs of historical objects.
 # Their local WebP files are referenced through theme-aware CSS.

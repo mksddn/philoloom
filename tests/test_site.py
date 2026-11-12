@@ -78,6 +78,8 @@ class SiteTests(unittest.TestCase):
         self.assertIn('Автор: <a href="https://mksddn.ru/" target="_blank"', home)
         self.assertIn('href="https://flsf.maxdudin.ru/" target="_blank"', home)
         self.assertIn('id="search-open"', home)
+        self.assertIn('<svg aria-hidden="true" viewBox="0 0 24 24"', home)
+        self.assertIn('.museum-search svg { display: block; width: 20px; height: 20px; }', (OUT / 'style.css').read_text(encoding='utf-8'))
         self.assertEqual(home.count('id="search-open"'), 1)
         self.assertIn('class="featured-quote"', home)
         self.assertIn('Человеку, исследующему истину, необходимо хоть один раз в жизни усомниться во всех вещах', home)

@@ -63,10 +63,15 @@ class SiteTests(unittest.TestCase):
 
     def test_home_navigation_and_search(self):
         home = (OUT / 'index.html').read_text()
-        self.assertEqual(home.count('<section class="hero-tile'), 4)
+        self.assertEqual(home.count('class="resource-trigger"'), 2)
+        self.assertIn('class="hero-quote"', home)
+        self.assertNotIn('<h2>Цитата</h2>', home)
+        self.assertIn('<h1>PhiloLoom</h1>', home)
+        self.assertIn('id="resource-dialog"', home)
         self.assertIn('Что посмотреть', home)
         self.assertIn('Что почитать', home)
-        self.assertIn('Автор: Макс Дудин', home)
+        self.assertIn('Автор: <a href="https://mksddn.ru/" target="_blank"', home)
+        self.assertIn('href="https://flsf.maxdudin.ru/" target="_blank"', home)
         self.assertNotIn('<header>', home)
         self.assertIn('id="search-open"', home)
 
@@ -76,7 +81,12 @@ class SiteTests(unittest.TestCase):
         page = (OUT / entry['url']).read_text()
         self.assertNotIn('<dt>Задание</dt>', page)
         self.assertNotIn('<dt>Зачтено</dt>', page)
+        self.assertNotIn('<dt>Моя работа</dt>', page)
+        self.assertLess(page.index('class="entity-links"'), page.index('<article>'))
         self.assertIn('id="search-open"', page)
+        for item in entries:
+            record = (OUT / item['url']).read_text()
+            self.assertNotIn('<dt>Моя работа</dt>', record, item['title'])
 
     def test_only_optimized_local_rasters_are_published(self):
         images = [p for p in OUT.rglob('*') if p.suffix.lower() in {'.jpg', '.jpeg', '.png', '.webp', '.gif'}]

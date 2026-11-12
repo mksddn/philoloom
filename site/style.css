@@ -1021,3 +1021,7 @@ dialog::backdrop { background: #000b; }
   main, article { max-width: none !important; }
   .card, .featured-quote { break-inside: avoid; }
 }
+
+/* The full-bleed cover is part of <main> for landmark and heading semantics. */
+main.home-page { max-width: none; padding-inline: 0; }
+.home-page > .home-inner { max-width: var(--container-width); margin-inline: auto; }

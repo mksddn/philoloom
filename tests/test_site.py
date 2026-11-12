@@ -74,7 +74,7 @@ class SiteTests(unittest.TestCase):
         self.assertIn('homeHeaderTitleImage_ru_RU.png', read_cards)
         self.assertIn('resource-card-placeholder', read_cards)
         self.assertIn('target="_blank" rel="noopener noreferrer"', read_cards)
-        self.assertIn('<h1><span class="hero-project-name">PhiloLoom</span> <span class="hero-title-text">', home)
+        self.assertIn('<h1><span class="hero-project-name"><img src="ui/philoloom-tree.webp" ', home)
         self.assertIn('Автор: <a href="https://mksddn.ru/" target="_blank"', home)
         self.assertIn('href="https://flsf.maxdudin.ru/" target="_blank"', home)
         self.assertIn('id="search-open"', home)
@@ -115,7 +115,7 @@ class SiteTests(unittest.TestCase):
         home = (OUT / 'index.html').read_text(encoding='utf-8')
         detail = (OUT / '89ecf3804396453cbc4256966e24aa27.html').read_text(encoding='utf-8')
         css = (OUT / 'style.css').read_text(encoding='utf-8')
-        self.assertIn('<h1><span class="hero-project-name">PhiloLoom</span>', home)
+        self.assertIn('<h1><span class="hero-project-name"><img src="ui/philoloom-tree.webp" ', home)
         self.assertEqual(home.count('<h1>'), 1)
         self.assertIn('class="museum-stage"', home)
         self.assertNotIn('class="museum-head"', home)
@@ -165,6 +165,22 @@ class SiteTests(unittest.TestCase):
         self.assertIn('@media (max-width: 650px)', css)
         self.assertIn('@media (prefers-reduced-motion: reduce)', css)
         self.assertIn(':focus-visible', css)
+
+    def test_brand_logo_and_favicon_are_published(self):
+        home = (OUT / 'index.html').read_text(encoding='utf-8')
+        detail = (OUT / '89ecf3804396453cbc4256966e24aa27.html').read_text(encoding='utf-8')
+        self.assertIn('class="hero-brand-mark"', home)
+        self.assertIn('>philoloom</span>', home)
+        self.assertIn('rel="icon" type="image/svg+xml" href="favicon.svg"', home)
+        self.assertIn('rel="icon" type="image/svg+xml" href="favicon.svg"', detail)
+        self.assertIn('property="og:site_name" content="philoloom"', home)
+        self.assertTrue((OUT / 'favicon.svg').is_file())
+        self.assertIn('<svg', (OUT / 'favicon.svg').read_text(encoding='utf-8'))
+        for name in ('philoloom-tree.webp', 'philoloom-approved.webp'):
+            asset = OUT / 'ui' / name
+            self.assertTrue(asset.is_file(), name)
+            with Image.open(asset) as picture:
+                self.assertEqual(picture.format, 'WEBP')
 
     def test_only_optimized_local_rasters_are_published(self):
         images = [p for p in OUT.rglob('*') if p.suffix.lower() in {'.jpg', '.jpeg', '.png', '.webp', '.gif'}]

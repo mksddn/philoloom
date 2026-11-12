@@ -207,7 +207,6 @@ for group,_ in SOURCE_GROUPS:
 nav = ''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}">{label}</a>' for g,label in GROUPS)
 
 def shell(title, body, group=''):
-    crumb = f'<span>/</span><span>{escape(group)}</span>' if group else ''
     cover = f'<div class="hero-cover">{image_html("ui/forest-cover.jpg", sizes="100vw", priority=True)}</div>' if not group else ''
     return f'''<!doctype html>
 <html lang="ru">
@@ -223,10 +222,8 @@ def shell(title, body, group=''):
 </head>
 <body>
 <a class="skip" href="#main">К содержимому</a>
-<header>
-<a class="brand" href="index.html">📜 PhiloLoom</a>{crumb}<button id="search-open" type="button">Поиск</button>
-</header>{cover}<main id="main" class="{'home-page' if not group else 'detail-page'}">{body}</main>
-<footer>PhiloLoom · Философский справочник</footer>
+{cover}<main id="main" class="{'home-page' if not group else 'detail-page'}">{body}</main>
+<footer><div class="site-container">PhiloLoom · Философский справочник · <a href="https://mksddn.ru/" rel="author">Автор: Макс Дудин</a></div></footer>
 <dialog id="page-panel" aria-label="Подробности страницы">
 <div class="panel-toolbar">
 <button id="panel-back" aria-label="Назад в панели">←</button>
@@ -304,8 +301,15 @@ for pid, page in pages.items():
             connections[related_id].add(pid)
 
 
-def related_records(page):
-    linked = sorted((pages[pid] for pid in connections[page['id']]), key=lambda p: (p['group'] != 'Темы', p['group'], p['title'].casefold()))
+def related_records(page, props):
+    # Explicit relations already appear in metadata; only show additional backlinks.
+    explicit = set()
+    for key, value in props:
+        if key in ('Личности', 'Темы', 'История философии', 'Связь', 'Связанные записи'):
+            explicit.update(re.findall(r'([a-f0-9]{32})\\.md', unquote(value)))
+    linked = sorted((pages[pid] for pid in connections[page['id']] if pid not in explicit
+                     and pages[pid]['group'] != 'Самостоятельная работа'),
+                    key=lambda p: (p['group'] != 'Темы', p['group'], p['title'].casefold()))
     if not linked:
         return ''
     def items(records):
@@ -313,7 +317,7 @@ def related_records(page):
     content = items(linked[:10])
     if len(linked) > 10:
         content += f'<details><summary>Ещё {len(linked)-10}</summary>{items(linked[10:])}</details>'
-    return '<aside class="related-records" aria-label="Связанные записи"><h2>Связанные записи</h2>' + content + '</aside>'
+    return '<div class="discovered-links"><h3>Также упоминается</h3><p>Автоматически найденные ссылки из других материалов справочника.</p>' + content + '</div>'
 
 
 def breadcrumbs(page):
@@ -340,17 +344,36 @@ for p in pages.values():
     row = rows_by_id.get(p['id'])
     if row:
         props = [(k,v) for k,v in row.items() if k != 'Name']
-    props = [(k,v) for k,v in props if v.strip() and k != 'Конспект']
+    props = [(k,v) for k,v in props if v.strip() and k not in ('Конспект', 'Задание', 'Зачтено', 'Связанные записи', 'Связь') and not k.startswith('Самостоятельная работа')]
     table = '<dl class="properties">' + ''.join(f'<dt>{escape(k)}</dt><dd>{property_html(v,p)}</dd>' for k,v in props) + '</dl>' if props else ''
+    extra = related_records(p, props)
+    connections_html = f'<section class="entity-links" aria-label="Связи и упоминания"><h2>Связи и упоминания</h2>{table}{extra}</section>' if table or extra else ''
     quote_class = ' class="quote-heading"' if p['group'] == 'Цитаты' else ''
-    body = f'{breadcrumbs(p)}<h1{quote_class}>{escape(p["title"])}</h1>{READING_CONTROLS}{table}<article>{render(body_text,p)}</article>{related_records(p)}'
+    body = f'{breadcrumbs(p)}<h1{quote_class}>{escape(p["title"])}</h1>{READING_CONTROLS}<article>{render(body_text,p)}</article>{connections_html}'
     (OUT / (p['id'] + '.html')).write_text(shell(p['title'],body,p['group']),encoding='utf-8')
 
-intro = home['text'].split('\n## ')[0].splitlines()[1:]
-intro_html = render('\n'.join(intro),home)
-# The export represents Notion toggles as top-level list items.
-intro_html = re.sub(r'<li>\s*<p>(Посмотреть|📗\s*Почитать)</p>([\s\S]*?)</li>',r'<li><details><summary>\1</summary>\2</details></li>',intro_html)
-body = f'<div class="page-icon">📜</div><h1>Философия</h1><div class="intro">{intro_html}</div><nav class="section-nav" aria-label="Разделы">{nav}</nav>'
+# Build four consistent hero tiles from the original introduction (source unchanged).
+intro = home['text'].split('\\n## ')[0]
+quote_source = intro.split('- Посмотреть', 1)[0].splitlines()[1:]
+quote_html = render('\\n'.join(quote_source), home)
+def hero_links(markdown_text):
+    return '<ul>' + ''.join(
+        f'<li><a href="{escape(url,quote=True)}">{escape(label)}</a></li>'
+        for label, url in re.findall(r'\\[([^]]+)\\]\\((https?://[^)]+)\\)', markdown_text)
+        if safe_url(url)
+    ) + '</ul>'
+
+watch = intro.split('- Посмотреть',1)[1].split('- 📗',1)[0] if '- Посмотреть' in intro else ''
+read = intro.split('- 📗',1)[1].split('[Блог о философии]',1)[0] if '- 📗' in intro else ''
+blog = 'https://flsf.maxdudin.ru/'
+hero = (f'<div class="hero-tiles">'
+        f'<section class="hero-tile hero-quote"><h2>Цитата</h2>{quote_html}</section>'
+        f'<section class="hero-tile"><h2>Что посмотреть</h2>{hero_links(watch)}</section>'
+        f'<section class="hero-tile"><h2>Что почитать</h2>{hero_links(read)}</section>'
+        f'<section class="hero-tile hero-blog"><h2>Блог о философии</h2><p>Авторские размышления и статьи о философии.</p><a href="{blog}">Читать блог</a></section>'
+        f'</div>')
+body = f'<div class="home-heading"><div class="page-icon">📜</div><h1>Философия</h1><button id="search-open" class="search-trigger" type="button" aria-haspopup="dialog" aria-controls="search-dialog">⌕ Найти в справочнике <span>⌘ K</span></button></div>{hero}<nav class="section-nav" aria-label="Разделы">{nav}</nav>'
+
 class MediaLinks(HTMLParser):
     def __init__(self, text):
         super().__init__()

@@ -224,9 +224,9 @@ def shell(title, body, group='', hero_quote=''):
              f'<div class="hero-artwork" role="img" '
              f'aria-label="Художественный образ Рене Декарта"></div>'
              f'<div class="hero-orbit" aria-hidden="true"></div>'
+             f'<div class="hero-brand-watermark" aria-hidden="true"></div>'
              f'<div class="hero-cover-content">'
-             f'<h1><span class="hero-project-name"><img src="ui/philoloom-tree.webp" '
-              f'class="hero-brand-mark" alt="" width="72" height="72" decoding="async">philoloom</span> '
+             f'<h1><span class="hero-project-name">philoloom</span> '
              f'<span class="hero-title-text">Философия <em>как искусство</em> мышления</span></h1>'
              f'{hero_quote}</div></div></div>') if not group else ''
     return f'''<!doctype html>

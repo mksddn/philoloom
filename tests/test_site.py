@@ -65,6 +65,8 @@ class SiteTests(unittest.TestCase):
         home = (OUT / 'index.html').read_text()
         self.assertEqual(home.count('class="resource-trigger"'), 2)
         self.assertIn('class="hero-quote"', home)
+        self.assertIn('<cite>Рене Декарт</cite>', home)
+        self.assertEqual(home.count('class="resource-trigger"'), 2)
         self.assertNotIn('<h2>Цитата</h2>', home)
         self.assertIn('<h1>PhiloLoom</h1>', home)
         self.assertIn('id="resource-dialog"', home)

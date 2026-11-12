@@ -47,6 +47,7 @@ async function assertNoOverflow(page, label) {
     await home.waitForFunction(() => document.querySelector('#search-status')?.textContent.startsWith('Найдено страниц'));
     assert.ok(await home.locator('#results a').count() > 0);
     await home.keyboard.press('Escape');
+    await home.waitForFunction(() => !document.querySelector('#search-dialog').open);
     await home.locator('[data-resource-open="watch"]').click();
     assert.ok(await home.locator('#resource-dialog').evaluate(element => element.open));
     await home.locator('#resource-close').click();

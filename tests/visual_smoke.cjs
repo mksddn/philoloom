@@ -67,15 +67,16 @@ async function assertThemeArtwork(page, theme) {
       return {
         ok: response.ok, type: response.headers.get('content-type'),
         opacity: style.opacity,
-        blurred: blurred.filter.includes('blur('),
+        blurred: blurred.filter.includes('blur(8px)'),
+        transitionStartsLate: crisp.maskImage.includes('65%') && blurred.maskImage.includes('65%'),
         crispMask: crisp.maskImage !== 'none' || crisp.webkitMaskImage !== 'none',
         blurredMask: blurred.maskImage !== 'none' || blurred.webkitMaskImage !== 'none',
         sharedImage: crisp.backgroundImage === blurred.backgroundImage,
       };
     });
     assert.ok(watermarkAsset.ok && watermarkAsset.type?.includes('svg'), 'Vector tree background must load');
-    assert.equal(watermarkAsset.opacity, '0.05', 'Hero logo opacity must be 0.05');
-    assert.ok(watermarkAsset.blurred && watermarkAsset.crispMask && watermarkAsset.blurredMask && watermarkAsset.sharedImage,
+    assert.equal(watermarkAsset.opacity, '0.1', 'Hero logo opacity must be 0.1');
+    assert.ok(watermarkAsset.blurred && watermarkAsset.transitionStartsLate && watermarkAsset.crispMask && watermarkAsset.blurredMask && watermarkAsset.sharedImage,
       'Sharp-to-blurred tree blend must use the same SVG on both layers');
     const visualBrand = await home.locator('.hero-cover').evaluate(async hero => {
       const tree = hero.querySelector('.hero-brand-watermark');
@@ -147,7 +148,7 @@ async function assertThemeArtwork(page, theme) {
     await home.emulateMedia({ colorScheme: 'light' });
     await home.waitForFunction(() => document.documentElement.dataset.theme === 'light');
     assert.equal(await home.locator('html').getAttribute('data-theme'), 'light');
-    assert.equal(await home.locator('.hero-brand-watermark').evaluate(el => getComputedStyle(el).opacity), '0.05');
+    assert.equal(await home.locator('.hero-brand-watermark').evaluate(el => getComputedStyle(el).opacity), '0.1');
     const lightAppearance = await assertThemeArtwork(home, 'light');
     for (const token of ['heroBackground', 'headingColor', 'quoteColor']) {
       assert.notEqual(darkAppearance[token], lightAppearance[token],
@@ -192,7 +193,7 @@ async function assertThemeArtwork(page, theme) {
     small.on('pageerror', error => mobileErrors.push(error.message));
     await small.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
     assert.equal(await small.locator('html').getAttribute('data-theme'), 'dark');
-    assert.equal(await small.locator('.hero-brand-watermark').evaluate(el => getComputedStyle(el).opacity), '0.05');
+    assert.equal(await small.locator('.hero-brand-watermark').evaluate(el => getComputedStyle(el).opacity), '0.1');
     await assertNoOverflow(small, '390px home');
     assert.ok(await small.locator('.hero-cover').evaluate(el => el.getBoundingClientRect().height <= 550));
     assert.ok(await small.locator('.catalog-toolbar #search-open').isVisible());
@@ -207,7 +208,7 @@ async function assertThemeArtwork(page, theme) {
     await small.emulateMedia({ colorScheme: 'light' });
     await small.waitForFunction(() => document.documentElement.dataset.theme === 'light');
     assert.equal(await small.locator('html').getAttribute('data-theme'), 'light');
-    assert.equal(await small.locator('.hero-brand-watermark').evaluate(el => getComputedStyle(el).opacity), '0.05');
+    assert.equal(await small.locator('.hero-brand-watermark').evaluate(el => getComputedStyle(el).opacity), '0.1');
     await assertThemeArtwork(small, 'light');
     assert.ok(await small.locator('.hero-cover-content .featured-quote').evaluate(el =>
       el.getBoundingClientRect().bottom <= document.querySelector('.hero-cover').getBoundingClientRect().bottom),

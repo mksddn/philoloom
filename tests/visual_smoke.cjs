@@ -30,7 +30,7 @@ async function assertNoOverflow(page, label) {
     const errors = [];
     home.on('pageerror', error => errors.push(error.message));
     await home.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
-    assert.equal((await home.locator('.hero-cover h1').textContent()).replace(/\\s+/g, ' ').trim(), 'Философия как искусство мышления');
+    assert.equal((await home.locator('.hero-cover h1').textContent()).replace(/\s+/g, ' ').trim(), 'Философия как искусство мышления');
     assert.equal(await home.locator('#theme-toggle').getAttribute('aria-pressed'), 'false');
     assert.equal(await home.locator('.section-nav a').count(), 4);
     assert.equal(await home.locator('.reference-section').count(), 4);

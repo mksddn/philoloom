@@ -113,7 +113,7 @@ class SiteTests(unittest.TestCase):
         home = (OUT / 'index.html').read_text(encoding='utf-8')
         detail = (OUT / '89ecf3804396453cbc4256966e24aa27.html').read_text(encoding='utf-8')
         css = (OUT / 'style.css').read_text(encoding='utf-8')
-        self.assertIn('<h1>Философия <em>как искусство</em> мышления</h1>', home)
+        self.assertIn('<h1><span class="hero-project-name">PhiloLoom</span>', home)
         self.assertEqual(home.count('<h1>'), 1)
         self.assertIn('class="museum-stage"', home)
         self.assertNotIn('class="museum-head"', home)

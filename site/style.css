@@ -308,7 +308,7 @@ footer a { text-decoration-color: currentColor; }
 }
 .hero-quote blockquote strong { font-weight: 500; }
 .hero-quote blockquote p { margin: 0; }
-.hero-quote > p { margin: 0 0 0 auto; color: var(--muted); font-size: 13px; font-style: normal; white-space: nowrap; }
+.hero-quote cite { margin: 0 0 0 auto; color: var(--muted); font-size: 13px; font-style: normal; white-space: nowrap; }
 .hero-resources {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.32fr);
@@ -403,7 +403,7 @@ footer a { text-decoration-color: currentColor; }
   .home-heading h1 { font-size: 36px; }
   .hero-quote { padding: 12px 0 12px 14px; margin: 11px 0 14px; }
   .hero-quote blockquote { font-size: 17px; }
-  .hero-quote > p { margin: 6px 0 0; }
+  .hero-quote cite { margin: 6px 0 0; }
   .hero-resources { grid-template-columns: 1fr; gap: 9px; }
   .resource-trigger, .blog-feature { min-height: 0; padding: 13px 16px; }
   .resource-trigger { min-height: 77px; }

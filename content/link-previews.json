@@ -17,7 +17,8 @@
   },
   "https://flsf.maxdudin.ru/": {
     "description": "Статьи об истории философии,ее разделах и областях. Публикации на основе практических работ при обучении на философа.",
-    "title": "Блог о философии"
+    "title": "Блог о философии",
+    "image": "https://flsf.maxdudin.ru/img/imagehome.jpg"
   },
   "https://flsf.maxdudin.ru/germenevticheskij-analiz-na-primere-tolkovaniya-fragmenta-iz-alisy-v-strane-chudes.html": {
     "description": "3 разных философских трактовки фрагмента произведения Льюиса Кэрролла",

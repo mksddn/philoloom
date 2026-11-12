@@ -52,6 +52,14 @@ async function assertThemeArtwork(page, theme) {
     assert.equal((await home.locator('.hero-cover h1').textContent()).replace(/\s+/g, ' ').trim(), 'philoloom Философия как искусство мышления');
     assert.equal(await home.locator('.hero-brand-watermark').count(), 1);
     assert.equal(await home.locator('.hero-brand-mark').count(), 0);
+    const watermarkAsset = await home.locator('.hero-brand-watermark').evaluate(async element => {
+      const style = getComputedStyle(element);
+      const match = style.backgroundImage.match(/url\(["']?(.*?)["']?\)/);
+      if (!match || Number(style.opacity) <= 0) return { ok: false };
+      const response = await fetch(match[1]);
+      return { ok: response.ok, type: response.headers.get('content-type') };
+    });
+    assert.ok(watermarkAsset.ok, 'Neural tree background image must load successfully');
     assert.equal(await home.locator('#theme-toggle').count(), 0);
     assert.equal(await home.locator('.catalog-toolbar #search-open').count(), 1);
     assert.equal(await home.locator('.section-nav a').count(), 4);

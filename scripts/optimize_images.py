@@ -8,6 +8,10 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / 'content' / 'optimized'
 MANIFEST = ROOT / 'content' / 'image-manifest.json'
 SUFFIXES = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+# These two already-optimized Hero WebPs are served directly from dist/ui/.
+# Recompressing them would move them into hashed media/ URLs and break
+# CSS theme switching. Original Notion and legacy UI images still use the pipeline.
+PREOPTIMIZED_UI = {'descartes-hero-dark.webp', 'descartes-hero-light.webp'}
 VERSION = 'webp-v1-quality82-lossless-diagrams'
 
 
@@ -15,7 +19,9 @@ def optimize():
     OUTPUT.mkdir(parents=True, exist_ok=True)
     sources = []
     for folder in ('content/notion', 'content/previews', 'site/assets'):
-        sources.extend(p for p in (ROOT / folder).rglob('*') if p.suffix.lower() in SUFFIXES)
+        sources.extend(p for p in (ROOT / folder).rglob('*')
+                       if p.suffix.lower() in SUFFIXES
+                       and not (folder == 'site/assets' and p.name in PREOPTIMIZED_UI))
     previous = json.loads(MANIFEST.read_text(encoding='utf-8')) if MANIFEST.exists() else {}
     manifest = {'version': 1, 'encoder': VERSION, 'sources': {}}
     original_bytes = 0

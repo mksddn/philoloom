@@ -72,6 +72,7 @@ class SiteTests(unittest.TestCase):
         self.assertIn('data-resource-open="read"', home)
         self.assertIn('Автор: <a href="https://mksddn.ru/" target="_blank"', home)
         self.assertIn('href="https://flsf.maxdudin.ru/" target="_blank"', home)
+        self.assertIn('src="https://flsf.maxdudin.ru/img/imagehome.jpg"', home)
         self.assertNotIn('<header>', home)
         self.assertIn('id="search-open"', home)
 

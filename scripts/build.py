@@ -222,7 +222,7 @@ def shell(title, body, group='', hero_quote=''):
              f'aria-label="Художественный образ Рене Декарта"></div>'
              f'<div class="hero-orbit" aria-hidden="true"></div>'
              f'<div class="hero-cover-content">'
-             f'<h1><span class="hero-project-name">PhiloLoom</span>'
+             f'<h1><span class="hero-project-name">PhiloLoom</span> '
              f'<span class="hero-title-text">Философия <em>как искусство</em> мышления</span></h1>'
              f'{hero_quote}</div></div></div>') if not group else ''
     return f'''<!doctype html>

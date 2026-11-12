@@ -74,7 +74,7 @@ class SiteTests(unittest.TestCase):
         self.assertIn('homeHeaderTitleImage_ru_RU.png', read_cards)
         self.assertIn('resource-card-placeholder', read_cards)
         self.assertIn('target="_blank" rel="noopener noreferrer"', read_cards)
-        self.assertIn('<h1><span class="hero-project-name">PhiloLoom</span>', home)
+        self.assertIn('<h1><span class="hero-project-name">PhiloLoom</span> <span class="hero-title-text">', home)
         self.assertIn('Автор: <a href="https://mksddn.ru/" target="_blank"', home)
         self.assertIn('href="https://flsf.maxdudin.ru/" target="_blank"', home)
         self.assertIn('id="search-open"', home)

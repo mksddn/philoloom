@@ -206,3 +206,62 @@ dialog input { width: 100%; padding: 10px; border: 1px solid var(--line); border
 @media print {
   .reading-controls, .reader-options { display: none !important; }
 }
+
+/* Shared page rhythm; there is intentionally no duplicated site header. */
+:root { --container-width: 1100px; --page-gutter: 48px; }
+main { width: 100%; max-width: var(--container-width); }
+main.home-page { margin-top: -52px; }
+footer { max-width: none; padding: 0; margin: 48px 0 0; border-top: 1px solid var(--line); }
+.site-container { width: 100%; max-width: var(--container-width); margin-inline: auto; padding: 22px var(--page-gutter); }
+footer a { text-decoration-color: currentColor; }
+.home-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 22px; background: var(--paper); border: 1px solid var(--line); padding: 18px 22px; border-radius: 14px; box-shadow: 0 12px 30px var(--shade); margin-bottom: 22px; }
+.home-heading .page-icon { font-size: 34px; margin: 0; }
+.home-heading h1 { margin: 0; flex: 1; }
+.search-trigger { border: 1px solid var(--line); border-radius: 9px; background: var(--surface); font-size: 14px; padding: 10px 14px; white-space: nowrap; }
+.search-trigger span { font-size: 11px; color: var(--muted); margin-left: 12px; }
+.hero-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 40px; }
+.hero-tile { min-width: 0; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 23px 26px; box-shadow: 0 8px 25px var(--shade); }
+.hero-tile h2 { margin: 0 0 12px; font-size: 18px; font-weight: 750; }
+.hero-tile ul { margin: 0; padding: 0; list-style: none; columns: 2; column-gap: 18px; }
+.hero-tile li { break-inside: avoid; margin: 0 0 8px; font-size: 14px; }
+.hero-tile a { color: var(--accent); }
+.hero-tile blockquote { margin: 0; font-size: 17px; }
+.hero-tile blockquote p { margin: 0; }
+.hero-tile > p { margin: 0 0 10px; }
+.hero-quote { background: var(--surface); }
+.hero-blog { display: flex; flex-direction: column; align-items: flex-start; }
+.hero-blog > a { margin-top: auto; padding-top: 10px; font-weight: 650; }
+.section-nav { top: 0; font-size: 16px; gap: 8px; padding: 10px 0; margin-top: 0; border-bottom: 0; }
+.section-nav a { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 13px 18px; font-weight: 650; }
+.section-nav a[aria-selected=true] { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+.section-nav a:focus-visible, .search-trigger:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.entity-links { margin-top: 38px; border-top: 1px solid var(--line); padding-top: 14px; }
+.entity-links > h2 { font-size: 20px; }
+.entity-links .properties { padding: 0; margin: 0 0 20px; border: 0; }
+.discovered-links h3 { margin: 20px 0 3px; font-size: 16px; }
+.discovered-links > p { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+.discovered-links ul { list-style: none; padding: 0; }
+.discovered-links li a { display: flex; justify-content: space-between; gap: 14px; padding: 7px 8px; border-radius: 6px; text-decoration: none; }
+.discovered-links small { font-size: 12px; color: var(--muted); }
+.discovered-links summary { cursor: pointer; }
+.detail-page .page-breadcrumbs { margin-bottom: 26px; }
+.detail-page > h1 { margin-top: 0; }
+@media (max-width: 700px) {
+  :root { --page-gutter: 22px; }
+  main.home-page { margin-top: -30px; }
+  .home-heading { padding: 14px; }
+  .home-heading h1 { font-size: 30px; }
+  .search-trigger { width: 100%; text-align: left; }
+  .hero-tiles { grid-template-columns: 1fr; gap: 12px; }
+  .hero-tile { padding: 18px; }
+  .hero-tile ul { columns: 1; }
+  .section-nav { font-size: 14px; }
+  .section-nav a { padding: 10px 12px; }
+  .discovered-links li a { flex-wrap: wrap; }
+}
+@media print {
+  .home-heading { box-shadow: none; }
+  .hero-tiles { display: block; }
+  .hero-tile { box-shadow: none; break-inside: avoid; margin-bottom: 16px; }
+  .entity-links { border-top: 1px solid #ccc; }
+}

@@ -217,7 +217,7 @@ HERO_IMAGE = ('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/'
 HERO_SOURCE = 'https://commons.wikimedia.org/wiki/File:Marble_Bust_of_Marcus_Aurelius_(Roman_Emperor_161-180_AD)_(28273837396).jpg'
 
 
-def shell(title, body, group=''):
+def shell(title, body, group='', hero_quote=''):
     search_button = ('<button id="search-open" class="museum-search" type="button" '
                      'aria-label="Открыть поиск по справочнику" aria-haspopup="dialog" '
                      'aria-controls="search-dialog"><span aria-hidden="true">⌕</span></button>')
@@ -239,7 +239,7 @@ def shell(title, body, group=''):
              f'<div class="hero-orbit" aria-hidden="true"></div>'
              f'<div class="hero-cover-content">'
              f'<h1>Философия <em>как искусство</em> мышления</h1>'
-             f'</div>'
+             f'{hero_quote}</div>'
              f'<p class="hero-credit">Мраморный бюст Марка Аврелия · '
              f'<a href="{escape(HERO_SOURCE, quote=True)}" target="_blank" rel="noopener noreferrer">'
              f'Wikimedia Commons</a> · <a href="https://creativecommons.org/publicdomain/zero/1.0/" '
@@ -432,8 +432,8 @@ resource_dialog = ('<dialog id="resource-dialog" aria-labelledby="resource-title
                    f'<div id="resource-watch" class="resource-list" hidden>{resource_cards(watch)}</div>'
                    f'<div id="resource-read" class="resource-list" hidden>{resource_cards(read)}</div>'
                    '</dialog>')
-# Reference-like, compact resource tiles live immediately below Hero, with
-# the original quotation restored before the single encyclopedia tab menu.
+# Resource tiles live immediately below Hero; the original quotation is shown
+# inside the Hero, ahead of the single encyclopedia tab menu.
 blog_url = 'https://flsf.maxdudin.ru/'
 blog_meta = previews.get(blog_url, {})
 blog_image = blog_meta.get('local_image') or blog_meta.get('image') or ''
@@ -460,8 +460,8 @@ resources = (
     '<span class="resource-tile-arrow" aria-hidden="true">↗</span></a>'
     '</div>'
 )
-body = (f'<div class="home-source-strip" aria-label="Цитата и дополнительные материалы">'
-        f'{quote_html}{resources}</div>'
+body = (f'<div class="home-source-strip" aria-label="Дополнительные материалы">'
+        f'{resources}</div>'
         f'<nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>')
 
 class MediaLinks(HTMLParser):
@@ -547,7 +547,7 @@ for section_number, (group,label) in enumerate(GROUPS, start=1):
         hidden = '' if view == default else ' hidden'
         body += f'<div data-view-content="{view}"{hidden}>{content}</div>'
     body += '</section>'
-(OUT / 'index.html').write_text(shell('Философия',body),encoding='utf-8')
+(OUT / 'index.html').write_text(shell('Философия',body,hero_quote=quote_html),encoding='utf-8')
 search = [dict(title=p['title'],group=p['group'],url=('index.html' if p==home else p['id']+'.html'),text=re.sub(r'^Конспект:.*(?:\n|$)', '', p['text'], flags=re.MULTILINE)) for p in pages.values() if p['group'] != 'Самостоятельная работа']
 (OUT / 'search.json').write_text(json.dumps(search,ensure_ascii=False),encoding='utf-8')
 print(f'Built {len(pages)} pages; {len(assets)} assets; '+', '.join(f'{g}: {len(ordered[g])}' for g,_ in GROUPS))

@@ -14,8 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'notion'
 OUT = ROOT / 'dist'
 GROUPS = [('Темы', '📌 Темы'), ('История философии', '🕰️ История философии'),
-          ('Цитаты', '💬 Цитаты'), ('Личности', '🗂️ Личности'),
-          ('Самостоятельная работа', '💪 Мои статьи')]
+          ('Цитаты', '💬 Цитаты'), ('Личности', '🗂️ Личности')]
+# Retain exported homework metadata for direct article URLs, but no public section.
+SOURCE_GROUPS = GROUPS + [('Самостоятельная работа', '💪 Мои статьи')]
 ID = re.compile(r'([a-f0-9]{32})(?:_all)?\.(?:md|csv)$')
 escape = html.escape
 PREVIEWS = ROOT / 'content' / 'link-previews.json'
@@ -196,7 +197,7 @@ def matching_page(group, row):
 assigned = set()
 rows_by_id = {}
 ordered = {}
-for group,_ in GROUPS:
+for group,_ in SOURCE_GROUPS:
     ordered[group] = []
     for row in databases[group]:
         p = matching_page(group, row)
@@ -418,7 +419,7 @@ def database_table(group):
     return markup + '</tbody></table></div>'
 
 
-DEFAULT_VIEWS = {'Темы':'gallery','История философии':'table','Цитаты':'list','Личности':'table','Самостоятельная работа':'gallery'}
+DEFAULT_VIEWS = {'Темы':'gallery','История философии':'table','Цитаты':'list','Личности':'table'}
 for group,label in GROUPS:
     dbid = next(i for i,name in db_ids.items() if name==group)
     body += f'<section id="{dbid}" class="reference-section" aria-labelledby="heading-{dbid}"><h2 id="heading-{dbid}">{label}</h2>'
@@ -429,6 +430,6 @@ for group,label in GROUPS:
         body += f'<div data-view-content="{view}"{hidden}>{content}</div>'
     body += '</section>'
 (OUT / 'index.html').write_text(shell('Философия',body),encoding='utf-8')
-search = [dict(title=p['title'],group=p['group'],url=('index.html' if p==home else p['id']+'.html'),text=re.sub(r'^Конспект:.*(?:\n|$)', '', p['text'], flags=re.MULTILINE)) for p in pages.values()]
+search = [dict(title=p['title'],group=p['group'],url=('index.html' if p==home else p['id']+'.html'),text=re.sub(r'^Конспект:.*(?:\n|$)', '', p['text'], flags=re.MULTILINE)) for p in pages.values() if p['group'] != 'Самостоятельная работа']
 (OUT / 'search.json').write_text(json.dumps(search,ensure_ascii=False),encoding='utf-8')
 print(f'Built {len(pages)} pages; {len(assets)} assets; '+', '.join(f'{g}: {len(ordered[g])}' for g,_ in GROUPS))

@@ -30,7 +30,6 @@ async function assertThemeArtwork(page, theme) {
     return {
       background, loaded: image.naturalWidth === 1440 && image.naturalHeight === 810,
       heroBackground: getComputedStyle(document.querySelector('.hero-cover')).backgroundColor,
-      headerBackground: getComputedStyle(document.querySelector('.museum-head')).backgroundColor,
       headingColor: getComputedStyle(document.querySelector('.hero-cover h1')).color,
       quoteColor: getComputedStyle(document.querySelector('.hero-cover blockquote p')).color,
     };
@@ -45,13 +44,14 @@ async function assertThemeArtwork(page, theme) {
   try {
     await waitForServer();
     browser = await chromium.launch({ headless: true });
-    const desktop = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const desktop = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark' });
     const home = await desktop.newPage();
     const errors = [];
     home.on('pageerror', error => errors.push(error.message));
     await home.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
-    assert.equal((await home.locator('.hero-cover h1').textContent()).replace(/\s+/g, ' ').trim(), 'Философия как искусство мышления');
-    assert.equal(await home.locator('#theme-toggle').getAttribute('aria-pressed'), 'false');
+    assert.equal((await home.locator('.hero-cover h1').textContent()).replace(/\s+/g, ' ').trim(), 'PhiloLoom Философия как искусство мышления');
+    assert.equal(await home.locator('#theme-toggle').count(), 0);
+    assert.equal(await home.locator('.catalog-toolbar #search-open').count(), 1);
     assert.equal(await home.locator('.section-nav a').count(), 4);
     assert.equal(await home.locator('.reference-section').count(), 4);
     assert.equal(await home.locator('.featured-quote').count(), 1);
@@ -74,7 +74,7 @@ async function assertThemeArtwork(page, theme) {
       const tabs = document.querySelector('.section-nav').getBoundingClientRect();
       return tiles.top >= hero.bottom - 1 && tabs.top >= tiles.bottom - 1;
     }));
-    assert.equal(await home.locator('.museum-head').count(), 1);
+    assert.equal(await home.locator('.museum-head').count(), 0);
     assert.equal(await home.locator('.section-nav').count(), 1);
     assert.equal(await home.locator('.museum-shortcuts, .editorial-spotlight, .editorial-shelf, .hero-explore').count(), 0);
     assert.equal(await home.locator('.museum-frame, .museum-top-nav').count(), 0);
@@ -85,24 +85,28 @@ async function assertThemeArtwork(page, theme) {
     assert.equal(await home.locator('.hero-artwork').getAttribute('aria-label'),
       'Художественный образ Рене Декарта');
     const heroDimensions = await home.locator('.hero-cover').evaluate(element => ({
+      height: element.getBoundingClientRect().height,
       left: element.getBoundingClientRect().left,
       width: element.getBoundingClientRect().width,
       viewport: document.documentElement.clientWidth,
     }));
     assert.ok(Math.abs(heroDimensions.left) <= 1 && Math.abs(heroDimensions.width - heroDimensions.viewport) <= 1,
       'Hero must span the entire viewport: ' + JSON.stringify(heroDimensions));
+    assert.ok(heroDimensions.height < 580, 'Desktop Hero must be compact: ' + heroDimensions.height);
     await assertNoOverflow(home, 'desktop home');
 
-    await home.locator('#theme-toggle').click();
+    await home.emulateMedia({ colorScheme: 'light' });
+    await home.waitForFunction(() => document.documentElement.dataset.theme === 'light');
     assert.equal(await home.locator('html').getAttribute('data-theme'), 'light');
     const lightAppearance = await assertThemeArtwork(home, 'light');
-    for (const token of ['heroBackground', 'headerBackground', 'headingColor', 'quoteColor']) {
+    for (const token of ['heroBackground', 'headingColor', 'quoteColor']) {
       assert.notEqual(darkAppearance[token], lightAppearance[token],
         token + ' must change between dark and light theme');
     }
 
     await home.reload({ waitUntil: 'domcontentloaded' });
     assert.equal(await home.locator('html').getAttribute('data-theme'), 'light');
+    assert.equal(await home.locator('#theme-toggle').count(), 0);
     await home.locator('#search-open').click();
     assert.ok(await home.locator('#search-dialog').evaluate(element => element.open));
     await home.locator('#query').fill('онтология');
@@ -132,13 +136,15 @@ async function assertThemeArtwork(page, theme) {
     await home.locator('#panel-close').click();
     assert.deepEqual(errors, [], 'No uncaught JavaScript errors on desktop');
     await desktop.close();
-    const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, deviceScaleFactor: 1 });
+    const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, deviceScaleFactor: 1, colorScheme: 'dark' });
     const small = await mobile.newPage();
     const mobileErrors = [];
     small.on('pageerror', error => mobileErrors.push(error.message));
     await small.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
     assert.equal(await small.locator('html').getAttribute('data-theme'), 'dark');
     await assertNoOverflow(small, '390px home');
+    assert.ok(await small.locator('.hero-cover').evaluate(el => el.getBoundingClientRect().height <= 550));
+    assert.ok(await small.locator('.catalog-toolbar #search-open').isVisible());
     assert.equal(await small.locator('.section-nav').count(), 1);
     assert.equal(await small.locator('.resource-tiles .resource-tile').count(), 3);
     assert.ok(await small.locator('.hero-cover-content .featured-quote').isVisible());
@@ -147,7 +153,8 @@ async function assertThemeArtwork(page, theme) {
       Math.abs(element.getBoundingClientRect().width - document.documentElement.clientWidth) <= 1));
 
     await assertThemeArtwork(small, 'dark');
-    await small.locator('#theme-toggle').click();
+    await small.emulateMedia({ colorScheme: 'light' });
+    await small.waitForFunction(() => document.documentElement.dataset.theme === 'light');
     assert.equal(await small.locator('html').getAttribute('data-theme'), 'light');
     await assertThemeArtwork(small, 'light');
     assert.ok(await small.locator('.hero-cover-content .featured-quote').evaluate(el =>
@@ -158,15 +165,17 @@ async function assertThemeArtwork(page, theme) {
     assert.ok(await small.locator('article').isVisible());
     assert.ok(await small.locator('.page-breadcrumbs').isVisible());
     await assertNoOverflow(small, '390px article');
-    await small.locator('[data-reader-toggle]').click();
-    assert.equal(await small.locator('body').evaluate(el => el.classList.contains('reader-mode')), true);
+    assert.equal(await small.locator('[data-reader-toggle]').count(), 0);
+    assert.equal(await small.locator('.detail-navigation #search-open').count(), 1);
 
     assert.deepEqual(mobileErrors, [], 'No uncaught JavaScript errors on mobile');
     await mobile.close();
-    const narrow = await browser.newContext({ viewport: { width: 320, height: 640 }, isMobile: true });
+    const narrow = await browser.newContext({ viewport: { width: 320, height: 640 }, isMobile: true, colorScheme: 'dark' });
     const narrowPage = await narrow.newPage();
     await narrowPage.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
     await assertNoOverflow(narrowPage, '320px home');
+    assert.ok(await narrowPage.locator('.hero-cover').evaluate(el => el.getBoundingClientRect().height <= 550));
+    assert.ok(await narrowPage.locator('.catalog-toolbar #search-open').isVisible());
     await assertThemeArtwork(narrowPage, 'dark');
     assert.ok(await narrowPage.locator('.hero-cover-content .featured-quote').evaluate(el =>
       el.getBoundingClientRect().bottom <= document.querySelector('.hero-cover').getBoundingClientRect().bottom),

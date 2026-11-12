@@ -36,5 +36,5 @@ jobs:
         run: |
           npm install --no-save playwright@1.56.1
           npx playwright install --with-deps chromium
-      - name: Verify desktop, mobile, reading and navigation
+      - name: Verify desktop, mobile, search and navigation
         run: node tests/visual_smoke.cjs

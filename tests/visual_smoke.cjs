@@ -34,6 +34,19 @@ async function assertNoOverflow(page, label) {
     assert.equal(await home.locator('#theme-toggle').getAttribute('aria-pressed'), 'false');
     assert.equal(await home.locator('.section-nav a').count(), 4);
     assert.equal(await home.locator('.reference-section').count(), 4);
+    assert.equal(await home.locator('.featured-quote').count(), 1);
+    assert.equal(await home.locator('.resource-tiles .resource-tile').count(), 3);
+    assert.equal(await home.locator('.footer-resources').count(), 0);
+    assert.equal(await home.locator('.hero-summary').count(), 0);
+    assert.ok((await home.locator('.featured-quote blockquote').textContent()).includes(
+      'Человеку, исследующему истину, необходимо хоть один раз в жизни усомниться во всех вещах'));
+    assert.equal((await home.locator('.featured-quote figcaption').textContent()).trim(), '— Рене Декарт');
+    assert.ok(await home.locator('.resource-tiles').evaluate(el => {
+      const hero = document.querySelector('.hero-cover').getBoundingClientRect();
+      const tiles = el.getBoundingClientRect();
+      const tabs = document.querySelector('.section-nav').getBoundingClientRect();
+      return tiles.top >= hero.bottom - 1 && tabs.top >= tiles.bottom - 1;
+    }));
     assert.equal(await home.locator('.museum-head').count(), 1);
     assert.equal(await home.locator('.section-nav').count(), 1);
     assert.equal(await home.locator('.museum-shortcuts, .editorial-spotlight, .editorial-shelf, .hero-explore').count(), 0);
@@ -71,6 +84,11 @@ async function assertNoOverflow(page, label) {
     await home.locator('[data-resource-open="watch"]').click();
     assert.ok(await home.locator('#resource-dialog').evaluate(element => element.open));
     await home.locator('#resource-close').click();
+    await home.locator('[data-resource-open="read"]').click();
+    assert.ok(await home.locator('#resource-dialog').evaluate(element => element.open));
+    assert.ok(await home.locator('#resource-read .resource-card').count() > 0);
+    await home.locator('#resource-close').click();
+    assert.equal(await home.locator('.resource-tile-blog').getAttribute('href'), 'https://flsf.maxdudin.ru/');
     await home.locator('.section-nav a').first().click();
     assert.equal(await home.locator('.reference-section:not([hidden])').count(), 1);
     await home.locator('.section-nav a').nth(1).click();
@@ -93,6 +111,8 @@ async function assertNoOverflow(page, label) {
     assert.equal(await small.locator('html').getAttribute('data-theme'), 'dark');
     await assertNoOverflow(small, '390px home');
     assert.equal(await small.locator('.section-nav').count(), 1);
+    assert.equal(await small.locator('.resource-tiles .resource-tile').count(), 3);
+    assert.ok(await small.locator('.featured-quote').isVisible());
     assert.ok(await small.locator('.hero-cover').evaluate(element =>
       Math.abs(element.getBoundingClientRect().width - document.documentElement.clientWidth) <= 1));
     await small.screenshot({ path: 'screenshots/03-home-mobile-dark.png', fullPage: true });

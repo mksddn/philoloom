@@ -405,6 +405,7 @@ if (sectionNav) {
       if (next !== undefined) { event.preventDefault(); sectionTabs[next].click(); sectionTabs[next].focus(); }
     });
   });
+  document.documentElement.classList.add('tabs-ready');
   activateSection(location.hash.slice(1));
   window.addEventListener('hashchange', () => activateSection(location.hash.slice(1)));
   window.addEventListener('popstate', () => activateSection(location.hash.slice(1)));

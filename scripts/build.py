@@ -235,7 +235,9 @@ def shell(title, body, group=''):
              f'созданном для исследования идей.</p>'
              f'<a class="hero-explore" href="#reference-nav">Исследовать справочник <span aria-hidden="true">↘</span></a>'
              f'</div></div><p class="hero-credit">Зенон Китийский · фото: Marie-Lan Nguyen · '
-             f'<a href="{HERO_ART_SOURCE}" target="_blank" rel="noopener noreferrer">Wikimedia Commons, CC BY 4.0</a></p>'
+             f'<a href="{HERO_ART_SOURCE}" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> · '
+             f'<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · '
+             f'<span>тональная обработка: CSS</span></p>'
              f'</div>') if not group else ''
     return f'''<!doctype html>
 <html lang="ru">
@@ -252,7 +254,7 @@ def shell(title, body, group=''):
 </head>
 <body>
 <a class="skip" href="#main">К содержимому</a>
-{cover}{search_action}<main id="main" class="{'home-page' if not group else 'detail-page'}">{body}</main>
+{search_action}<main id="main" class="{'home-page' if not group else 'detail-page'}">{cover + '<div class="site-container home-inner">' + body + '</div>' if not group else body}</main>
 <footer><div class="site-container">PhiloLoom · Философский справочник · Автор: <a href="https://mksddn.ru/" target="_blank" rel="author noopener noreferrer">Макс Дудин</a></div></footer>
 <dialog id="page-panel" aria-label="Подробности страницы">
 <div class="panel-toolbar">
@@ -456,8 +458,11 @@ class MediaLinks(HTMLParser):
 
 def page_image(page):
     media = MediaLinks(page['text'])
-    # Prefer saved portraits for people; preserve original embedded illustrations for articles.
-    if page['group'] != 'Личности' and media.images:
+    # Only display an explicitly embedded portrait for a person: an arbitrary
+    # OpenGraph thumbnail from a linked website cannot verify their identity.
+    if page['group'] == 'Личности':
+        return resolve(media.images[0], page) if media.images else ''
+    if media.images:
         return resolve(media.images[0], page)
     for url in media.links:
         data = previews.get(url, {})

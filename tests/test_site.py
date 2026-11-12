@@ -63,8 +63,8 @@ class SiteTests(unittest.TestCase):
 
     def test_home_navigation_and_search(self):
         home = (OUT / 'index.html').read_text(encoding='utf-8')
-        # External study materials are available unobtrusively in the footer,
-        # without repeating the four encyclopedia sections or promoting any entry.
+        # The source-backed quote and three study resources appear once, below Hero,
+        # without introducing a second global menu or editorial spotlight.
         self.assertEqual(home.count('data-resource-open='), 2)
         self.assertIn('id="resource-dialog"', home)
         self.assertEqual(home.count('class="resource-cards"'), 2)
@@ -79,8 +79,19 @@ class SiteTests(unittest.TestCase):
         self.assertIn('href="https://flsf.maxdudin.ru/" target="_blank"', home)
         self.assertIn('id="search-open"', home)
         self.assertEqual(home.count('id="search-open"'), 1)
-        self.assertNotIn('class="featured-quote"', home)
-        self.assertNotIn('class="resource-trigger"', home)
+        self.assertIn('class="featured-quote"', home)
+        self.assertIn('Человеку, исследующему истину, необходимо хоть один раз в жизни усомниться во всех вещах', home)
+        self.assertIn('<figcaption>— Рене Декарт</figcaption>', home)
+        self.assertIn('class="resource-tiles"', home)
+        self.assertEqual(home.count('class="resource-trigger resource-tile"'), 2)
+        self.assertIn('class="resource-tile resource-tile-blog"', home)
+        self.assertIn('class="resource-tile-cover"', home)
+        self.assertLess(home.index('class="hero-cover"'), home.index('class="featured-quote"'))
+        self.assertLess(home.index('class="featured-quote"'), home.index('class="resource-tiles"'))
+        self.assertLess(home.index('class="resource-tiles"'), home.index('class="section-nav"'))
+        self.assertNotIn('class="footer-resources"', home)
+        self.assertNotIn('Философский справочник: темы, история мысли, личности и цитаты.', home)
+        self.assertNotIn('class="hero-summary"', home)
         self.assertNotIn('<header>', home)
 
     def test_detail_excludes_private_assignment_metadata(self):
@@ -112,6 +123,9 @@ class SiteTests(unittest.TestCase):
         self.assertEqual(home.count('id="theme-toggle"'), 1)
         self.assertEqual(home.count('class="section-nav"'), 1)
         self.assertIn('id="reference-nav"', home)
+        self.assertEqual(home.count('class="featured-quote"'), 1)
+        self.assertEqual(home.count('data-resource-open='), 2)
+        self.assertIn('class="home-source-strip"', home)
         self.assertIn('aria-label="Разделы"', home)
         # No sales-like CTAs, cards framing the hero or duplicated navigation.
         for fragment in ('class="museum-frame"', 'class="museum-shortcuts"',

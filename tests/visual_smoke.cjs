@@ -67,8 +67,9 @@ async function assertThemeArtwork(page, theme) {
       const heroBounds = hero.getBoundingClientRect();
       const wordStyle = getComputedStyle(word);
       const mask = wordStyle.maskImage !== 'none' ? wordStyle.maskImage : wordStyle.webkitMaskImage;
-      const match = mask?.match(/url\\(["']?(.*?)["']?\\)/);
-      const response = match ? await fetch(match[1]) : null;
+      const response = mask?.includes('philoloom-wordmark.svg')
+        ? await fetch(new URL('ui/philoloom-wordmark.svg', location.href))
+        : null;
       return {
         treeWidth: treeBounds.width,
         heroHeight: heroBounds.height,

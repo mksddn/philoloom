@@ -58,8 +58,45 @@ class SiteTests(unittest.TestCase):
     def test_explicit_relation_is_bidirectional(self):
         hermeneutics = (OUT / '89ecf3804396453cbc4256966e24aa27.html').read_text()
         gadamer = (OUT / '8fdcb8310a88441da41bce0b8f4857c4.html').read_text()
-        self.assertIn('8fdcb8310a88441da41bce0b8f4857c4.html', hermeneutics.split('<aside', 1)[1])
-        self.assertIn('89ecf3804396453cbc4256966e24aa27.html', gadamer.split('<aside', 1)[1])
+        self.assertIn('8fdcb8310a88441da41bce0b8f4857c4.html', hermeneutics.split('class="entity-links"', 1)[1])
+        self.assertIn('89ecf3804396453cbc4256966e24aa27.html', gadamer.split('class="entity-links"', 1)[1])
+
+    def test_home_navigation_and_search(self):
+        home = (OUT / 'index.html').read_text()
+        self.assertEqual(home.count('class="resource-trigger"'), 2)
+        self.assertIn('class="featured-quote"', home)
+        self.assertIn('<figcaption>— Рене Декарт</figcaption>', home)
+        self.assertNotIn('<h2>Цитата</h2>', home)
+        self.assertEqual(home.count('class="resource-cards"'), 2)
+        self.assertEqual(home.count('class="resource-card"'), 11)
+        self.assertIn('class="resource-card-image"', home)
+        read_cards = home.split('id="resource-read"', 1)[1].split('</div>', 1)[0]
+        self.assertIn('homeHeaderTitleImage_ru_RU.png', read_cards)
+        self.assertIn('resource-card-placeholder', read_cards)
+        self.assertIn('target="_blank" rel="noopener noreferrer"', read_cards)
+        self.assertEqual(home.count('class="resource-trigger"'), 2)
+        self.assertIn('<h1>PhiloLoom</h1>', home)
+        self.assertIn('id="resource-dialog"', home)
+        self.assertIn('data-resource-open="watch"', home)
+        self.assertIn('data-resource-open="read"', home)
+        self.assertIn('Автор: <a href="https://mksddn.ru/" target="_blank"', home)
+        self.assertIn('href="https://flsf.maxdudin.ru/" target="_blank"', home)
+        self.assertIn('src="https://flsf.maxdudin.ru/img/imagehome.jpg"', home)
+        self.assertNotIn('<header>', home)
+        self.assertIn('id="search-open"', home)
+
+    def test_detail_excludes_private_assignment_metadata(self):
+        entries = json.loads((OUT / 'search.json').read_text())
+        entry = next(item for item in entries if item['group'] == 'Темы')
+        page = (OUT / entry['url']).read_text()
+        self.assertNotIn('<dt>Задание</dt>', page)
+        self.assertNotIn('<dt>Зачтено</dt>', page)
+        self.assertNotIn('<dt>Моя работа</dt>', page)
+        self.assertLess(page.index('class="entity-links"'), page.index('<article>'))
+        self.assertIn('id="search-open"', page)
+        for item in entries:
+            record = (OUT / item['url']).read_text()
+            self.assertNotIn('<dt>Моя работа</dt>', record, item['title'])
 
     def test_only_optimized_local_rasters_are_published(self):
         images = [p for p in OUT.rglob('*') if p.suffix.lower() in {'.jpg', '.jpeg', '.png', '.webp', '.gif'}]

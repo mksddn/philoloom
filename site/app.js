@@ -42,6 +42,35 @@ async function search() {
 document.querySelector('#search-open').addEventListener('click', () => { dialog.showModal(); query.focus(); search(); });
 query.addEventListener('input', search);
 dialog.addEventListener('close', () => { revision++; });
+dialog.addEventListener('click', event => {
+  // Native modal backdrops dispatch clicks on the dialog itself.
+  if (event.target !== dialog) return;
+  const bounds = dialog.getBoundingClientRect();
+  if (event.clientX < bounds.left || event.clientX > bounds.right ||
+      event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
+});
+
+
+const resourceDialog = document.querySelector('#resource-dialog');
+if (resourceDialog) {
+  const resourceTitle = document.querySelector('#resource-title');
+  const resourceViews = [...resourceDialog.querySelectorAll('.resource-list')];
+  document.querySelectorAll('[data-resource-open]').forEach(trigger => {
+    trigger.addEventListener('click', () => {
+      const selected = trigger.dataset.resourceOpen;
+      resourceViews.forEach(view => { view.hidden = view.id !== 'resource-' + selected; });
+      resourceTitle.textContent = selected === 'watch' ? 'Что посмотреть' : 'Что почитать';
+      resourceDialog.showModal();
+    });
+  });
+  document.querySelector('#resource-close').addEventListener('click', () => resourceDialog.close());
+  resourceDialog.addEventListener('click', event => {
+    if (event.target !== resourceDialog) return;
+    const rect = resourceDialog.getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right ||
+        event.clientY < rect.top || event.clientY > rect.bottom) resourceDialog.close();
+  });
+}
 
 const panel = document.querySelector('#page-panel');
 const panelContent = document.querySelector('#panel-content');

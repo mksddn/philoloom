@@ -17,7 +17,8 @@
   },
   "https://flsf.maxdudin.ru/": {
     "description": "Статьи об истории философии,ее разделах и областях. Публикации на основе практических работ при обучении на философа.",
-    "title": "Блог о философии"
+    "title": "Блог о философии",
+    "image": "https://flsf.maxdudin.ru/img/imagehome.jpg"
   },
   "https://flsf.maxdudin.ru/germenevticheskij-analiz-na-primere-tolkovaniya-fragmenta-iz-alisy-v-strane-chudes.html": {
     "description": "3 разных философских трактовки фрагмента произведения Льюиса Кэрролла",
@@ -391,7 +392,8 @@
   },
   "https://www.phisci.info/jour": {
     "description": "Научный рецензируемый журнал",
-    "title": "Философские науки"
+    "title": "Философские науки",
+    "image": "https://www.phisci.info/public/journals/1/homeHeaderTitleImage_ru_RU.png"
   },
   "https://www.socionauki.ru/journal/fio/": {
     "description": "Информация о журнале «Философия и общество», где публикуются статьи как философской, так и исторической тематики, материалы по социологическим и экономическим проблемам, философии истории, герменевтике и структурализму, гносеологии и онтологии, глобальным проблемам современности, в том числе архив журнала, подписные индексы, бланк подписки, авторы, общественный совет редакции журнала.",

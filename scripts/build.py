@@ -207,7 +207,7 @@ for group,_ in SOURCE_GROUPS:
 nav = ''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}">{label}</a>' for g,label in GROUPS)
 
 def shell(title, body, group=''):
-    crumb = f'<span>/</span><span>{escape(group)}</span>' if group else ''
+    search_action = '<div class="detail-search site-container"><button id="search-open" class="search-trigger" type="button" aria-haspopup="dialog" aria-controls="search-dialog">⌕ Поиск по справочнику</button></div>' if group else ''
     cover = f'<div class="hero-cover">{image_html("ui/forest-cover.jpg", sizes="100vw", priority=True)}</div>' if not group else ''
     return f'''<!doctype html>
 <html lang="ru">
@@ -223,10 +223,8 @@ def shell(title, body, group=''):
 </head>
 <body>
 <a class="skip" href="#main">К содержимому</a>
-<header>
-<a class="brand" href="index.html">📜 PhiloLoom</a>{crumb}<button id="search-open" type="button">Поиск</button>
-</header>{cover}<main id="main" class="{'home-page' if not group else 'detail-page'}">{body}</main>
-<footer>PhiloLoom · Философский справочник</footer>
+{cover}{search_action}<main id="main" class="{'home-page' if not group else 'detail-page'}">{body}</main>
+<footer><div class="site-container">PhiloLoom · Философский справочник · Автор: <a href="https://mksddn.ru/" target="_blank" rel="author noopener noreferrer">Макс Дудин</a></div></footer>
 <dialog id="page-panel" aria-label="Подробности страницы">
 <div class="panel-toolbar">
 <button id="panel-back" aria-label="Назад в панели">←</button>
@@ -242,6 +240,7 @@ def shell(title, body, group=''):
 <button id="image-close" aria-label="Закрыть изображение">×</button>
 <img id="image-full" alt="">
 </dialog>
+{resource_dialog if not group else ""}
 <dialog id="search-dialog">
 <form method="dialog">
 <label for="query">Поиск по справочнику</label>
@@ -304,8 +303,15 @@ for pid, page in pages.items():
             connections[related_id].add(pid)
 
 
-def related_records(page):
-    linked = sorted((pages[pid] for pid in connections[page['id']]), key=lambda p: (p['group'] != 'Темы', p['group'], p['title'].casefold()))
+def related_records(page, props):
+    # Explicit relations already appear in metadata; only show additional backlinks.
+    explicit = set()
+    for key, value in props:
+        if key in ('Личности', 'Темы', 'История философии', 'Связь', 'Связанные записи'):
+            explicit.update(re.findall(r'([a-f0-9]{32})\.md', unquote(value)))
+    linked = sorted((pages[pid] for pid in connections[page['id']] if pid not in explicit
+                     and pages[pid]['group'] != 'Самостоятельная работа'),
+                    key=lambda p: (p['group'] != 'Темы', p['group'], p['title'].casefold()))
     if not linked:
         return ''
     def items(records):
@@ -313,7 +319,7 @@ def related_records(page):
     content = items(linked[:10])
     if len(linked) > 10:
         content += f'<details><summary>Ещё {len(linked)-10}</summary>{items(linked[10:])}</details>'
-    return '<aside class="related-records" aria-label="Связанные записи"><h2>Связанные записи</h2>' + content + '</aside>'
+    return '<div class="discovered-links"><h3>Также упоминается</h3><p>Автоматически найденные ссылки из других материалов справочника.</p>' + content + '</div>'
 
 
 def breadcrumbs(page):
@@ -340,17 +346,70 @@ for p in pages.values():
     row = rows_by_id.get(p['id'])
     if row:
         props = [(k,v) for k,v in row.items() if k != 'Name']
-    props = [(k,v) for k,v in props if v.strip() and k != 'Конспект']
+    hidden_meta = {'Конспект', 'Задание', 'Зачтено', 'Моя работа', 'Связанные записи'}
+    props = [(k,v) for k,v in props if v.strip() and k not in hidden_meta and not k.startswith('Самостоятельная работа')]
+    # Keep explicit relations including "Связь"; these are meaningful public navigation.
     table = '<dl class="properties">' + ''.join(f'<dt>{escape(k)}</dt><dd>{property_html(v,p)}</dd>' for k,v in props) + '</dl>' if props else ''
+    extra = related_records(p, props)
+    connections_html = f'<section class="entity-links" aria-label="Связи и упоминания">{table}{extra}</section>' if table or extra else ''
     quote_class = ' class="quote-heading"' if p['group'] == 'Цитаты' else ''
-    body = f'{breadcrumbs(p)}<h1{quote_class}>{escape(p["title"])}</h1>{READING_CONTROLS}{table}<article>{render(body_text,p)}</article>{related_records(p)}'
+    body = f'{breadcrumbs(p)}<h1{quote_class}>{escape(p["title"])}</h1>{connections_html}{READING_CONTROLS}<article>{render(body_text,p)}</article>'
     (OUT / (p['id'] + '.html')).write_text(shell(p['title'],body,p['group']),encoding='utf-8')
 
-intro = home['text'].split('\n## ')[0].splitlines()[1:]
-intro_html = render('\n'.join(intro),home)
-# The export represents Notion toggles as top-level list items.
-intro_html = re.sub(r'<li>\s*<p>(Посмотреть|📗\s*Почитать)</p>([\s\S]*?)</li>',r'<li><details><summary>\1</summary>\2</details></li>',intro_html)
-body = f'<div class="page-icon">📜</div><h1>Философия</h1><div class="intro">{intro_html}</div><nav class="section-nav" aria-label="Разделы">{nav}</nav>'
+# Landing content is drawn from the untouched Notion introduction.
+intro = home['text'].split('\n## ')[0]
+quote_source = intro.split('- Посмотреть', 1)[0].splitlines()[1:]
+quote_lines = [line.strip() for line in quote_source if line.strip() and line.strip() != '>']
+quote_text = next((re.sub(r'^>\s*|\*\*', '', line) for line in quote_lines if line.startswith('>')), '')
+quote_author = next((line for line in quote_lines if not line.startswith('>')), '')
+quote_html = (f'<figure class="featured-quote"><span class="quote-ornament" aria-hidden="true">“</span>'
+              f'<blockquote><p>{escape(quote_text)}</p></blockquote>'
+              f'<figcaption>— {escape(quote_author)}</figcaption></figure>')
+
+def resource_cards(markdown_text):
+    cards = []
+    for label, url in re.findall(r'\[([^]]+)\]\((https?://[^)]+)\)', markdown_text):
+        if not safe_url(url):
+            continue
+        meta = previews.get(url, {})
+        domain = urlsplit(url).netloc.removeprefix('www.')
+        image = meta.get('local_image') or meta.get('image') or ''
+        media = (f'<span class="resource-card-media">{image_html(image, "resource-card-image", sizes="(max-width: 650px) 88px, 160px")}</span>'
+                 if image and safe_url(image) else
+                 f'<span class="resource-card-media resource-card-placeholder" aria-hidden="true">{escape(domain[:1].upper())}</span>')
+        # Labels come from the curated source; generic OG titles must not replace them.
+        description = (meta.get('description') or '').strip()
+        generic = ('Делитесь видео с близкими', 'Share your videos')
+        if description.startswith(generic):
+            description = ''
+        description_html = f'<span class="resource-card-description">{escape(description[:155])}</span>' if description else ''
+        cards.append(f'<li><a class="resource-card" href="{escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">'
+                     f'{media}<span class="resource-card-copy"><strong>{escape(label)}</strong>'
+                     f'{description_html}<small>{escape(domain)}</small></span>'
+                     f'<span class="resource-card-arrow" aria-hidden="true">↗</span></a></li>')
+    return '<ul class="resource-cards">' + ''.join(cards) + '</ul>'
+
+watch = intro.split('- Посмотреть', 1)[1].split('- 📗', 1)[0] if '- Посмотреть' in intro else ''
+read = intro.split('- 📗', 1)[1].split('[Блог о философии]', 1)[0] if '- 📗' in intro else ''
+blog = 'https://flsf.maxdudin.ru/'
+# OG image is optional: the local metadata cache does not currently contain it.
+blog_meta = previews.get(blog, {})
+blog_image = blog_meta.get('local_image') or blog_meta.get('image') or ''
+blog_media = (f'<span class="blog-image">{image_html(blog_image, "blog-cover")}</span>'
+              if blog_image and safe_url(blog_image) else '')
+hero = (f'<div class="hero-intro">{quote_html}'
+        f'<div class="hero-resources">'
+        f'<button type="button" class="resource-trigger" data-resource-open="watch" aria-haspopup="dialog" aria-controls="resource-dialog"><span>Смотреть</span><small>Видеоматериалы о философии</small><span aria-hidden="true">↗</span></button>'
+        f'<button type="button" class="resource-trigger" data-resource-open="read" aria-haspopup="dialog" aria-controls="resource-dialog"><span>Читать</span><small>Статьи, журналы и библиотеки</small><span aria-hidden="true">↗</span></button>'
+        f'<a class="blog-feature" href="{blog}" target="_blank" rel="noopener noreferrer">{blog_media}<span class="blog-feature-copy"><strong>Блог о философии</strong><small>Статьи об истории и разделах философии</small></span><span class="blog-arrow" aria-hidden="true">↗</span></a>'
+        f'</div></div>')
+resource_dialog = ('<dialog id="resource-dialog" aria-labelledby="resource-title">'
+                   '<div class="resource-toolbar"><h2 id="resource-title">Материалы</h2><button type="button" id="resource-close" aria-label="Закрыть">×</button></div>'
+                   f'<div id="resource-watch" class="resource-list" hidden>{resource_cards(watch)}</div>'
+                   f'<div id="resource-read" class="resource-list" hidden>{resource_cards(read)}</div>'
+                   '</dialog>')
+body = f'<div class="home-heading"><h1>PhiloLoom</h1><button id="search-open" class="search-trigger" type="button" aria-haspopup="dialog" aria-controls="search-dialog">⌕ Найти в справочнике <span>⌘ K</span></button></div>{hero}<nav class="section-nav" aria-label="Разделы">{nav}</nav>'
+
 class MediaLinks(HTMLParser):
     def __init__(self, text):
         super().__init__()

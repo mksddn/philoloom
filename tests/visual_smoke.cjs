@@ -1,7 +1,6 @@
-/** Desktop and mobile browser smoke checks; captures CI screenshots. */
+/** Desktop and mobile browser smoke checks; no screenshots required. */
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
-const { mkdir } = require('node:fs/promises');
 const { chromium } = require('playwright');
 const base = 'http://127.0.0.1:8765';
 const server = spawn('python3', ['-m', 'http.server', '8765', '--bind', '127.0.0.1', '--directory', 'dist'], { stdio: 'ignore' });
@@ -23,7 +22,6 @@ async function assertNoOverflow(page, label) {
   let browser;
   try {
     await waitForServer();
-    await mkdir('screenshots', { recursive: true });
     browser = await chromium.launch({ headless: true });
     const desktop = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const home = await desktop.newPage();
@@ -35,12 +33,19 @@ async function assertNoOverflow(page, label) {
     assert.equal(await home.locator('.section-nav a').count(), 4);
     assert.equal(await home.locator('.reference-section').count(), 4);
     assert.equal(await home.locator('.featured-quote').count(), 1);
+    assert.equal(await home.locator('.hero-cover-content .featured-quote').count(), 1);
+    assert.equal(await home.locator('.home-source-strip .featured-quote').count(), 0);
     assert.equal(await home.locator('.resource-tiles .resource-tile').count(), 3);
     assert.equal(await home.locator('.footer-resources').count(), 0);
     assert.equal(await home.locator('.hero-summary').count(), 0);
     assert.ok((await home.locator('.featured-quote blockquote').textContent()).includes(
       'Человеку, исследующему истину, необходимо хоть один раз в жизни усомниться во всех вещах'));
     assert.equal((await home.locator('.featured-quote figcaption').textContent()).trim(), '— Рене Декарт');
+    assert.ok(await home.locator('.hero-cover-content .featured-quote').evaluate(el => {
+      const quote = el.getBoundingClientRect();
+      const hero = document.querySelector('.hero-cover').getBoundingClientRect();
+      return quote.top >= hero.top && quote.bottom <= hero.bottom;
+    }), 'Quotation must fit within the Hero');
     assert.ok(await home.locator('.resource-tiles').evaluate(el => {
       const hero = document.querySelector('.hero-cover').getBoundingClientRect();
       const tiles = el.getBoundingClientRect();
@@ -68,10 +73,10 @@ async function assertNoOverflow(page, label) {
     assert.ok(Math.abs(heroDimensions.left) <= 1 && Math.abs(heroDimensions.width - heroDimensions.viewport) <= 1,
       'Hero must span the entire viewport: ' + JSON.stringify(heroDimensions));
     await assertNoOverflow(home, 'desktop home');
-    await home.screenshot({ path: 'screenshots/01-home-desktop-dark.png', fullPage: true });
+
     await home.locator('#theme-toggle').click();
     assert.equal(await home.locator('html').getAttribute('data-theme'), 'light');
-    await home.screenshot({ path: 'screenshots/02-home-desktop-light.png', fullPage: true });
+
     await home.reload({ waitUntil: 'domcontentloaded' });
     assert.equal(await home.locator('html').getAttribute('data-theme'), 'light');
     await home.locator('#search-open').click();
@@ -112,20 +117,21 @@ async function assertNoOverflow(page, label) {
     await assertNoOverflow(small, '390px home');
     assert.equal(await small.locator('.section-nav').count(), 1);
     assert.equal(await small.locator('.resource-tiles .resource-tile').count(), 3);
-    assert.ok(await small.locator('.featured-quote').isVisible());
+    assert.ok(await small.locator('.hero-cover-content .featured-quote').isVisible());
+    assert.equal(await small.locator('.home-source-strip .featured-quote').count(), 0);
     assert.ok(await small.locator('.hero-cover').evaluate(element =>
       Math.abs(element.getBoundingClientRect().width - document.documentElement.clientWidth) <= 1));
-    await small.screenshot({ path: 'screenshots/03-home-mobile-dark.png', fullPage: true });
+
     await small.locator('#theme-toggle').click();
     assert.equal(await small.locator('html').getAttribute('data-theme'), 'light');
-    await small.screenshot({ path: 'screenshots/04-home-mobile-light.png', fullPage: true });
+
     await small.goto(base + '/89ecf3804396453cbc4256966e24aa27.html', { waitUntil: 'domcontentloaded' });
     assert.ok(await small.locator('article').isVisible());
     assert.ok(await small.locator('.page-breadcrumbs').isVisible());
     await assertNoOverflow(small, '390px article');
     await small.locator('[data-reader-toggle]').click();
     assert.equal(await small.locator('body').evaluate(el => el.classList.contains('reader-mode')), true);
-    await small.screenshot({ path: 'screenshots/05-article-mobile-reader.png', fullPage: true });
+
     assert.deepEqual(mobileErrors, [], 'No uncaught JavaScript errors on mobile');
     await mobile.close();
     const narrow = await browser.newContext({ viewport: { width: 320, height: 640 }, isMobile: true });
@@ -134,7 +140,7 @@ async function assertNoOverflow(page, label) {
     await assertNoOverflow(narrowPage, '320px home');
     await narrowPage.goto(base + '/89ecf3804396453cbc4256966e24aa27.html', { waitUntil: 'domcontentloaded' });
     await assertNoOverflow(narrowPage, '320px article');
-    await narrowPage.screenshot({ path: 'screenshots/06-article-narrow.png', fullPage: true });
+
     await narrow.close();
     console.log('Desktop 1440px, mobile 390px and narrow mobile 320px checks passed.');
   } finally {

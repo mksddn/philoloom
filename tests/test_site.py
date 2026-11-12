@@ -36,7 +36,8 @@ class SiteTests(unittest.TestCase):
 
     def test_all_pages_and_local_links_exist(self):
         entries = json.loads((OUT / 'search.json').read_text())
-        self.assertEqual(len(entries), len(list((ROOT / 'content/notion').rglob('*.md'))))
+        self.assertEqual(len(entries), len([p for p in (ROOT / 'content/notion').rglob('*.md') if p.parent.name != 'Самостоятельная работа']))
+        self.assertFalse(any(entry['group'] == 'Самостоятельная работа' for entry in entries))
         for entry in entries:
             path = OUT / entry['url']
             self.assertTrue(path.is_file(), entry['title'])
@@ -49,8 +50,9 @@ class SiteTests(unittest.TestCase):
 
     def test_sections_remain_in_static_html(self):
         source = (OUT / 'index.html').read_text()
-        self.assertEqual(source.count('class="reference-section"'), 5)
-        self.assertEqual(source.count('data-view-content='), 15)
+        self.assertEqual(source.count('class="reference-section"'), 4)
+        self.assertNotIn('💪 Мои статьи', source)
+        self.assertEqual(source.count('data-view-content='), 12)
         self.assertNotIn('class="reference-section" hidden', source)
 
     def test_explicit_relation_is_bidirectional(self):

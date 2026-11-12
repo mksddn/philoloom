@@ -239,22 +239,12 @@ def shell(title, body, group=''):
              f'<div class="hero-orbit" aria-hidden="true"></div>'
              f'<div class="hero-cover-content">'
              f'<h1>Философия <em>как искусство</em> мышления</h1>'
-             f'<p class="hero-summary">Философский справочник: темы, история мысли, '
-             f'личности и цитаты.</p>'
              f'</div>'
              f'<p class="hero-credit">Мраморный бюст Марка Аврелия · '
              f'<a href="{escape(HERO_SOURCE, quote=True)}" target="_blank" rel="noopener noreferrer">'
              f'Wikimedia Commons</a> · <a href="https://creativecommons.org/publicdomain/zero/1.0/" '
              f'target="_blank" rel="noopener noreferrer">CC0</a></p>'
              f'</div></div>') if not group else ''
-    footer_resources = (
-        '<div class="footer-resources" aria-label="Дополнительные материалы">'
-        '<button type="button" data-resource-open="watch" aria-haspopup="dialog" '
-        'aria-controls="resource-dialog">Видео</button>'
-        '<button type="button" data-resource-open="read" aria-haspopup="dialog" '
-        'aria-controls="resource-dialog">Библиотека</button>'
-        '<a href="https://flsf.maxdudin.ru/" target="_blank" rel="noopener noreferrer">Блог</a>'
-        '</div>') if not group else ''
     return f'''<!doctype html>
 <html lang="ru">
 <head>
@@ -271,7 +261,7 @@ def shell(title, body, group=''):
 <body>
 <a class="skip" href="#main">К содержимому</a>
 {search_action}<main id="main" class="{'home-page' if not group else 'detail-page'}">{cover + '<div class="site-container home-inner">' + body + '</div>' if not group else body}</main>
-<footer><div class="site-container"><div>PhiloLoom · Философский справочник · Автор: <a href="https://mksddn.ru/" target="_blank" rel="author noopener noreferrer">Макс Дудин</a></div>{footer_resources}</div></footer>
+<footer><div class="site-container">PhiloLoom · Философский справочник · Автор: <a href="https://mksddn.ru/" target="_blank" rel="author noopener noreferrer">Макс Дудин</a></div></footer>
 <dialog id="page-panel" aria-label="Подробности страницы">
 <div class="panel-toolbar">
 <button id="panel-back" aria-label="Назад в панели">←</button>
@@ -401,9 +391,18 @@ for p in pages.values():
     body = f'{breadcrumbs(p)}<h1{quote_class}>{escape(p["title"])}</h1>{connections_html}{READING_CONTROLS}<article>{render(body_text,p)}</article>'
     (OUT / (p['id'] + '.html')).write_text(shell(p['title'],body,p['group']),encoding='utf-8')
 
-# Preserve links from the untouched Notion introduction without promoting any
-# one topic, philosopher or resource above the complete encyclopedia catalog.
+# Preserve the exact published quotation and resources from the untouched
+# Notion introduction; none of these are newly authored philosophical claims.
 intro = home['text'].split('\n## ')[0]
+quote_source = intro.split('- Посмотреть', 1)[0].splitlines()[1:]
+quote_lines = [line.strip() for line in quote_source if line.strip() and line.strip() != '>']
+quote_text = next((re.sub(r'^>\s*|\*\*', '', line) for line in quote_lines if line.startswith('>')), '')
+quote_author = next((line for line in quote_lines if not line.startswith('>')), '')
+if not quote_text or not quote_author:
+    raise ValueError('The original Descartes quotation is missing from the source introduction')
+quote_html = (f'<figure class="featured-quote"><span class="quote-ornament" aria-hidden="true">“</span>'
+              f'<blockquote><p>{escape(quote_text)}</p></blockquote>'
+              f'<figcaption>— {escape(quote_author)}</figcaption></figure>')
 
 def resource_cards(markdown_text):
     cards = []
@@ -433,7 +432,37 @@ resource_dialog = ('<dialog id="resource-dialog" aria-labelledby="resource-title
                    f'<div id="resource-watch" class="resource-list" hidden>{resource_cards(watch)}</div>'
                    f'<div id="resource-read" class="resource-list" hidden>{resource_cards(read)}</div>'
                    '</dialog>')
-body = f'<nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>'
+# Reference-like, compact resource tiles live immediately below Hero, with
+# the original quotation restored before the single encyclopedia tab menu.
+blog_url = 'https://flsf.maxdudin.ru/'
+blog_meta = previews.get(blog_url, {})
+blog_image = blog_meta.get('local_image') or blog_meta.get('image') or ''
+blog_media = (f'<span class="resource-tile-art">{image_html(blog_image, "resource-tile-cover", sizes="(max-width: 650px) 100px, 200px")}</span>'
+              if blog_image and safe_url(blog_image) else '')
+watch_count = len(re.findall(r'\[[^]]+\]\(https?://[^)]+\)', watch))
+read_count = len(re.findall(r'\[[^]]+\]\(https?://[^)]+\)', read))
+resources = (
+    '<div class="resource-tiles" aria-label="Дополнительные материалы">'
+    '<button type="button" class="resource-trigger resource-tile" data-resource-open="watch" '
+    'aria-haspopup="dialog" aria-controls="resource-dialog">'
+    f'<span class="resource-tile-title">Видео</span>'
+    f'<small>{watch_count} подборки</small>'
+    '<span class="resource-tile-arrow" aria-hidden="true">↗</span></button>'
+    '<button type="button" class="resource-trigger resource-tile" data-resource-open="read" '
+    'aria-haspopup="dialog" aria-controls="resource-dialog">'
+    f'<span class="resource-tile-title">Библиотека</span>'
+    f'<small>{read_count} источников</small>'
+    '<span class="resource-tile-arrow" aria-hidden="true">↗</span></button>'
+    f'<a class="resource-tile resource-tile-blog" href="{blog_url}" target="_blank" rel="noopener noreferrer">'
+    f'{blog_media}<span class="resource-tile-description">'
+    f'<span class="resource-tile-title">Блог о философии</span>'
+    f'<small>flsf.maxdudin.ru</small></span>'
+    '<span class="resource-tile-arrow" aria-hidden="true">↗</span></a>'
+    '</div>'
+)
+body = (f'<div class="home-source-strip" aria-label="Цитата и дополнительные материалы">'
+        f'{quote_html}{resources}</div>'
+        f'<nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>')
 
 class MediaLinks(HTMLParser):
     def __init__(self, text):

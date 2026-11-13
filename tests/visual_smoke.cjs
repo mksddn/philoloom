@@ -102,8 +102,8 @@ async function assertThemeArtwork(page, theme) {
       'Approved vector wordmark must load visibly: ' + JSON.stringify(visualBrand));
     assert.equal(await home.locator('#theme-toggle').count(), 0);
     assert.equal(await home.locator('.catalog-toolbar #search-open').count(), 1);
-    assert.equal(await home.locator('.section-nav a').count(), 4);
-    assert.equal(await home.locator('.reference-section').count(), 4);
+    assert.equal(await home.locator('.section-nav a').count(), 5);
+    assert.equal(await home.locator('.reference-section').count(), 5);
     assert.equal(await home.locator('.featured-quote').count(), 1);
     assert.equal(await home.locator('.hero-cover-content .featured-quote').count(), 1);
     assert.equal(await home.locator('.home-source-strip .featured-quote').count(), 0);
@@ -118,18 +118,17 @@ async function assertThemeArtwork(page, theme) {
       const hero = document.querySelector('.hero-cover').getBoundingClientRect();
       return quote.top >= hero.top && quote.bottom <= hero.bottom;
     }), 'Quotation must fit within the Hero');
-    assert.ok(await home.locator('.resource-tiles').evaluate(el => {
-      const hero = document.querySelector('.hero-cover').getBoundingClientRect();
-      const tiles = el.getBoundingClientRect();
-      const tabs = document.querySelector('.section-nav').getBoundingClientRect();
-      return tiles.top >= hero.bottom - 1 && tabs.top >= tiles.bottom - 1;
-    }));
+    assert.equal(await home.locator('#more .resource-tiles .resource-tile').count(), 3);
+    assert.ok(await home.locator('.resource-tiles').evaluate(el =>
+      el.closest('#more') && el.compareDocumentPosition(document.querySelector('.section-nav')) & Node.DOCUMENT_POSITION_PRECEDING
+    ));
     assert.equal(await home.locator('.museum-head').count(), 0);
     assert.equal(await home.locator('.section-nav').count(), 1);
     assert.equal(await home.locator('.museum-shortcuts, .editorial-spotlight, .editorial-shelf, .hero-explore').count(), 0);
     assert.equal(await home.locator('.museum-frame, .museum-top-nav').count(), 0);
     assert.ok(await home.locator('html').evaluate(element => element.classList.contains('tabs-ready')));
-    assert.ok(await home.locator('.reference-section:not([hidden]) .cards .card').count() > 20);
+    assert.ok(await home.locator('.reference-section:not([hidden]) .entity-card').count() > 20);
+    assert.ok(await home.locator('.reference-section:not([hidden]) .entity-card-connections .relation').count() > 0);
 
     const darkAppearance = await assertThemeArtwork(home, 'dark');
     assert.equal(await home.locator('.hero-artwork').getAttribute('aria-label'),
@@ -165,6 +164,8 @@ async function assertThemeArtwork(page, theme) {
     assert.ok(await home.locator('#results a').count() > 0);
     await home.keyboard.press('Escape');
     await home.waitForFunction(() => !document.querySelector('#search-dialog').open);
+    await home.locator('.section-nav a').last().click();
+    assert.ok(await home.locator('#more').isVisible());
     await home.locator('[data-resource-open="watch"]').click();
     assert.ok(await home.locator('#resource-dialog').evaluate(element => element.open));
     await home.locator('#resource-close').click();
@@ -175,13 +176,15 @@ async function assertThemeArtwork(page, theme) {
     assert.equal(await home.locator('.resource-tile-blog').getAttribute('href'), 'https://flsf.maxdudin.ru/');
     await home.locator('.section-nav a').first().click();
     assert.equal(await home.locator('.reference-section:not([hidden])').count(), 1);
+    assert.equal(await home.locator('.view-controls').count(), 0);
     await home.locator('.section-nav a').nth(1).click();
-    assert.equal(await home.locator('.reference-section:not([hidden])').count(), 1);
+    assert.ok(await home.locator('.history-timeline').isVisible());
+    await home.locator('.section-nav a').nth(2).click();
+    assert.ok(await home.locator('.quote-catalog').isVisible());
+    await home.locator('.section-nav a').nth(3).click();
+    assert.ok(await home.locator('.entity-card--people').first().isVisible());
     await home.locator('.section-nav a').first().click();
-    await home.locator('.reference-section:not([hidden]) [data-view="list"]').click();
-    assert.ok(await home.locator('.reference-section:not([hidden]) .entry-list').isVisible());
-    await home.locator('.reference-section:not([hidden]) [data-view="gallery"]').click();
-    await home.locator('.reference-section:not([hidden]) .cards .card').first().click();
+    await home.locator('.reference-section:not([hidden]) .entity-card-main').first().click();
     await home.locator('#panel-content .entity-header h1').waitFor();
     assert.ok(await home.locator('#panel-content article').isVisible());
     assert.equal(await home.locator('#panel-content .entity-kicker').count(), 1);
@@ -250,7 +253,7 @@ async function assertThemeArtwork(page, theme) {
     await assertNoOverflow(small, '390px philosopher');
     await small.goto(base + '/index.html#quote-47d742c8761f4a0c86a27b43497759b0', { waitUntil: 'domcontentloaded' });
     await small.locator('#quote-47d742c8761f4a0c86a27b43497759b0').waitFor({state: 'visible'});
-    assert.ok(await small.locator('.quotes-list').isVisible(), 'Direct quote links must reveal the quotations tab');
+    assert.ok(await small.locator('.quote-catalog').isVisible(), 'Direct quote links must reveal the quotations tab');
     await assertNoOverflow(small, '390px inline quotation');
     await small.goto(base + '/topics/germenevtika/', { waitUntil: 'domcontentloaded' });
     assert.ok(await small.locator('article').isVisible());

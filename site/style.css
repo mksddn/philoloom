@@ -2342,17 +2342,19 @@ footer .site-container {
 
 
 /* Contextual entity catalog: complete source relations, no view switches.
-   Varying card heights are intentional; CSS columns preserve reading order. */
+   Row-major CSS grid preserves chronological left-to-right reading order.
+   Cards keep their natural heights instead of stretching to match a row. */
 .entity-collection {
-  columns: 3;
-  column-gap: 17px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 17px;
+  align-items: start;
 }
 .entity-card {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
-  vertical-align: top;
   width: 100%;
-  margin: 0 0 17px;
+  margin: 0;
   break-inside: avoid;
   -webkit-column-break-inside: avoid;
   border: 1px solid var(--line);
@@ -2552,10 +2554,11 @@ footer .site-container {
   background: var(--accent);
 }
 @media (max-width: 1000px) {
-  .entity-collection { columns: 2; }
+  .entity-collection { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 700px) {
-  .entity-collection, .quote-catalog { columns: 1; }
+  .entity-collection { grid-template-columns: minmax(0, 1fr); }
+  .quote-catalog { columns: 1; }
   .history-timeline-step .entity-card { display: flex; }
   .history-timeline-step .entity-card-connections {
     margin: 0 18px 18px;
@@ -2566,7 +2569,7 @@ footer .site-container {
   .history-related { margin-left: 28px; }
 }
 @media (max-width: 650px) {
-  .entity-card { margin-bottom: 12px; }
+  .entity-collection { gap: 12px; }
   .entity-card-main { padding: 18px; }
   .entity-card-media { width: calc(100% + 36px); margin: -18px -18px 9px; }
   .entity-card .card-cover,
@@ -2601,7 +2604,7 @@ footer .site-container {
 }
 .history-timeline-step::before { top: 4px; }
 .history-related .entity-collection:has(> .entity-card:only-child) {
-  columns: 1;
+  grid-template-columns: minmax(0, 1fr);
 }
 .history-related .entity-collection:has(> .entity-card:only-child)
   > .entity-card:has(.entity-card-connections) {

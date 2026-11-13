@@ -217,7 +217,17 @@ async function assertThemeArtwork(page, theme) {
       el.getBoundingClientRect().bottom <= document.querySelector('.hero-cover').getBoundingClientRect().bottom),
       'Quotation must remain inside 390px Hero');
 
-    await small.goto(base + '/89ecf3804396453cbc4256966e24aa27.html', { waitUntil: 'domcontentloaded' });
+    await small.goto(base + '/people/rene-dekart/', { waitUntil: 'domcontentloaded' });
+    assert.ok(await small.locator('.person-overview').isVisible());
+    assert.ok(await small.locator('.person-context .relation').count() > 0);
+    const portraitSrc = await small.locator('.person-portrait-image').getAttribute('src');
+    assert.ok(portraitSrc?.startsWith('media/'), 'Portrait must be served from local optimized assets');
+    await assertNoOverflow(small, '390px philosopher');
+    await small.goto(base + '/index.html#quote-47d742c8761f4a0c86a27b43497759b0', { waitUntil: 'domcontentloaded' });
+    await small.locator('#quote-47d742c8761f4a0c86a27b43497759b0').waitFor({state: 'visible'});
+    assert.ok(await small.locator('.quotes-list').isVisible(), 'Direct quote links must reveal the quotations tab');
+    await assertNoOverflow(small, '390px inline quotation');
+    await small.goto(base + '/topics/germenevtika/', { waitUntil: 'domcontentloaded' });
     assert.ok(await small.locator('article').isVisible());
     assert.ok(await small.locator('.page-breadcrumbs').isVisible());
     await assertNoOverflow(small, '390px article');
@@ -236,7 +246,7 @@ async function assertThemeArtwork(page, theme) {
     assert.ok(await narrowPage.locator('.hero-cover-content .featured-quote').evaluate(el =>
       el.getBoundingClientRect().bottom <= document.querySelector('.hero-cover').getBoundingClientRect().bottom),
       'Quotation must remain inside 320px Hero');
-    await narrowPage.goto(base + '/89ecf3804396453cbc4256966e24aa27.html', { waitUntil: 'domcontentloaded' });
+    await narrowPage.goto(base + '/topics/germenevtika/', { waitUntil: 'domcontentloaded' });
     await assertNoOverflow(narrowPage, '320px article');
 
     await narrow.close();

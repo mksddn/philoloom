@@ -1,6 +1,7 @@
 """Integration checks for the generated reference and its image pipeline."""
 import csv
 import json
+from html import unescape as html_unescape
 import re
 import subprocess
 import sys
@@ -148,6 +149,48 @@ class SiteTests(unittest.TestCase):
                                     for card in candidates),
                                 f'Missing one or more relations in {group} / {name}')
         self.assertGreater(total_relations, 0)
+
+    def test_history_approximate_periods_and_single_cross_era_card(self):
+        home = (OUT / 'index.html').read_text(encoding='utf-8')
+        self.assertEqual(home.count('class="history-timeline-period"'), 8)
+        for period in (
+            'VI в. до н. э.', 'V–XV вв.', 'XV–XVIII вв.',
+            '1780–1840 гг.', '1801–1900', '1901–1950 гг.',
+            '1951–2000 гг.', 'с 2001 года',
+        ):
+            self.assertIn(period, home)
+        # The lone cross-period tradition must be a full-width card.
+        self.assertIn('class="history-related"', home)
+        related = home.split('class="history-related"', 1)[1].split('</section>', 1)[0]
+        if related.count('class="entity-card entity-card--history"') == 1:
+            css = (OUT / 'style.css').read_text(encoding='utf-8')
+            self.assertIn('.history-related .entity-collection:has(> .entity-card:only-child)', css)
+
+    def test_person_cards_ordered_by_year_of_death(self):
+        csv_files = list((ROOT / 'content' / 'notion').rglob('Личности *_all.csv'))
+        self.assertEqual(len(csv_files), 1)
+        with csv_files[0].open(encoding='utf-8-sig', newline='') as stream:
+            people = list(csv.DictReader(stream))
+
+        def death_key(row):
+            value = row.get('Год смерти', '').strip()
+            match = re.search(r'-?\d{1,4}', value)
+            if not match:
+                return (1, 0, row['Name'].casefold())
+            year = int(match.group())
+            if 'до н' in value.casefold() or 'bce' in value.casefold():
+                year = -abs(year)
+            return (0, year, row['Name'].casefold())
+
+        expected = [row['Name'] for row in sorted(people, key=death_key)]
+        home = (OUT / 'index.html').read_text(encoding='utf-8')
+        actual = [html_unescape(match) for match in re.findall(
+            r'<article class="entity-card entity-card--people">'
+            r'<a class="entity-card-main" href="[^"]+">.*?'
+            r'<span class="entity-card-title">([^<]+)</span>',
+            home, flags=re.DOTALL
+        )]
+        self.assertEqual(actual, expected)
 
     def test_explicit_relation_is_bidirectional(self):
         hermeneutics = self.public_page('89ecf3804396453cbc4256966e24aa27')

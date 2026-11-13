@@ -33,6 +33,16 @@ for path in sorted(CONTENT.rglob('*.md')):
     pages[match[1]] = dict(id=match[1], path=path, title=title, text=text,
                          group=path.parent.name if path.parent != CONTENT else '')
 home = next(p for p in pages.values() if not p['group'])
+# IDs remain the source of truth; the checked-in map pins stable public URLs.
+SLUGS = json.loads((ROOT / 'content' / 'slugs.json').read_text(encoding='utf-8'))
+
+def page_url(page):
+    if page['id'] == home['id']:
+        return 'index.html'
+    if page['group'] == 'Цитаты':
+        return 'index.html#quote-' + page['id']
+    return SLUGS.get(page['id'], '#')
+
 databases = {}
 for path in CONTENT.rglob('*_all.csv'):
     name = re.sub(r' [a-f0-9]{32}_all$', '', path.stem)
@@ -64,9 +74,10 @@ def image_url(url):
     return info['variants'][-1]['url'] if info else url
 
 
-def image_html(url, css_class='', sizes='(max-width: 700px) 100vw, 700px', priority=False):
+def image_html(url, css_class='', sizes='(max-width: 700px) 100vw, 700px', priority=False, alt=''):
     info = image_info(url)
     attrs = f' class="{escape(css_class, quote=True)}"' if css_class else ''
+    attrs += f' alt="{escape(alt, quote=True)}"'
     if info:
         variants = info['variants']
         largest = variants[-1]
@@ -75,7 +86,7 @@ def image_html(url, css_class='', sizes='(max-width: 700px) 100vw, 700px', prior
                   f' width="{largest["width"]}" height="{largest["height"]}" data-full-src="{largest["url"]}"')
         url = largest['url']
     loading = 'fetchpriority="high"' if priority else 'loading="lazy"'
-    return f'<img{attrs} src="{escape(url,quote=True)}" alt="" {loading} decoding="async" referrerpolicy="no-referrer">'
+    return f'<img{attrs} src="{escape(url,quote=True)}" {loading} decoding="async" referrerpolicy="no-referrer">'
 
 
 def local_portrait(page, fallback):
@@ -97,7 +108,7 @@ def resolve(url, page):
     if match:
         pid = match[1]
         if pid in pages:
-            return 'index.html' if pid == home['id'] else pid + '.html'
+            return page_url(pages[pid])
         if pid in db_ids:
             return 'index.html#' + pid
     candidate = (page['path'].parent / decoded).resolve()
@@ -206,6 +217,15 @@ for group,_ in SOURCE_GROUPS:
         ordered[group].append(p)
         rows_by_id[p['id']] = row
 
+public_ids = {page['id'] for group, _ in GROUPS if group != 'Цитаты' for page in ordered[group]}
+if set(SLUGS) != public_ids:
+    raise ValueError('Public slug registry does not match the current published IDs. Update content/slugs.json.')
+if len(set(SLUGS.values())) != len(SLUGS) or any(
+    not re.fullmatch(r'(?:people|topics|history)/[a-z0-9]+(?:-[a-z0-9]+)*/', value)
+    for value in SLUGS.values()
+):
+    raise ValueError('Duplicate or invalid public slugs.')
+
 nav = ''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}">{label}</a>' for g,label in GROUPS)
 
 # The visual identity is a presentation layer; content remains sourced from Notion.
@@ -240,6 +260,7 @@ def shell(title, body, group='', hero_quote='', canonical_path=''):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0f0f0f">
+{('<base href="../../">' if canonical_path.count('/') == 2 else '')}
 <title>{escape(title)} · philoloom</title>
 <link rel="canonical" href="{escape(SITE_URL + canonical_path, quote=True)}">
 <meta name="description" content="{escape("Исследуйте философские идеи, мыслителей и связи между ними." if not group else title + " — история философии, направления и мыслители в справочнике philoloom.", quote=True)}">
@@ -330,23 +351,166 @@ for pid, page in pages.items():
             connections[related_id].add(pid)
 
 
-def related_records(page, props):
-    # Explicit relations already appear in metadata; only show additional backlinks.
-    explicit = set()
-    for key, value in props:
-        if key in ('Личности', 'Темы', 'История философии', 'Связь', 'Связанные записи'):
-            explicit.update(re.findall(r'([a-f0-9]{32})\.md', unquote(value)))
-    linked = sorted((pages[pid] for pid in connections[page['id']] if pid not in explicit
-                     and pages[pid]['group'] != 'Самостоятельная работа'),
-                    key=lambda p: (p['group'] != 'Темы', p['group'], p['title'].casefold()))
+def referenced_ids(text):
+    """IDs referenced in a source field or Markdown body, independent of order."""
+    return set(re.findall(r'([a-f0-9]{32})\.md', unquote(text)))
+
+
+def explicit_relations(page, relations, already_shown):
+    """Show each explicit connection once, with labels specific to its context."""
+    labels = {
+        'Темы': {
+            'История философии': 'Исторический контекст',
+            'Личности': 'Философы',
+            'Связь': 'Связанные темы',
+            'Темы': 'Связанные темы',
+        },
+        'История философии': {
+            'Личности': 'Представители',
+            'Темы': 'Темы и направления',
+            'Связь': 'Связанные разделы',
+            'История философии': 'Исторический контекст',
+        },
+    }
+    pattern = re.compile(r'([^\n]*?) \(([^\s]*?[a-f0-9]{32}\.md)\)(?:, |$)')
+    rows = []
+    for key, value in relations:
+        links = []
+        matches = list(pattern.finditer(value))
+        for match in matches:
+            pid_match = ID.search(unquote(match[2]))
+            if not pid_match:
+                continue
+            pid = pid_match[1]
+            # Private, unavailable and already visible records are not repeated.
+            if pid not in public_ids or pid in already_shown:
+                continue
+            already_shown.add(pid)
+            links.append(f'<a class="relation" href="{page_url(pages[pid])}">{escape(match[1].strip())}</a>')
+        if not matches and value.strip():
+            # Retain genuine free-form metadata, without inventing a relation.
+            links.append(property_html(value, page))
+        if links:
+            label = labels.get(page['group'], {}).get(key, key)
+            rows.append(f'<dt>{escape(label)}</dt><dd>{"".join(links)}</dd>')
+    return '<dl class="properties entity-relations">' + ''.join(rows) + '</dl>' if rows else ''
+
+
+def related_records(page, already_shown):
+    """Discover incoming references that are not already visible in this page."""
+    linked = sorted(
+        (pages[pid] for pid in connections[page['id']]
+         if pid in public_ids and pid not in already_shown),
+        key=lambda p: (p['group'] != 'Темы', p['group'], p['title'].casefold()),
+    )
     if not linked:
         return ''
     def items(records):
-        return '<ul>' + ''.join(f'<li><a href="{p["id"]}.html"><span>{escape(p["title"])}</span><small>{escape(p["group"])}</small></a></li>' for p in records) + '</ul>'
+        return '<ul>' + ''.join(
+            f'<li><a href="{page_url(p)}"><span>{escape(p["title"])}</span>'
+            f'<small>{escape(p["group"])}</small></a></li>' for p in records
+        ) + '</ul>'
     content = items(linked[:10])
     if len(linked) > 10:
         content += f'<details><summary>Ещё {len(linked)-10}</summary>{items(linked[10:])}</details>'
-    return '<div class="discovered-links"><h3>Также упоминается</h3><p>Автоматически найденные ссылки из других материалов справочника.</p>' + content + '</div>'
+    heading = 'Где встречается эта тема' if page['group'] == 'Темы' else 'Где встречается этот раздел'
+    return (f'<div class="discovered-links"><h3>{heading}</h3>'
+            '<p>Ссылки из других материалов справочника.</p>' + content + '</div>')
+
+
+def quote_figure(page, anchored=False):
+    author = rows_by_id[page['id']].get('Автор', '')
+    author_html = property_html(author, page) if author else 'Автор не указан'
+    anchor = f' id="quote-{page["id"]}"' if anchored else ''
+    return (f'<figure class="quote-entry"{anchor}><span class="quote-entry-label">Цитата</span>'
+            f'<blockquote><p>{escape(page["title"])}</p></blockquote>'
+            f'<figcaption>{author_html}</figcaption></figure>')
+
+
+def person_portrait(page):
+    """Prefer cached Wikipedia preview for the explicitly illustrated person."""
+    image_match = re.search(r'!\[[^\]]*\]\((https?://[^)]+)\)', page['text'])
+    original = image_match[1] if image_match else ''
+    if not original:
+        return '', ''
+    for url, metadata in previews.items():
+        cached = metadata.get('local_image', '')
+        if 'wikipedia.org/wiki/' in url and url in page['text'] and cached and image_info(cached):
+            return cached, original
+    # Never silently hotlink the portrait from Commons in the public UI.
+    return '', original
+
+
+def person_document(markdown_text):
+    """Recompose existing Markdown visually; do not modify the original export."""
+    lines, resources = [], []
+    first_image_removed = False
+    for line in markdown_text.splitlines():
+        stripped = line.strip()
+        if not first_image_removed and re.fullmatch(r'!\[[^\]]*\]\(https?://[^)]+\)', stripped):
+            first_image_removed = True
+            continue
+        match = re.fullmatch(r'\[([^\]]+)\]\((https?://[^)]+)\)', stripped)
+        if match and safe_url(match[2]):
+            resources.append((match[1], match[2]))
+            continue
+        if stripped in ('Основные труды', 'Основные идеи'):
+            lines.append('### ' + stripped)
+        else:
+            lines.append(line)
+    return '\n'.join(lines).strip(), resources
+
+
+def person_sources(resources, original):
+    markup = []
+    for label, url in resources:
+        domain = urlsplit(url).netloc.removeprefix('www.')
+        markup.append(f'<li><a href="{escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">'
+                      f'<span>{escape(label)}</span><small>{escape(domain)}</small></a></li>')
+    if not markup and not original:
+        return ''
+    source_line = (
+        f'<p class="person-image-source">Изображение: '
+        f'<a href="{escape(original, quote=True)}" target="_blank" rel="noopener noreferrer">исходный файл</a></p>'
+        if original else ''
+    )
+    return ('<section class="person-sources" aria-label="Дополнительные материалы">'
+            '<h2>Дополнительные материалы</h2>'
+            + ('<ul>' + ''.join(markup) + '</ul>' if markup else '')
+            + source_line + '</section>')
+
+
+def person_quotes(page):
+    selected = [
+        quote for quote in ordered['Цитаты']
+        if page['id'] in re.findall(r'([a-f0-9]{32})\.md',
+                                    unquote(rows_by_id[quote['id']].get('Автор', '')))
+    ]
+    if not selected:
+        return ''
+    tiles = ''.join(quote_figure(quote) for quote in selected)
+    return ('<section class="person-quotes" aria-label="Высказывания в справочнике">'
+            '<h2>Высказывания в справочнике</h2>'
+            f'<div class="person-quote-grid">{tiles}</div>'
+            '<p class="person-quote-note">Атрибуция перенесена из исходной коллекции; '
+            'первоисточники цитат требуют проверки.</p></section>')
+
+
+def person_overview(page, facts_html, relations):
+    picture, original = person_portrait(page)
+    if picture:
+        media = image_html(picture, 'person-portrait-image', '(max-width: 650px) 45vw, 260px',
+                           alt=f'Иллюстрация: {page["title"]}')
+    else:
+        media = '<span class="person-portrait-placeholder" aria-hidden="true"></span>'
+    portrait = f'<figure class="person-portrait">{media}</figure>'
+    connection_html = (
+        '<dl class="person-context">'
+        + ''.join(f'<div><dt>{escape(k)}</dt><dd>{property_html(v,page)}</dd></div>' for k, v in relations)
+        + '</dl>'
+    ) if relations else ''
+    return (f'<div class="person-overview">{portrait}<div class="person-overview-info">'
+            f'{facts_html}{connection_html}</div></div>', original)
 
 
 def breadcrumbs(page):
@@ -359,7 +523,7 @@ def breadcrumbs(page):
 
 
 for p in pages.values():
-    if p == home:
+    if p['id'] not in public_ids:
         continue
     props, body_text = page_parts(p)
     row = rows_by_id.get(p['id'])
@@ -367,14 +531,55 @@ for p in pages.values():
         props = [(k,v) for k,v in row.items() if k != 'Name']
     hidden_meta = {'Конспект', 'Задание', 'Зачтено', 'Моя работа', 'Связанные записи'}
     props = [(k,v) for k,v in props if v.strip() and k not in hidden_meta and not k.startswith('Самостоятельная работа')]
-    # Keep explicit relations including "Связь"; these are meaningful public navigation.
-    table = '<dl class="properties">' + ''.join(f'<dt>{escape(k)}</dt><dd>{property_html(v,p)}</dd>' for k,v in props) + '</dl>' if props else ''
-    extra = related_records(p, props)
-    connections_html = f'<section class="entity-links" aria-label="Связи и упоминания">{table}{extra}</section>' if table or extra else ''
-    quote_class = ' class="quote-heading"' if p['group'] == 'Цитаты' else ''
-    body = (f'<div class="detail-navigation">{breadcrumbs(p)}{SEARCH_BUTTON}</div>'
-            f'<h1{quote_class}>{escape(p["title"])}</h1>{connections_html}<article>{render(body_text,p)}</article>')
-    (OUT / (p['id'] + '.html')).write_text(shell(p['title'],body,p['group'],canonical_path=p['id'] + '.html'),encoding='utf-8')
+
+    # Short biographical facts accompany the identity. Relationships remain
+    # an explicit part of the knowledge graph, never inferred from a portrait.
+    fact_keys = {'Год рождения', 'Год смерти', 'Автор', 'Блок'}
+    facts = [(k, v) for k, v in props if k in fact_keys]
+    relations = [(k, v) for k, v in props if k not in fact_keys]
+    facts_html = (
+        '<section class="entity-facts" aria-label="Краткие сведения"><dl class="entity-facts-list">'
+        + ''.join(f'<div class="entity-fact"><dt>{escape(k)}</dt><dd>{property_html(v,p)}</dd></div>'
+                  for k, v in facts)
+        + '</dl></section>'
+    ) if facts else ''
+    # People already show their relationships in the portrait overview and
+    # their attributed quotations in a dedicated block: no generic footer.
+    # For topics and history, source links shown in the article also count.
+    connections_html = ''
+    if p['group'] != 'Личности':
+        shown = referenced_ids(body_text)
+        shown.update(referenced_ids(' '.join(v for _, v in facts)))
+        relation_list = explicit_relations(p, relations, shown)
+        extra = related_records(p, shown)
+        if relation_list or extra:
+            title = '<h2 class="entity-links-title">Связанные материалы</h2>' if relation_list else ''
+            connections_html = (
+                '<section class="entity-links" aria-label="Связанные материалы">'
+                f'{title}{relation_list}{extra}</section>'
+            )
+    kind = {'Темы': 'topics', 'Личности': 'people',
+            'История философии': 'history'}.get(p['group'], 'other')
+    head = (
+        f'<div class="detail-navigation">{breadcrumbs(p)}{SEARCH_BUTTON}</div>'
+        f'<div class="entity-detail entity-detail--{kind}">'
+        f'<header class="entity-header"><span class="entity-kicker">{escape(p["group"])}</span>'
+        f'<h1>{escape(p["title"])}</h1></header>'
+    )
+    if p['group'] == 'Личности':
+        overview, portrait_original = person_overview(p, facts_html, relations)
+        readable_text, sources = person_document(body_text)
+        text_html = (render(readable_text, p) if readable_text
+                     else '<p class="person-no-essay">В этой записи пока нет развёрнутого очерка. '
+                          'Связанные темы и дополнительные материалы помогут продолжить знакомство.</p>')
+        body = (head + overview + f'<article>{text_html}</article>'
+                + person_quotes(p) + person_sources(sources, portrait_original) + '</div>')
+    else:
+        body = head + facts_html + f'<article>{render(body_text,p)}</article>{connections_html}</div>'
+    address = page_url(p)
+    destination = OUT / address / 'index.html'
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(shell(p['title'], body, p['group'], canonical_path=address), encoding='utf-8')
 
 # Preserve the exact published quotation and resources from the untouched
 # Notion introduction; none of these are newly authored philosophical claims.
@@ -464,10 +669,10 @@ class MediaLinks(HTMLParser):
 
 def page_image(page):
     media = MediaLinks(page['text'])
-    # Only display an explicitly embedded portrait for a person: an arbitrary
-    # OpenGraph thumbnail from a linked website cannot verify their identity.
+    # Cached images derived from the linked Wikipedia page are available locally.
+    # Never substitute unrelated link-preview art for a person's portrait.
     if page['group'] == 'Личности':
-        return resolve(media.images[0], page) if media.images else ''
+        return person_portrait(page)[0]
     if media.images:
         return resolve(media.images[0], page)
     for url in media.links:
@@ -475,13 +680,13 @@ def page_image(page):
         image = data.get('local_image') or data.get('image')
         if image and safe_url(image):
             return image
-    return resolve(media.images[0], page) if media.images else ''
+    return ''
 
 
 def record_meta(group, row):
     if group == 'Личности':
-        return ' — '.join(row.get(k,'') for k in ('Год рождения','Год смерти') if row.get(k,''))
-    return re.sub(r' \(%.*$', '', row.get('Автор','') or row.get('Блок',''))
+        return ' — '.join(row.get(k, '') for k in ('Год рождения', 'Год смерти') if row.get(k, ''))
+    return re.sub(r' \(%.*$', '', row.get('Автор', '') or row.get('Блок', ''))
 
 
 def records(group):
@@ -489,55 +694,102 @@ def records(group):
 
 
 def gallery(group):
-    markup = '<div class="cards' + (' quote-cards' if group == 'Цитаты' else '') + '">'
+    if group == 'Цитаты':
+        return '<div class="quote-gallery">' + ''.join(quote_figure(page) for page in records(group)) + '</div>'
+    markup = '<div class="cards">'
     for page in records(group):
         description = record_meta(group, rows_by_id[page['id']])
-        image = page_image(page) if group not in ('Цитаты', 'Темы') else ''
-        cover = (image_html(image, 'card-cover', '(max-width: 650px) 50vw, 320px') if image else
-                 '<span class="card-etching" aria-hidden="true"></span>' if group == 'Темы' else '')
-        markup += f'<a class="card" href="{page["id"]}.html">{cover}<span>{escape(page["title"])}</span>' + (f'<small>{escape(description)}</small>' if description else '') + '</a>'
+        image = page_image(page) if group != 'Темы' else ''
+        cover = (
+            image_html(image, 'card-cover', '(max-width: 650px) 50vw, 320px') if image else
+            '<span class="card-etching" aria-hidden="true"></span>' if group == 'Темы' else
+            f'<span class="person-card-placeholder" aria-hidden="true">{escape(page["title"][:1])}</span>'
+            if group == 'Личности' else ''
+        )
+        markup += (f'<a class="card" href="{page_url(page)}">{cover}<span>{escape(page["title"])}</span>'
+                   + (f'<small>{escape(description)}</small>' if description else '') + '</a>')
     return markup + '</div>'
 
 
 def record_list(group):
     markup = '<ul class="entry-list' + (' quotes-list' if group == 'Цитаты' else '') + '">'
     for page in records(group):
+        if group == 'Цитаты':
+            markup += f'<li id="quote-{page["id"]}" class="quote-row">{quote_figure(page)}</li>'
+            continue
         description = record_meta(group, rows_by_id[page['id']])
-        markup += f'<li><a class="entry-link" href="{page["id"]}.html"><span class="entry-title">{escape(page["title"])}</span>' + (f'<span class="entry-meta">{escape(description)}</span>' if description else '') + '</a></li>'
+        markup += (f'<li><a class="entry-link" href="{page_url(page)}">'
+                   f'<span class="entry-title">{escape(page["title"])}</span>'
+                   + (f'<span class="entry-meta">{escape(description)}</span>' if description else '')
+                   + '</a></li>')
     return markup + '</ul>'
 
 
 def database_table(group):
-    columns = (['Name','Темы','Личности'] if group == 'История философии' else
-               ['Name','Год рождения','Год смерти','Темы','История философии'] if group == 'Личности' else
-               ['Name','Автор'] if group == 'Цитаты' else
-               ['Name','История философии','Личности','Связь'] if group == 'Темы' else ['Name','Блок','Зачтено'])
+    columns = (['Name', 'Темы', 'Личности'] if group == 'История философии' else
+               ['Name', 'Год рождения', 'Год смерти', 'Темы', 'История философии'] if group == 'Личности' else
+               ['Name', 'Автор'] if group == 'Цитаты' else
+               ['Name', 'История философии', 'Личности', 'Связь'] if group == 'Темы' else
+               ['Name', 'Блок', 'Зачтено'])
     columns = [column for column in columns if column == 'Name' or any(row.get(column, '').strip() for row in databases[group])]
-    markup = '<div class="table-scroll" tabindex="0" role="region" aria-label="'+escape(group)+'"><table class="database"><thead><tr>'
-    markup += ''.join(f'<th scope="col"><button class="column-sort" type="button" data-column="{i}">{escape("Название" if column=="Name" else column)}</button></th>' for i,column in enumerate(columns)) + '</tr></thead><tbody>'
+    markup = '<div class="table-scroll" tabindex="0" role="region" aria-label="' + escape(group) + '"><table class="database"><thead><tr>'
+    markup += ''.join(f'<th scope="col"><button class="column-sort" type="button" data-column="{i}">{escape("Название" if column == "Name" else column)}</button></th>' for i, column in enumerate(columns)) + '</tr></thead><tbody>'
     for page in records(group):
         row = rows_by_id[page['id']]
-        markup += '<tr><td><a href="'+page['id']+'.html">'+escape(page['title'])+'</a></td>' + ''.join('<td>'+property_html(row.get(column,''),page)+'</td>' for column in columns[1:]) + '</tr>'
+        title = (escape(page['title']) if group == 'Цитаты'
+                 else f'<a href="{page_url(page)}">{escape(page["title"])}</a>')
+        markup += '<tr><td>' + title + '</td>' + ''.join(
+            '<td>' + property_html(row.get(column, ''), page) + '</td>' for column in columns[1:]
+        ) + '</tr>'
     return markup + '</tbody></table></div>'
 
 
-DEFAULT_VIEWS = {'Темы':'gallery','История философии':'table','Цитаты':'list','Личности':'table'}
-for section_number, (group,label) in enumerate(GROUPS, start=1):
-    dbid = next(i for i,name in db_ids.items() if name==group)
+DEFAULT_VIEWS = {'Темы': 'gallery', 'История философии': 'table', 'Цитаты': 'list', 'Личности': 'table'}
+for section_number, (group, label) in enumerate(GROUPS, start=1):
+    dbid = next(i for i, name in db_ids.items() if name == group)
     body += (f'<section id="{dbid}" class="reference-section" aria-labelledby="heading-{dbid}">'
              f'<div class="section-heading"><h2 id="heading-{dbid}">{escape(label)}</h2></div>')
     default = DEFAULT_VIEWS[group]
-    body += '<div class="view-controls" role="group" aria-label="Вид раздела">' + ''.join(f'<button type="button" data-view="{view}" aria-pressed="{str(view==default).lower()}">{view_label}</button>' for view,view_label in [('gallery','Галерея'),('list','Список'),('table','Таблица')]) + '</div>'
-    for view,content in [('gallery',gallery(group)),('list',record_list(group)),('table',database_table(group))]:
+    body += '<div class="view-controls" role="group" aria-label="Вид раздела">' + ''.join(
+        f'<button type="button" data-view="{view}" aria-pressed="{str(view == default).lower()}">{view_label}</button>'
+        for view, view_label in [('gallery', 'Галерея'), ('list', 'Список'), ('table', 'Таблица')]
+    ) + '</div>'
+    for view, content in [('gallery', gallery(group)), ('list', record_list(group)), ('table', database_table(group))]:
         hidden = '' if view == default else ' hidden'
         body += f'<div data-view-content="{view}"{hidden}>{content}</div>'
     body += '</section>'
-(OUT / 'index.html').write_text(shell('Философия',body,hero_quote=quote_html),encoding='utf-8')
-search = [dict(title=p['title'],group=p['group'],url=('index.html' if p==home else p['id']+'.html'),text=re.sub(r'^Конспект:.*(?:\n|$)', '', p['text'], flags=re.MULTILINE)) for p in pages.values() if p['group'] != 'Самостоятельная работа']
-(OUT / 'search.json').write_text(json.dumps(search,ensure_ascii=False),encoding='utf-8')
-# List only canonical URLs, never query-string theme previews.
+(OUT / 'index.html').write_text(shell('Философия', body, hero_quote=quote_html), encoding='utf-8')
+
+search = [
+    dict(title=p['title'], group=p['group'], url=page_url(p),
+         text=re.sub(r'^Конспект:.*(?:\n|$)', '', p['text'], flags=re.MULTILINE))
+    for p in pages.values() if p == home or p['id'] in public_ids or p['group'] == 'Цитаты' and p['id'] in rows_by_id
+]
+(OUT / 'search.json').write_text(json.dumps(search, ensure_ascii=False), encoding='utf-8')
+
+# Old Notion-ID URLs remain as noindex HTML forwarding pages. GitHub Pages
+# cannot produce real HTTP 301 redirects on its own; never list aliases
+# in the sitemap or point canonical URLs back to the aliases.
+def write_legacy_alias(page, destination):
+    title = escape(page['title'])
+    href = escape(destination, quote=True)
+    canonical = escape(SITE_URL + destination.split('#', 1)[0], quote=True)
+    markup = (f'<!doctype html><html lang="ru"><head><meta charset="utf-8">'
+              f'<meta name="robots" content="noindex,follow">'
+              f'<link rel="canonical" href="{canonical}">'
+              f'<meta http-equiv="refresh" content="0;url={href}">'
+              f'<title>{title} · philoloom</title></head>'
+              f'<body><p>Страница переехала: <a href="{href}">{title}</a></p></body></html>')
+    (OUT / (page['id'] + '.html')).write_text(markup, encoding='utf-8')
+
+
+for page in pages.values():
+    if page['id'] in public_ids or page['group'] == 'Цитаты' and page['id'] in rows_by_id:
+        write_legacy_alias(page, page_url(page))
+
+# The sitemap includes only human-readable canonical pages and the homepage.
 sitemap = ET.Element('urlset', xmlns='http://www.sitemaps.org/schemas/sitemap/0.9')
-for path in [''] + sorted(p['id'] + '.html' for p in pages.values() if p != home):
+for path in [''] + sorted(SLUGS.values()):
     entry = ET.SubElement(sitemap, 'url')
     ET.SubElement(entry, 'loc').text = SITE_URL + path
 ET.ElementTree(sitemap).write(OUT / 'sitemap.xml', encoding='utf-8', xml_declaration=True)
@@ -545,4 +797,5 @@ ET.ElementTree(sitemap).write(OUT / 'sitemap.xml', encoding='utf-8', xml_declara
     'User-agent: *\nAllow: /\nSitemap: ' + SITE_URL + 'sitemap.xml\n',
     encoding='utf-8'
 )
-print(f'Built {len(pages)} pages; {len(assets)} assets; '+', '.join(f'{g}: {len(ordered[g])}' for g,_ in GROUPS))
+print(f'Built {len(public_ids)} public pages, {len(ordered["Цитаты"])} inline quotations; '
+      + ', '.join(f'{g}: {len(ordered[g])}' for g, _ in GROUPS))

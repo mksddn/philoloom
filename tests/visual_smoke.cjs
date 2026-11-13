@@ -254,8 +254,8 @@ async function assertThemeArtwork(page, theme) {
     for (let i = 1; i < peopleVisualOrder.length; i++) {
       const previous = peopleVisualOrder[i - 1];
       const current = peopleVisualOrder[i];
-      assert.ok(current.top > previous.top + 2 ||
-        (Math.abs(current.top - previous.top) <= 2 && current.left > previous.left + 2),
+      assert.ok(current.top > previous.top + 0.25 ||
+        (Math.abs(current.top - previous.top) <= 0.25 && current.left > previous.left + 2),
         'Philosopher cards must follow chronological row-major visual order: ' +
         JSON.stringify({ previous, current }));
     }

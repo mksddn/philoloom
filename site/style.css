@@ -1774,3 +1774,12 @@ html.tabs-ready .section-heading {
   .hero-cover-content:has(.featured-quote) h1 { font-size: 33px; }
   .hero-cover-content .featured-quote { margin-top: 26px; }
 }
+
+/* The portrait must dissolve into the Hero instead of ending at its mobile
+   artwork layer boundary. Mask the artwork itself so both themes blend. */
+@media (max-width: 650px) {
+  .hero-artwork {
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%);
+  }
+}

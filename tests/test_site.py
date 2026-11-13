@@ -1,5 +1,8 @@
 """Integration checks for the generated reference and its image pipeline."""
+import csv
 import json
+from html import unescape as html_unescape
+import re
 import subprocess
 import sys
 import unittest
@@ -40,7 +43,10 @@ class SiteTests(unittest.TestCase):
 
     def test_all_pages_and_local_links_exist(self):
         entries = json.loads((OUT / 'search.json').read_text())
-        self.assertEqual(len(entries), len(self.slugs) + 12)  # homepage + 11 quotes
+        self.assertEqual(len(entries), len(self.slugs) + 11)  # public pages + 11 inline quotes
+        self.assertFalse(any(entry['url'] == 'index.html' for entry in entries),
+                         'Homepage must not match every entity search query')
+        self.assertEqual(sum(entry['group'] == 'Цитаты' for entry in entries), 11)
         self.assertFalse(any(entry['group'] == 'Самостоятельная работа' for entry in entries))
         for entry in entries:
             address = entry['url'].split('#', 1)[0]
@@ -89,10 +95,105 @@ class SiteTests(unittest.TestCase):
 
     def test_sections_remain_in_static_html(self):
         source = (OUT / 'index.html').read_text()
-        self.assertEqual(source.count('class="reference-section"'), 4)
+        self.assertEqual(source.count('class="reference-section"'), 5)
         self.assertNotIn('💪 Мои статьи', source)
-        self.assertEqual(source.count('data-view-content='), 12)
+        self.assertNotIn('data-view-content=', source)
+        self.assertNotIn('class="view-controls"', source)
+        self.assertIn('class="history-timeline"', source)
+        self.assertIn('class="quote-catalog"', source)
+        self.assertIn('id="more"', source)
         self.assertNotIn('class="reference-section" hidden', source)
+
+    def test_catalog_cards_render_all_structured_links(self):
+        """Every published relation in a CSV field appears in that entity card."""
+        home = (OUT / 'index.html').read_text(encoding='utf-8')
+        source_root = ROOT / 'content' / 'notion'
+        relation_fields = {
+            'Темы': ('История философии', 'Личности', 'Связь'),
+            'Личности': ('Темы', 'История философии'),
+            'История философии': ('Темы', 'Личности'),
+        }
+        total_relations = 0
+        for group, keys in relation_fields.items():
+            csv_files = list(source_root.rglob(group + ' *' + '_all.csv'))
+            self.assertEqual(len(csv_files), 1, group)
+            with csv_files[0].open(encoding='utf-8-sig', newline='') as stream:
+                rows = list(csv.DictReader(stream))
+            for row in rows:
+                # Cards link the same record, but duplicate titles can occur in
+                # the original export. Verify each card once, not by title alone.
+                name = row['Name']
+                kind = {'Темы': 'topics', 'Личности': 'people',
+                        'История философии': 'history'}[group]
+                cards = re.findall(
+                    r'<article class="entity-card entity-card--' + kind + r'">.*?</article>',
+                    home, flags=re.DOTALL
+                )
+                from html import escape as html_escape
+                candidates = [
+                    card for card in cards
+                    if '<span class="entity-card-title">' + html_escape(name) + '</span>' in card
+                ]
+                self.assertTrue(candidates, f'Catalog card absent: {group} / {name}')
+                expected = []
+                for key in keys:
+                    raw = row.get(key, '').strip()
+                    if not raw:
+                        continue
+                    expected.append('<dt>' + key + '</dt>')
+                    for pid in re.findall(r'([a-f0-9]{32})\.md', raw):
+                        # Only linkable public entities: unpublished homework and
+                        # missing export entries never masquerade as public pages.
+                        if pid not in self.slugs:
+                            continue
+                        expected.append('href="' + self.slugs[pid] + '"')
+                        total_relations += 1
+                self.assertTrue(any(all(fragment in card for fragment in expected)
+                                    for card in candidates),
+                                f'Missing one or more relations in {group} / {name}')
+        self.assertGreater(total_relations, 0)
+
+    def test_history_approximate_periods_and_single_cross_era_card(self):
+        home = (OUT / 'index.html').read_text(encoding='utf-8')
+        self.assertEqual(home.count('class="history-timeline-period"'), 8)
+        for period in (
+            'VI в. до н. э.', 'V–XV вв.', 'XV–XVIII вв.',
+            '1780–1840 гг.', '1801–1900', '1901–1950 гг.',
+            '1951–2000 гг.', 'с 2001 года',
+        ):
+            self.assertIn(period, home)
+        # The lone cross-period tradition must be a full-width card.
+        self.assertIn('class="history-related"', home)
+        related = home.split('class="history-related"', 1)[1].split('</section>', 1)[0]
+        if related.count('class="entity-card entity-card--history"') == 1:
+            css = (OUT / 'style.css').read_text(encoding='utf-8')
+            self.assertIn('.history-related .entity-collection:has(> .entity-card:only-child)', css)
+
+    def test_person_cards_ordered_by_year_of_death(self):
+        csv_files = list((ROOT / 'content' / 'notion').rglob('Личности *_all.csv'))
+        self.assertEqual(len(csv_files), 1)
+        with csv_files[0].open(encoding='utf-8-sig', newline='') as stream:
+            people = list(csv.DictReader(stream))
+
+        def death_key(row):
+            value = row.get('Год смерти', '').strip()
+            match = re.search(r'-?\d{1,4}', value)
+            if not match:
+                return (1, 0, row['Name'].casefold())
+            year = int(match.group())
+            if 'до н' in value.casefold() or 'bce' in value.casefold():
+                year = -abs(year)
+            return (0, year, row['Name'].casefold())
+
+        expected = [row['Name'] for row in sorted(people, key=death_key)]
+        home = (OUT / 'index.html').read_text(encoding='utf-8')
+        actual = [html_unescape(match) for match in re.findall(
+            r'<article class="entity-card entity-card--people">'
+            r'<a class="entity-card-main" href="[^"]+">.*?'
+            r'<span class="entity-card-title">([^<]+)</span>',
+            home, flags=re.DOTALL
+        )]
+        self.assertEqual(actual, expected)
 
     def test_explicit_relation_is_bidirectional(self):
         hermeneutics = self.public_page('89ecf3804396453cbc4256966e24aa27')
@@ -129,9 +230,10 @@ class SiteTests(unittest.TestCase):
         self.assertIn('class="resource-tile-cover"', home)
         self.assertLess(home.index('class="hero-cover"'), home.index('class="featured-quote"'))
         self.assertLess(home.index('class="featured-quote"'), home.index('class="resource-tiles"'))
-        self.assertLess(home.index('class="resource-tiles"'), home.index('class="section-nav"'))
+        self.assertLess(home.index('class="section-nav"'), home.index('class="resource-tiles"'))
+        self.assertIn('id="more"', home)
         self.assertIn('class="hero-cover-content"', home.split('class="featured-quote"', 1)[0])
-        self.assertNotIn('class="featured-quote"', home.split('class="home-source-strip"', 1)[1])
+        self.assertNotIn('class="featured-quote"', home.split('id="more"', 1)[1])
         self.assertNotIn('class="footer-resources"', home)
         self.assertNotIn('Философский справочник: темы, история мысли, личности и цитаты.', home)
         self.assertNotIn('class="hero-summary"', home)
@@ -216,7 +318,7 @@ class SiteTests(unittest.TestCase):
         self.assertIn('id="reference-nav"', home)
         self.assertEqual(home.count('class="featured-quote"'), 1)
         self.assertEqual(home.count('data-resource-open='), 2)
-        self.assertIn('class="home-source-strip"', home)
+        self.assertNotIn('class="home-source-strip"', home)
         self.assertIn('aria-label="Разделы"', home)
         # No sales-like CTAs, cards framing the hero or duplicated navigation.
         for fragment in ('class="museum-frame"', 'class="museum-shortcuts"',

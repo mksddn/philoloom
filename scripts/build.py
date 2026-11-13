@@ -351,23 +351,71 @@ for pid, page in pages.items():
             connections[related_id].add(pid)
 
 
-def related_records(page, props):
-    # Explicit relations already appear in metadata; only show additional backlinks.
-    explicit = set()
-    for key, value in props:
-        if key in ('Личности', 'Темы', 'История философии', 'Связь', 'Связанные записи'):
-            explicit.update(re.findall(r'([a-f0-9]{32})\.md', unquote(value)))
-    linked = sorted((pages[pid] for pid in connections[page['id']] if pid not in explicit
-                     and pages[pid]['group'] != 'Самостоятельная работа'),
-                    key=lambda p: (p['group'] != 'Темы', p['group'], p['title'].casefold()))
+def referenced_ids(text):
+    """IDs referenced in a source field or Markdown body, independent of order."""
+    return set(re.findall(r'([a-f0-9]{32})\.md', unquote(text)))
+
+
+def explicit_relations(page, relations, already_shown):
+    """Show each explicit connection once, with labels specific to its context."""
+    labels = {
+        'Темы': {
+            'История философии': 'Исторический контекст',
+            'Личности': 'Философы',
+            'Связь': 'Связанные темы',
+            'Темы': 'Связанные темы',
+        },
+        'История философии': {
+            'Личности': 'Представители',
+            'Темы': 'Темы и направления',
+            'Связь': 'Связанные разделы',
+            'История философии': 'Исторический контекст',
+        },
+    }
+    pattern = re.compile(r'([^\n]*?) \(([^\s]*?[a-f0-9]{32}\.md)\)(?:, |$)')
+    rows = []
+    for key, value in relations:
+        links = []
+        matches = list(pattern.finditer(value))
+        for match in matches:
+            pid_match = ID.search(unquote(match[2]))
+            if not pid_match:
+                continue
+            pid = pid_match[1]
+            # Private, unavailable and already visible records are not repeated.
+            if pid not in public_ids or pid in already_shown:
+                continue
+            already_shown.add(pid)
+            links.append(f'<a class="relation" href="{page_url(pages[pid])}">{escape(match[1].strip())}</a>')
+        if not matches and value.strip():
+            # Retain genuine free-form metadata, without inventing a relation.
+            links.append(property_html(value, page))
+        if links:
+            label = labels.get(page['group'], {}).get(key, key)
+            rows.append(f'<dt>{escape(label)}</dt><dd>{"".join(links)}</dd>')
+    return '<dl class="properties entity-relations">' + ''.join(rows) + '</dl>' if rows else ''
+
+
+def related_records(page, already_shown):
+    """Discover incoming references that are not already visible in this page."""
+    linked = sorted(
+        (pages[pid] for pid in connections[page['id']]
+         if pid in public_ids and pid not in already_shown),
+        key=lambda p: (p['group'] != 'Темы', p['group'], p['title'].casefold()),
+    )
     if not linked:
         return ''
     def items(records):
-        return '<ul>' + ''.join(f'<li><a href="{page_url(p)}"><span>{escape(p["title"])}</span><small>{escape(p["group"])}</small></a></li>' for p in records) + '</ul>'
+        return '<ul>' + ''.join(
+            f'<li><a href="{page_url(p)}"><span>{escape(p["title"])}</span>'
+            f'<small>{escape(p["group"])}</small></a></li>' for p in records
+        ) + '</ul>'
     content = items(linked[:10])
     if len(linked) > 10:
         content += f'<details><summary>Ещё {len(linked)-10}</summary>{items(linked[10:])}</details>'
-    return '<div class="discovered-links"><h3>Также упоминается</h3><p>Автоматически найденные ссылки из других материалов справочника.</p>' + content + '</div>'
+    heading = 'Где встречается эта тема' if page['group'] == 'Темы' else 'Где встречается этот раздел'
+    return (f'<div class="discovered-links"><h3>{heading}</h3>'
+            '<p>Ссылки из других материалов справочника.</p>' + content + '</div>')
 
 
 def quote_figure(page, anchored=False):
@@ -495,17 +543,21 @@ for p in pages.values():
                   for k, v in facts)
         + '</dl></section>'
     ) if facts else ''
-    relation_list = (
-        '<dl class="properties entity-relations">'
-        + ''.join(f'<dt>{escape(k)}</dt><dd>{property_html(v,p)}</dd>' for k, v in relations)
-        + '</dl>'
-    ) if relations and p['group'] != 'Личности' else ''
-    extra = related_records(p, props)
-    connections_html = (
-        '<section class="entity-links" aria-label="Связи и упоминания">'
-        '<h2 class="entity-links-title">Связи и упоминания</h2>'
-        f'{relation_list}{extra}</section>'
-    ) if relation_list or extra else ''
+    # People already show their relationships in the portrait overview and
+    # their attributed quotations in a dedicated block: no generic footer.
+    # For topics and history, source links shown in the article also count.
+    connections_html = ''
+    if p['group'] != 'Личности':
+        shown = referenced_ids(body_text)
+        shown.update(referenced_ids(' '.join(v for _, v in facts)))
+        relation_list = explicit_relations(p, relations, shown)
+        extra = related_records(p, shown)
+        if relation_list or extra:
+            title = '<h2 class="entity-links-title">Связанные материалы</h2>' if relation_list else ''
+            connections_html = (
+                '<section class="entity-links" aria-label="Связанные материалы">'
+                f'{title}{relation_list}{extra}</section>'
+            )
     kind = {'Темы': 'topics', 'Личности': 'people',
             'История философии': 'history'}.get(p['group'], 'other')
     head = (
@@ -521,8 +573,7 @@ for p in pages.values():
                      else '<p class="person-no-essay">В этой записи пока нет развёрнутого очерка. '
                           'Связанные темы и дополнительные материалы помогут продолжить знакомство.</p>')
         body = (head + overview + f'<article>{text_html}</article>'
-                + person_quotes(p) + connections_html
-                + person_sources(sources, portrait_original) + '</div>')
+                + person_quotes(p) + person_sources(sources, portrait_original) + '</div>')
     else:
         body = head + facts_html + f'<article>{render(body_text,p)}</article>{connections_html}</div>'
     address = page_url(p)

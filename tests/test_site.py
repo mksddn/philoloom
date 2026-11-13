@@ -33,20 +33,59 @@ class SiteTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.manifest = json.loads((ROOT / 'content/image-manifest.json').read_text())
+        cls.slugs = json.loads((ROOT / 'content/slugs.json').read_text())
+
+    def public_page(self, pid):
+        return (OUT / self.slugs[pid] / 'index.html').read_text(encoding='utf-8')
 
     def test_all_pages_and_local_links_exist(self):
         entries = json.loads((OUT / 'search.json').read_text())
-        self.assertEqual(len(entries), len([p for p in (ROOT / 'content/notion').rglob('*.md') if p.parent.name != 'Самостоятельная работа']))
+        self.assertEqual(len(entries), len(self.slugs) + 12)  # homepage + 11 quotes
         self.assertFalse(any(entry['group'] == 'Самостоятельная работа' for entry in entries))
         for entry in entries:
-            path = OUT / entry['url']
+            address = entry['url'].split('#', 1)[0]
+            destination = OUT / address
+            path = destination / 'index.html' if destination.is_dir() else destination
             self.assertTrue(path.is_file(), entry['title'])
             page = Page(path.read_text())
             self.assertEqual(len(page.ids), len(set(page.ids)), entry['title'])
             for link in page.links:
                 parsed = urlsplit(link)
                 if not parsed.scheme and parsed.path:
-                    self.assertTrue((OUT / unquote(parsed.path)).is_file(), (entry['title'], link))
+                    if parsed.path in ('../', '../../'):
+                        continue
+                    target = OUT / unquote(parsed.path)
+                    if target.is_dir():
+                        target = target / 'index.html'
+                    self.assertTrue(target.is_file(), (entry['title'], link))
+
+    def test_pinned_slugs_and_legacy_forwarding(self):
+        self.assertEqual(self.slugs['c4c741fb50874c87a5d2cb4d4def5e50'], 'people/rene-dekart/')
+        self.assertEqual(self.slugs['10ebde78a3c349b29057a45caee57a92'], 'topics/ontologiya/')
+        self.assertEqual(len(set(self.slugs.values())), len(self.slugs))
+        self.assertTrue(all((OUT / address / 'index.html').is_file() for address in self.slugs.values()))
+        detail = self.public_page('c4c741fb50874c87a5d2cb4d4def5e50')
+        self.assertIn('<base href="../../">', detail)
+        self.assertIn('rel="canonical" href="https://mksddn.github.io/philoloom/people/rene-dekart/"', detail)
+        legacy = (OUT / 'c4c741fb50874c87a5d2cb4d4def5e50.html').read_text()
+        self.assertIn('name="robots" content="noindex,follow"', legacy)
+        self.assertIn('url=people/rene-dekart/', legacy)
+        sitemap = (OUT / 'sitemap.xml').read_text()
+        self.assertIn('/people/rene-dekart/', sitemap)
+        self.assertNotIn('c4c741fb50874c87a5d2cb4d4def5e50.html', sitemap)
+
+    def test_quotes_are_inline_and_deep_linkable(self):
+        quote_id = '47d742c8761f4a0c86a27b43497759b0'
+        home = (OUT / 'index.html').read_text()
+        self.assertIn(f'id="quote-{quote_id}"', home)
+        self.assertIn('class="quote-entry"', home)
+        self.assertNotIn(f'href="{quote_id}.html"', home)
+        legacy = (OUT / f'{quote_id}.html').read_text()
+        self.assertIn(f'index.html#quote-{quote_id}', legacy)
+        self.assertFalse((OUT / 'quotes').exists())
+        descartes = self.public_page('c4c741fb50874c87a5d2cb4d4def5e50')
+        self.assertIn('class="person-quotes"', descartes)
+
 
     def test_sections_remain_in_static_html(self):
         source = (OUT / 'index.html').read_text()
@@ -56,10 +95,10 @@ class SiteTests(unittest.TestCase):
         self.assertNotIn('class="reference-section" hidden', source)
 
     def test_explicit_relation_is_bidirectional(self):
-        hermeneutics = (OUT / '89ecf3804396453cbc4256966e24aa27.html').read_text()
-        gadamer = (OUT / '8fdcb8310a88441da41bce0b8f4857c4.html').read_text()
-        self.assertIn('8fdcb8310a88441da41bce0b8f4857c4.html', hermeneutics.split('class="entity-links"', 1)[1])
-        self.assertIn('89ecf3804396453cbc4256966e24aa27.html', gadamer.split('class="entity-links"', 1)[1])
+        hermeneutics = self.public_page('89ecf3804396453cbc4256966e24aa27')
+        gadamer = self.public_page('8fdcb8310a88441da41bce0b8f4857c4')
+        self.assertIn(self.slugs['8fdcb8310a88441da41bce0b8f4857c4'], hermeneutics)
+        self.assertIn(self.slugs['89ecf3804396453cbc4256966e24aa27'], gadamer)
 
     def test_home_navigation_and_search(self):
         home = (OUT / 'index.html').read_text(encoding='utf-8')
@@ -101,7 +140,7 @@ class SiteTests(unittest.TestCase):
     def test_detail_excludes_private_assignment_metadata(self):
         entries = json.loads((OUT / 'search.json').read_text())
         entry = next(item for item in entries if item['group'] == 'Темы')
-        page = (OUT / entry['url']).read_text()
+        page = (OUT / entry['url'] / 'index.html').read_text()
         self.assertNotIn('<dt>Задание</dt>', page)
         self.assertNotIn('<dt>Зачтено</dt>', page)
         self.assertNotIn('<dt>Моя работа</dt>', page)
@@ -111,11 +150,13 @@ class SiteTests(unittest.TestCase):
         self.assertIn('class="entity-links-title">Связи и упоминания</h2>', page)
         self.assertIn('id="search-open"', page)
         for item in entries:
-            record = (OUT / item['url']).read_text()
+            address = item['url'].split('#', 1)[0]
+            target = OUT / address
+            record = (target / 'index.html' if target.is_dir() else target).read_text()
             self.assertNotIn('<dt>Моя работа</dt>', record, item['title'])
 
     def test_person_details_separate_facts_content_and_relations(self):
-        descartes = (OUT / 'c4c741fb50874c87a5d2cb4d4def5e50.html').read_text()
+        descartes = self.public_page('c4c741fb50874c87a5d2cb4d4def5e50')
         self.assertIn('class="entity-detail entity-detail--people"', descartes)
         self.assertIn('class="entity-facts-list"', descartes)
         self.assertIn('<dt>Год рождения</dt><dd>1596</dd>', descartes)
@@ -127,7 +168,7 @@ class SiteTests(unittest.TestCase):
 
     def test_compact_headerless_shell_and_system_theme(self):
         home = (OUT / 'index.html').read_text(encoding='utf-8')
-        detail = (OUT / '89ecf3804396453cbc4256966e24aa27.html').read_text(encoding='utf-8')
+        detail = self.public_page('89ecf3804396453cbc4256966e24aa27')
         css = (OUT / 'style.css').read_text(encoding='utf-8')
         self.assertIn('<h1><span class="hero-project-name"><span class="brand-accessible-name">philoloom</span>', home)
         self.assertEqual(home.count('<h1>'), 1)
@@ -182,7 +223,7 @@ class SiteTests(unittest.TestCase):
 
     def test_brand_logo_and_favicon_are_published(self):
         home = (OUT / 'index.html').read_text(encoding='utf-8')
-        detail = (OUT / '89ecf3804396453cbc4256966e24aa27.html').read_text(encoding='utf-8')
+        detail = self.public_page('89ecf3804396453cbc4256966e24aa27')
         self.assertIn('class="hero-brand-watermark" aria-hidden="true"', home)
         self.assertNotIn('class="hero-brand-mark"', home)
         css = (OUT / 'style.css').read_text(encoding='utf-8')

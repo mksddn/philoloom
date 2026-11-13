@@ -25,7 +25,7 @@ async function search() {
   status.textContent = 'Ищем…';
   try {
     if (!entries) {
-      loading ??= fetch('search.json').then(response => {
+      loading ??= fetch(new URL('search.json', document.baseURI)).then(response => {
         if (!response.ok) throw new Error('Search unavailable');
         return response.json();
       });
@@ -106,7 +106,7 @@ const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').match
 
 async function catalog() {
   if (!entries) {
-    loading ??= fetch('search.json').then(response => {
+    loading ??= fetch(new URL('search.json', document.baseURI)).then(response => {
       if (!response.ok) throw new Error('Catalog unavailable');
       return response.json();
     }).catch(error => { loading = undefined; throw error; });
@@ -115,11 +115,11 @@ async function catalog() {
   return entries;
 }
 function pagePath(url) {
-  const target = new URL(url, location.href);
-  const currentDirectory = new URL('.', location.href);
-  if (target.origin !== location.origin || new URL('.', target).pathname !== currentDirectory.pathname) return null;
-  const name = target.pathname.split('/').pop();
-  return /^[a-f0-9]{32}\.html$/.test(name) && !target.hash ? name : null;
+  const siteBase = new URL('.', document.baseURI);
+  const target = new URL(url, document.baseURI);
+  if (target.origin !== siteBase.origin || !target.pathname.startsWith(siteBase.pathname) || target.hash) return null;
+  const path = target.pathname.slice(siteBase.pathname.length);
+  return /^(?:people|topics|history)\/[a-z0-9-]+\/$/.test(path) ? path : null;
 }
 function panelLocation(path) {
   const url = new URL(location.href);
@@ -149,7 +149,7 @@ async function displayPanel(path) {
   try {
     let source = pageCache.get(path);
     if (!source) {
-      const response = await fetch(path, {signal: requestController.signal});
+      const response = await fetch(new URL(path, document.baseURI), {signal: requestController.signal});
       if (!response.ok) throw new Error('Page unavailable');
       source = await response.text();
       pageCache.set(path, source);
@@ -315,7 +315,9 @@ const sectionNav = document.querySelector('.section-nav');
 const sectionTabs = sectionNav ? [...sectionNav.querySelectorAll('a')] : [];
 const sections = [...document.querySelectorAll('.reference-section')];
 function activateSection(id, focus = false) {
-  const selected = sections.find(section => section.id === id) || sections[0];
+  const quoteAnchor = /^quote-[a-f0-9]{32}$/.test(id) ? document.getElementById(id) : null;
+  const selected = quoteAnchor?.closest('.reference-section') ||
+    sections.find(section => section.id === id) || sections[0];
   if (!selected) return;
   sections.forEach(section => { section.hidden = section !== selected; });
   sectionTabs.forEach(tab => {
@@ -324,6 +326,10 @@ function activateSection(id, focus = false) {
     tab.tabIndex = active ? 0 : -1;
     if (active && focus) tab.focus();
   });
+  if (quoteAnchor) {
+    selectView(selected, 'list');
+    requestAnimationFrame(() => quoteAnchor.scrollIntoView({block:'start'}));
+  }
 }
 if (sectionNav) {
   sectionNav.setAttribute('role', 'tablist');
@@ -373,6 +379,7 @@ sections.forEach(section => {
   try { saved = localStorage.getItem(`philoloom:view:${section.id}`); } catch { /* Default views still work. */ }
   if (['gallery', 'list', 'table'].includes(saved)) selectView(section, saved);
 });
+if (location.hash.startsWith('#quote-')) activateSection(location.hash.slice(1));
 document.querySelectorAll('.view-controls button').forEach(button => {
   button.addEventListener('click', () => selectView(button.closest('section'), button.dataset.view, true));
 });

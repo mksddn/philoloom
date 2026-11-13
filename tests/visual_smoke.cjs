@@ -203,6 +203,23 @@ async function assertThemeArtwork(page, theme) {
     assert.ok(await home.locator('.quote-catalog').isVisible());
     await home.locator('.section-nav a').nth(3).click();
     assert.ok(await home.locator('.entity-card--people').first().isVisible());
+    // Semantic HTML order is not enough: the visible chronology must also run
+    // from left to right, then down to the next row (never down CSS columns).
+    const peopleVisualOrder = await home.locator('.entity-card--people').evaluateAll(cards =>
+      cards.map(card => {
+        const rect = card.getBoundingClientRect();
+        return { name: card.querySelector('.entity-card-title')?.textContent, top: rect.top, left: rect.left };
+      })
+    );
+    assert.ok(peopleVisualOrder.length > 3, 'Expected multiple philosopher rows');
+    for (let i = 1; i < peopleVisualOrder.length; i++) {
+      const previous = peopleVisualOrder[i - 1];
+      const current = peopleVisualOrder[i];
+      assert.ok(current.top > previous.top + 2 ||
+        (Math.abs(current.top - previous.top) <= 2 && current.left > previous.left + 2),
+        'Philosopher cards must follow chronological row-major visual order: ' +
+        JSON.stringify({ previous, current }));
+    }
     await home.locator('.section-nav a').first().click();
     await home.locator('.reference-section:not([hidden]) .entity-card-main').first().click();
     await home.locator('#panel-content .entity-header h1').waitFor();
@@ -248,6 +265,12 @@ async function assertThemeArtwork(page, theme) {
     await assertNoOverflow(small, '390px home');
     await small.locator('.section-nav a').nth(1).click();
     await assertNoOverflow(small, '390px history');
+    await small.locator('.section-nav a').nth(3).click();
+    await assertNoOverflow(small, '390px people');
+    const mobilePeopleTops = await small.locator('.entity-card--people').evaluateAll(cards =>
+      cards.map(card => card.getBoundingClientRect().top));
+    assert.ok(mobilePeopleTops.every((top, i) => i === 0 || top > mobilePeopleTops[i - 1]),
+      'Mobile philosopher cards must be top-to-bottom chronological');
     await small.locator('.section-nav a').last().click();
     await assertNoOverflow(small, '390px resources');
     await small.locator('.section-nav a').first().click();

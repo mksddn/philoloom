@@ -2339,3 +2339,250 @@ footer .site-container {
     background-repeat: no-repeat;
   }
 }
+
+
+/* Contextual entity catalog: complete source relations, no view switches.
+   Varying card heights are intentional; CSS columns preserve reading order. */
+.entity-collection {
+  columns: 3;
+  column-gap: 17px;
+}
+.entity-card {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: top;
+  width: 100%;
+  margin: 0 0 17px;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--surface);
+  min-width: 0;
+  overflow: hidden;
+  transition: border-color .15s ease, background .15s ease;
+}
+.entity-card:hover { border-color: var(--accent); }
+.entity-card-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 8px;
+  padding: 22px 20px 19px;
+  color: var(--text);
+  text-decoration: none;
+}
+.entity-card-main:hover { background: var(--hover); }
+.entity-card-main:focus-visible,
+.entity-card-connections a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.entity-card-title {
+  font: 500 clamp(20px, 1.8vw, 26px)/1.25 var(--serif);
+  letter-spacing: -.025em;
+  overflow-wrap: anywhere;
+}
+.entity-card-meta {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.entity-card--topics .entity-card-main::before {
+  content: "ТЕМА";
+  color: var(--muted);
+  font: 650 10px/1.5 var(--sans);
+  letter-spacing: .12em;
+}
+.entity-card-media {
+  display: block;
+  width: calc(100% + 40px);
+  margin: -22px -20px 11px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+}
+.entity-card .card-cover,
+.entity-card .person-card-placeholder {
+  display: block;
+  width: 100%;
+  height: 188px;
+  max-height: none;
+  margin: 0;
+  object-fit: cover;
+  object-position: center 26%;
+  background: var(--surface);
+  border: 0;
+}
+.entity-card .card-cover { filter: grayscale(.78) contrast(1.05); }
+.entity-card .person-card-placeholder { flex: none; }
+.entity-card-connections {
+  display: grid;
+  gap: 14px;
+  margin: 0 20px 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  min-width: 0;
+}
+.entity-card-connection { min-width: 0; }
+.entity-card-connection dt {
+  margin: 0 0 7px;
+  color: var(--muted);
+  font: 600 10px/1.5 var(--sans);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.entity-card-connection dd {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+.entity-card-connections .relation {
+  display: inline-block;
+  margin: 2px 5px 2px 0;
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text);
+  font: 400 12px/1.5 var(--sans);
+  text-decoration: none;
+  vertical-align: baseline;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.entity-card-connections .relation:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--hover);
+}
+/* No invented dates: sequence represents chapters, not year-specific events. */
+.history-timeline {
+  position: relative;
+  padding-left: 34px;
+  max-width: 1100px;
+}
+.history-timeline::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 27px;
+  bottom: 28px;
+  width: 1px;
+  background: var(--line);
+}
+.history-timeline-step { position: relative; }
+.history-timeline-step::before {
+  content: "";
+  position: absolute;
+  left: -26px;
+  top: 29px;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--paper);
+  z-index: 1;
+}
+.history-timeline-step .entity-card {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  align-items: start;
+  width: 100%;
+  margin-bottom: 14px;
+}
+.history-timeline-step .entity-card-connections {
+  margin: 0;
+  padding: 22px;
+  border-top: 0;
+  border-left: 1px solid var(--line);
+}
+.history-timeline-step .entity-card-main { padding: 22px; }
+.history-related {
+  margin: 30px 0 0 34px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.history-related h3 {
+  color: var(--muted);
+  font: 500 14px/1.5 var(--sans);
+  margin: 0 0 18px;
+}
+.quote-catalog { columns: 2; column-gap: clamp(22px, 5vw, 65px); }
+.quote-catalog .quote-entry {
+  display: flex;
+  width: 100%;
+  height: auto;
+  margin: 0 0 12px;
+  padding: 25px 0 28px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+}
+.quote-catalog .quote-entry-label { display: none; }
+.quote-catalog .quote-entry blockquote {
+  font: 400 clamp(19px, 2vw, 25px)/1.5 var(--serif);
+}
+.quote-catalog .quote-entry figcaption {
+  margin: 0;
+  padding-top: 18px;
+}
+.quote-catalog .quote-entry:target { border-bottom-color: var(--accent); }
+.database td a { text-decoration: none; }
+.database td a:hover { color: var(--accent); }
+.catalog-toolbar .section-nav { padding: 0; }
+.catalog-toolbar .section-nav a {
+  position: relative;
+  border-bottom: 0;
+  min-height: 57px;
+}
+.catalog-toolbar .section-nav a::after {
+  content: "";
+  position: absolute;
+  left: clamp(13px, 2vw, 25px);
+  right: clamp(13px, 2vw, 25px);
+  bottom: 0;
+  height: 2px;
+  background: transparent;
+}
+.catalog-toolbar .section-nav a[aria-selected="true"]::after {
+  background: var(--accent);
+}
+@media (max-width: 1000px) {
+  .entity-collection { columns: 2; }
+}
+@media (max-width: 700px) {
+  .entity-collection, .quote-catalog { columns: 1; }
+  .history-timeline-step .entity-card { display: flex; }
+  .history-timeline-step .entity-card-connections {
+    margin: 0 18px 18px;
+    padding: 15px 0 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+  .history-related { margin-left: 28px; }
+}
+@media (max-width: 650px) {
+  .entity-card { margin-bottom: 12px; }
+  .entity-card-main { padding: 18px; }
+  .entity-card-media { width: calc(100% + 36px); margin: -18px -18px 9px; }
+  .entity-card .card-cover,
+  .entity-card .person-card-placeholder { height: 175px; }
+  .entity-card-connections { margin: 0 18px 18px; padding-top: 14px; }
+  .entity-card-title { font-size: 23px; }
+  .history-timeline-step .entity-card-main { padding: 18px; }
+  .history-timeline-step .entity-card-connections { margin: 0 18px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entity-card,
+  .entity-card-connections .relation { transition: none; }
+}
+@media print {
+  .entity-card, .history-timeline-step, .quote-catalog .quote-entry {
+    break-inside: avoid;
+  }
+  .entity-card .card-cover { filter: none; }
+}

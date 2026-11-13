@@ -264,7 +264,7 @@ def shell(title, body, group='', hero_quote='', canonical_path=''):
 {('<base href="../../">' if canonical_path.count('/') == 2 else '')}
 <title>{escape(title)} · philoloom</title>
 <link rel="canonical" href="{escape(SITE_URL + canonical_path, quote=True)}">
-<meta name="description" content="{escape("Исследуйте философские идеи, мыслителей и связи между ними." if not group else title + " — история философии, направления и мыслители в справочнике philoloom.", quote=True)}">
+<meta name="description" content="{escape("Интерактивная карта философских знаний Филолум. Исследуйте идеи, мыслителей и связи между ними." if not group else title + " — история философии, направления и мыслители в справочнике philoloom.", quote=True)}">
 <script>const previewTheme = new URLSearchParams(location.search).get('theme'); document.documentElement.dataset.theme = ['light', 'dark'].includes(previewTheme) ? previewTheme : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta property="og:site_name" content="philoloom">
@@ -810,7 +810,7 @@ body += ('<section id="more" class="reference-section" aria-labelledby="heading-
          '<div class="section-heading"><h2 id="heading-more">Ещё</h2></div>'
          + resources + '</section>')
 
-(OUT / 'index.html').write_text(shell('Философия', body, hero_quote=quote_html), encoding='utf-8')
+(OUT / 'index.html').write_text(shell('Атлас философской мысли', body, hero_quote=quote_html), encoding='utf-8')
 
 search = [
     dict(title=p['title'], group=p['group'], url=page_url(p),

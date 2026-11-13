@@ -1715,3 +1715,36 @@ html.tabs-ready .section-heading {
   .hero-wordmark { width: 185px; }
 }
 @media print { .hero-brand-watermark { display: none; } }
+
+
+/* Separate the project identity from the Descartes quotation in the Hero.
+   Keep the title near the top and anchor the quote at the bottom. */
+.hero-cover-content {
+  justify-content: space-between;
+  gap: clamp(65px, 9vw, 150px);
+}
+.hero-cover-content h1,
+.hero-cover-content:has(.featured-quote) h1 {
+  margin-bottom: 0;
+}
+.hero-cover-content .featured-quote {
+  margin-top: auto;
+}
+@media (max-width: 850px) {
+  .hero-cover-content { gap: clamp(70px, 11vw, 120px); }
+}
+@media (max-width: 650px) {
+  .hero-cover, .hero-cover-content { min-height: 580px; }
+  .hero-cover-content {
+    justify-content: space-between;
+    gap: 110px;
+    padding-top: 45px;
+    padding-bottom: 52px;
+  }
+  .hero-cover-content h1,
+  .hero-cover-content:has(.featured-quote) h1 { margin-bottom: 0; }
+}
+@media (max-width: 360px) {
+  .hero-cover, .hero-cover-content { min-height: 610px; }
+  .hero-cover-content { gap: 95px; padding-top: 44px; padding-bottom: 48px; }
+}

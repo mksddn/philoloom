@@ -2350,6 +2350,11 @@ footer .site-container {
   gap: 17px;
   align-items: start;
 }
+@media (min-width: 1001px) {
+  .entity-collection:has(> .entity-card--people) {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
 .entity-card {
   display: flex;
   flex-direction: column;
@@ -2448,7 +2453,8 @@ footer .site-container {
   border-radius: 2px;
   background: transparent;
   color: var(--text);
-  font: 400 12px/1.5 var(--sans);
+  font: 400 12px var(--sans);
+  line-height: 1.3;
   text-decoration: none;
   vertical-align: baseline;
   transition: background-color .15s ease, border-color .15s ease;

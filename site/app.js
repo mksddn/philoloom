@@ -327,7 +327,6 @@ function activateSection(id, focus = false) {
     if (active && focus) tab.focus();
   });
   if (quoteAnchor) {
-    selectView(selected, 'list');
     requestAnimationFrame(() => quoteAnchor.scrollIntoView({block:'start'}));
   }
 }
@@ -365,24 +364,6 @@ if (sectionNav) {
   window.addEventListener('hashchange', () => activateSection(location.hash.slice(1)));
   window.addEventListener('popstate', () => activateSection(location.hash.slice(1)));
 }
-function selectView(section, view, remember = false) {
-  const target = section.querySelector(`[data-view-content="${view}"]`);
-  if (!target) return;
-  section.querySelectorAll('[data-view]').forEach(control => control.setAttribute('aria-pressed', String(control.dataset.view === view)));
-  section.querySelectorAll('[data-view-content]').forEach(content => { content.hidden = content !== target; });
-  if (remember) {
-    try { localStorage.setItem(`philoloom:view:${section.id}`, view); } catch { /* Storage may be disabled. */ }
-  }
-}
-sections.forEach(section => {
-  let saved;
-  try { saved = localStorage.getItem(`philoloom:view:${section.id}`); } catch { /* Default views still work. */ }
-  if (['gallery', 'list', 'table'].includes(saved)) selectView(section, saved);
-});
-if (location.hash.startsWith('#quote-')) activateSection(location.hash.slice(1));
-document.querySelectorAll('.view-controls button').forEach(button => {
-  button.addEventListener('click', () => selectView(button.closest('section'), button.dataset.view, true));
-});
 document.querySelectorAll('.column-sort').forEach(button => {
   button.addEventListener('click', () => {
     const table = button.closest('table');

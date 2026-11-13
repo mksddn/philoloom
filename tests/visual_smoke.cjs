@@ -1,13 +1,24 @@
 /** Desktop and mobile browser smoke checks; no screenshots required. */
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
+const http = require('node:http');
 const { chromium } = require('playwright');
 const base = 'http://127.0.0.1:8765';
 const server = spawn('python3', ['-m', 'http.server', '8765', '--bind', '127.0.0.1', '--directory', 'dist'], { stdio: 'ignore' });
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function waitForServer() {
+  // Node's bundled undici occasionally aborts on a server startup race.
+  // A simple HTTP readiness probe avoids that unrelated test-runner crash.
   for (let i = 0; i < 60; i++) {
-    try { if ((await fetch(base)).ok) return; } catch (_) {}
+    const ready = await new Promise(resolve => {
+      const req = http.get(base, response => {
+        response.resume();
+        resolve(response.statusCode === 200);
+      });
+      req.on('error', () => resolve(false));
+      req.setTimeout(1000, () => { req.destroy(); resolve(false); });
+    });
+    if (ready) return;
     await pause(200);
   }
   throw new Error('Static preview server did not start');

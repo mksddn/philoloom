@@ -419,7 +419,7 @@ for p in pages.values():
         f'<h1{quote_class}>{escape(p["title"])}</h1></header>'
         f'{facts_html}<article>{render(body_text,p)}</article>{connections_html}</div>'
     )
-        address = page_url(p)
+    address = page_url(p)
     destination = OUT / address / 'index.html'
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(shell(p['title'], body, p['group'], canonical_path=address), encoding='utf-8')

@@ -367,13 +367,40 @@ for p in pages.values():
         props = [(k,v) for k,v in row.items() if k != 'Name']
     hidden_meta = {'Конспект', 'Задание', 'Зачтено', 'Моя работа', 'Связанные записи'}
     props = [(k,v) for k,v in props if v.strip() and k not in hidden_meta and not k.startswith('Самостоятельная работа')]
-    # Keep explicit relations including "Связь"; these are meaningful public navigation.
-    table = '<dl class="properties">' + ''.join(f'<dt>{escape(k)}</dt><dd>{property_html(v,p)}</dd>' for k,v in props) + '</dl>' if props else ''
+
+    # Keep concise biographical/bibliographic facts near the heading. Explicit
+    # relationships and backlinks are navigational, so they follow the text.
+    fact_keys = {'Год рождения', 'Год смерти', 'Автор', 'Блок'}
+    facts = [(k, v) for k, v in props if k in fact_keys]
+    relations = [(k, v) for k, v in props if k not in fact_keys]
+    facts_html = (
+        '<section class="entity-facts" aria-label="Краткие сведения"><dl class="entity-facts-list">'
+        + ''.join(f'<div class="entity-fact"><dt>{escape(k)}</dt><dd>{property_html(v,p)}</dd></div>'
+                  for k, v in facts)
+        + '</dl></section>'
+    ) if facts else ''
+    relation_list = (
+        '<dl class="properties entity-relations">'
+        + ''.join(f'<dt>{escape(k)}</dt><dd>{property_html(v,p)}</dd>' for k, v in relations)
+        + '</dl>'
+    ) if relations else ''
+    # Keep all explicit relationships, including "Связь", and all backlinks.
     extra = related_records(p, props)
-    connections_html = f'<section class="entity-links" aria-label="Связи и упоминания">{table}{extra}</section>' if table or extra else ''
+    connections_html = (
+        '<section class="entity-links" aria-label="Связи и упоминания">'
+        '<h2 class="entity-links-title">Связи и упоминания</h2>'
+        f'{relation_list}{extra}</section>'
+    ) if relation_list or extra else ''
+    kind = {'Темы': 'topics', 'Личности': 'people',
+            'История философии': 'history', 'Цитаты': 'quotes'}.get(p['group'], 'other')
     quote_class = ' class="quote-heading"' if p['group'] == 'Цитаты' else ''
-    body = (f'<div class="detail-navigation">{breadcrumbs(p)}{SEARCH_BUTTON}</div>'
-            f'<h1{quote_class}>{escape(p["title"])}</h1>{connections_html}<article>{render(body_text,p)}</article>')
+    body = (
+        f'<div class="detail-navigation">{breadcrumbs(p)}{SEARCH_BUTTON}</div>'
+        f'<div class="entity-detail entity-detail--{kind}">'
+        f'<header class="entity-header"><span class="entity-kicker">{escape(p["group"])}</span>'
+        f'<h1{quote_class}>{escape(p["title"])}</h1></header>'
+        f'{facts_html}<article>{render(body_text,p)}</article>{connections_html}</div>'
+    )
     (OUT / (p['id'] + '.html')).write_text(shell(p['title'],body,p['group'],canonical_path=p['id'] + '.html'),encoding='utf-8')
 
 # Preserve the exact published quotation and resources from the untouched

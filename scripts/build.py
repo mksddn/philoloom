@@ -252,7 +252,7 @@ def shell(title, body, group='', hero_quote='', canonical_path=''):
 <body>
 <a class="skip" href="#main">К содержимому</a>
 <main id="main" class="{'home-page' if not group else 'detail-page'}">{cover + '<div class="site-container home-inner">' + body + '</div>' if not group else body}</main>
-<footer><div class="site-container">philoloom · Философский справочник · Автор: <a href="https://mksddn.ru/" target="_blank" rel="author noopener noreferrer">Макс Дудин</a></div></footer>
+<footer><div class="site-container"><span class="footer-brand"><span class="brand-accessible-name">philoloom</span><span class="footer-wordmark" aria-hidden="true"></span></span><span class="footer-description">Философский справочник · Автор: <a href="https://mksddn.ru/" target="_blank" rel="author noopener noreferrer">Макс Дудин</a></span></div></footer>
 <dialog id="page-panel" aria-label="Подробности страницы">
 <div class="panel-toolbar">
 <button id="panel-back" aria-label="Назад в панели">←</button>

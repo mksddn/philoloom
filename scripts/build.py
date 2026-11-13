@@ -5,6 +5,7 @@ import html
 import json
 import re
 import shutil
+from xml.etree import ElementTree as ET
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 from html.parser import HTMLParser
@@ -13,6 +14,7 @@ import markdown
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'notion'
 OUT = ROOT / 'dist'
+SITE_URL = 'https://mksddn.github.io/philoloom/'
 GROUPS = [('Темы', 'Темы'), ('История философии', 'История философии'),
           ('Цитаты', 'Цитаты'), ('Личности', 'Личности')]
 # Retain exported homework metadata for direct article URLs, but no public section.
@@ -218,7 +220,7 @@ SEARCH_BUTTON = ('<button id="search-open" class="museum-search" type="button" '
 # Their local WebP files are referenced through theme-aware CSS.
 
 
-def shell(title, body, group='', hero_quote=''):
+def shell(title, body, group='', hero_quote='', canonical_path='index.html'):
     # Project identity belongs inside the home page's main heading.
     cover = (f'<div class="museum-stage"><div class="hero-cover">'
              f'<div class="hero-artwork" role="img" '
@@ -239,6 +241,7 @@ def shell(title, body, group='', hero_quote=''):
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0f0f0f">
 <title>{escape(title)} · philoloom</title>
+<link rel="canonical" href="{escape(SITE_URL + canonical_path, quote=True)}">
 <meta name="description" content="{escape("Исследуйте философские идеи, мыслителей и связи между ними." if not group else title + " — история философии, направления и мыслители в справочнике philoloom.", quote=True)}">
 <script>const previewTheme = new URLSearchParams(location.search).get('theme'); document.documentElement.dataset.theme = ['light', 'dark'].includes(previewTheme) ? previewTheme : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -371,7 +374,7 @@ for p in pages.values():
     quote_class = ' class="quote-heading"' if p['group'] == 'Цитаты' else ''
     body = (f'<div class="detail-navigation">{breadcrumbs(p)}{SEARCH_BUTTON}</div>'
             f'<h1{quote_class}>{escape(p["title"])}</h1>{connections_html}<article>{render(body_text,p)}</article>')
-    (OUT / (p['id'] + '.html')).write_text(shell(p['title'],body,p['group']),encoding='utf-8')
+    (OUT / (p['id'] + '.html')).write_text(shell(p['title'],body,p['group'],canonical_path=p['id'] + '.html'),encoding='utf-8')
 
 # Preserve the exact published quotation and resources from the untouched
 # Notion introduction; none of these are newly authored philosophical claims.
@@ -532,4 +535,14 @@ for section_number, (group,label) in enumerate(GROUPS, start=1):
 (OUT / 'index.html').write_text(shell('Философия',body,hero_quote=quote_html),encoding='utf-8')
 search = [dict(title=p['title'],group=p['group'],url=('index.html' if p==home else p['id']+'.html'),text=re.sub(r'^Конспект:.*(?:\n|$)', '', p['text'], flags=re.MULTILINE)) for p in pages.values() if p['group'] != 'Самостоятельная работа']
 (OUT / 'search.json').write_text(json.dumps(search,ensure_ascii=False),encoding='utf-8')
+# List only canonical URLs, never query-string theme previews.
+sitemap = ET.Element('urlset', xmlns='http://www.sitemaps.org/schemas/sitemap/0.9')
+for path in ['index.html'] + sorted(p['id'] + '.html' for p in pages.values() if p != home):
+    entry = ET.SubElement(sitemap, 'url')
+    ET.SubElement(entry, 'loc').text = SITE_URL + path
+ET.ElementTree(sitemap).write(OUT / 'sitemap.xml', encoding='utf-8', xml_declaration=True)
+(OUT / 'robots.txt').write_text(
+    'User-agent: *\nAllow: /\nSitemap: ' + SITE_URL + 'sitemap.xml\n',
+    encoding='utf-8'
+)
 print(f'Built {len(pages)} pages; {len(assets)} assets; '+', '.join(f'{g}: {len(ordered[g])}' for g,_ in GROUPS))

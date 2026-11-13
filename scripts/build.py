@@ -815,7 +815,7 @@ body += ('<section id="more" class="reference-section" aria-labelledby="heading-
 search = [
     dict(title=p['title'], group=p['group'], url=page_url(p),
          text=re.sub(r'^Конспект:.*(?:\n|$)', '', p['text'], flags=re.MULTILINE))
-    for p in pages.values() if p == home or p['id'] in public_ids or p['group'] == 'Цитаты' and p['id'] in rows_by_id
+    for p in pages.values() if p['id'] in public_ids or (p['group'] == 'Цитаты' and p['id'] in rows_by_id)
 ]
 (OUT / 'search.json').write_text(json.dumps(search, ensure_ascii=False), encoding='utf-8')
 

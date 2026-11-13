@@ -340,7 +340,7 @@ function arrangeMasonry(collection) {
 
   // Read dimensions as one batch before applying any positions to avoid
   // a forced relayout for every card (especially cards with many relations).
-  const heights = cards.map(card => card.offsetHeight);
+  const heights = cards.map(card => card.getBoundingClientRect().height);
   const bottoms = Array(columns).fill(0);
   cards.forEach((card, index) => {
     const y = Math.min(...bottoms);

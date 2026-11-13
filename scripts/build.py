@@ -217,7 +217,7 @@ for group,_ in SOURCE_GROUPS:
         ordered[group].append(p)
         rows_by_id[p['id']] = row
 
-public_ids = {page['id'] for group, _ in GROUPS for page in ordered[group]}
+public_ids = {page['id'] for group, _ in GROUPS if group != 'Цитаты' for page in ordered[group]}
 if set(SLUGS) != public_ids:
     raise ValueError('Public slug registry does not match the current published IDs. Update content/slugs.json.')
 if len(set(SLUGS.values())) != len(SLUGS) or any(

@@ -226,7 +226,8 @@ if len(set(SLUGS.values())) != len(SLUGS) or any(
 ):
     raise ValueError('Duplicate or invalid public slugs.')
 
-nav = ''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}">{label}</a>' for g,label in GROUPS)
+nav = (''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}">{label}</a>' for g,label in GROUPS)
+       + '<a href="index.html#more">Ещё</a>')
 
 # The visual identity is a presentation layer; content remains sourced from Notion.
 SEARCH_BUTTON = ('<button id="search-open" class="museum-search" type="button" '
@@ -650,9 +651,7 @@ resources = (
     '<span class="resource-tile-arrow" aria-hidden="true">↗</span></a>'
     '</div>'
 )
-body = (f'<div class="home-source-strip" aria-label="Дополнительные материалы">'
-        f'{resources}</div>'
-        f'<div class="catalog-toolbar"><nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>{SEARCH_BUTTON}</div>')
+body = f'<div class="catalog-toolbar"><nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>{SEARCH_BUTTON}</div>'
 
 class MediaLinks(HTMLParser):
     def __init__(self, text):
@@ -693,71 +692,101 @@ def records(group):
     return sorted(ordered[group], key=lambda page: page['title'].casefold()) if group == 'Темы' else ordered[group]
 
 
-def gallery(group):
-    if group == 'Цитаты':
-        return '<div class="quote-gallery">' + ''.join(quote_figure(page) for page in records(group)) + '</div>'
-    markup = '<div class="cards">'
-    for page in records(group):
-        description = record_meta(group, rows_by_id[page['id']])
-        image = page_image(page) if group != 'Темы' else ''
-        cover = (
-            image_html(image, 'card-cover', '(max-width: 650px) 50vw, 320px') if image else
-            '<span class="card-etching" aria-hidden="true"></span>' if group == 'Темы' else
-            f'<span class="person-card-placeholder" aria-hidden="true">{escape(page["title"][:1])}</span>'
-            if group == 'Личности' else ''
-        )
-        markup += (f'<a class="card" href="{page_url(page)}">{cover}<span>{escape(page["title"])}</span>'
-                   + (f'<small>{escape(description)}</small>' if description else '') + '</a>')
-    return markup + '</div>'
+# Each entity has one purposeful presentation. Relationships are taken directly
+# from the original CSV: no previews, truncation, or artificial maximum counts.
+CARD_RELATION_COLUMNS = {
+    'Темы': ('История философии', 'Личности', 'Связь'),
+    'История философии': ('Темы', 'Личности'),
+    'Личности': ('Темы', 'История философии'),
+}
 
 
-def record_list(group):
-    markup = '<ul class="entry-list' + (' quotes-list' if group == 'Цитаты' else '') + '">'
-    for page in records(group):
-        if group == 'Цитаты':
-            markup += f'<li id="quote-{page["id"]}" class="quote-row">{quote_figure(page)}</li>'
-            continue
-        description = record_meta(group, rows_by_id[page['id']])
-        markup += (f'<li><a class="entry-link" href="{page_url(page)}">'
-                   f'<span class="entry-title">{escape(page["title"])}</span>'
-                   + (f'<span class="entry-meta">{escape(description)}</span>' if description else '')
-                   + '</a></li>')
-    return markup + '</ul>'
+def card_relationships(page):
+    row = rows_by_id[page['id']]
+    items = []
+    for key in CARD_RELATION_COLUMNS[page['group']]:
+        raw = row.get(key, '').strip()
+        if raw:
+            items.append(
+                f'<div class="entity-card-connection">'
+                f'<dt>{escape(key)}</dt><dd>{property_html(raw, page)}</dd></div>'
+            )
+    return ('<dl class="entity-card-connections">' + ''.join(items) + '</dl>') if items else ''
 
 
-def database_table(group):
-    columns = (['Name', 'Темы', 'Личности'] if group == 'История философии' else
-               ['Name', 'Год рождения', 'Год смерти', 'Темы', 'История философии'] if group == 'Личности' else
-               ['Name', 'Автор'] if group == 'Цитаты' else
-               ['Name', 'История философии', 'Личности', 'Связь'] if group == 'Темы' else
-               ['Name', 'Блок', 'Зачтено'])
-    columns = [column for column in columns if column == 'Name' or any(row.get(column, '').strip() for row in databases[group])]
-    markup = '<div class="table-scroll" tabindex="0" role="region" aria-label="' + escape(group) + '"><table class="database"><thead><tr>'
-    markup += ''.join(f'<th scope="col"><button class="column-sort" type="button" data-column="{i}">{escape("Название" if column == "Name" else column)}</button></th>' for i, column in enumerate(columns)) + '</tr></thead><tbody>'
-    for page in records(group):
-        row = rows_by_id[page['id']]
-        title = (escape(page['title']) if group == 'Цитаты'
-                 else f'<a href="{page_url(page)}">{escape(page["title"])}</a>')
-        markup += '<tr><td>' + title + '</td>' + ''.join(
-            '<td>' + property_html(row.get(column, ''), page) + '</td>' for column in columns[1:]
-        ) + '</tr>'
-    return markup + '</tbody></table></div>'
+def entity_card(page):
+    group = page['group']
+    description = record_meta(group, rows_by_id[page['id']])
+    media = ''
+    if group == 'Личности':
+        picture = page_image(page)
+        media = (image_html(picture, 'card-cover', '(max-width: 650px) 50vw, 320px',
+                            alt=f'Портрет: {page["title"]}') if picture else
+                 '<span class="person-card-placeholder" aria-hidden="true"></span>')
+        media = f'<span class="entity-card-media">{media}</span>'
+    meta = f'<span class="entity-card-meta">{escape(description)}</span>' if description else ''
+    kind = {'Темы': 'topics', 'История философии': 'history', 'Личности': 'people'}[group]
+    return (f'<article class="entity-card entity-card--{kind}">'
+            f'<a class="entity-card-main" href="{page_url(page)}">{media}'
+            f'<span class="entity-card-title">{escape(page["title"])}</span>{meta}</a>'
+            + card_relationships(page) + '</article>')
 
 
-DEFAULT_VIEWS = {'Темы': 'gallery', 'История философии': 'table', 'Цитаты': 'list', 'Личности': 'table'}
-for section_number, (group, label) in enumerate(GROUPS, start=1):
+def cards_collection(group):
+    return '<div class="entity-collection">' + ''.join(entity_card(p) for p in records(group)) + '</div>'
+
+
+# The published history entries overlap in time: Russian philosophy covers
+# several eras, so it is presented as a cross-period tradition, not assigned
+# an arbitrary date or an invented place on a strict chronology.
+HISTORY_SEQUENCE = (
+    'antichnaya-filosofiya',
+    'srednevekovaya-filosofiya',
+    'filosofiya-novogo-vremeni-epoha-vozrozhdeniya',
+    'nemetskii-idealizm',
+    'filosofiya-xix-veka',
+    'pervaya-polovina-xx-veka',
+    'vtoraya-polovina-hh-veka',
+    'filosofiya-xxi-veka',
+)
+
+
+def history_collection():
+    entries = records('История философии')
+    def slug(page):
+        return page_url(page).rstrip('/').rsplit('/', 1)[-1]
+    main = [p for p in entries if slug(p) in HISTORY_SEQUENCE]
+    main.sort(key=lambda p: HISTORY_SEQUENCE.index(slug(p)))
+    other = [p for p in entries if slug(p) not in HISTORY_SEQUENCE]
+    content = ('<div class="history-timeline" aria-label="Исторические периоды">'
+               + ''.join(f'<div class="history-timeline-step">{entity_card(p)}</div>' for p in main)
+               + '</div>')
+    if other:
+        content += ('<div class="history-related"><h3>Сквозные традиции и разделы</h3>'
+                    '<div class="entity-collection">' + ''.join(entity_card(p) for p in other)
+                    + '</div></div>')
+    return content
+
+
+def quotes_collection():
+    return ('<div class="quote-catalog">' +
+            ''.join(quote_figure(p, anchored=True) for p in records('Цитаты')) +
+            '</div>')
+
+
+for group, label in GROUPS:
     dbid = next(i for i, name in db_ids.items() if name == group)
     body += (f'<section id="{dbid}" class="reference-section" aria-labelledby="heading-{dbid}">'
              f'<div class="section-heading"><h2 id="heading-{dbid}">{escape(label)}</h2></div>')
-    default = DEFAULT_VIEWS[group]
-    body += '<div class="view-controls" role="group" aria-label="Вид раздела">' + ''.join(
-        f'<button type="button" data-view="{view}" aria-pressed="{str(view == default).lower()}">{view_label}</button>'
-        for view, view_label in [('gallery', 'Галерея'), ('list', 'Список'), ('table', 'Таблица')]
-    ) + '</div>'
-    for view, content in [('gallery', gallery(group)), ('list', record_list(group)), ('table', database_table(group))]:
-        hidden = '' if view == default else ' hidden'
-        body += f'<div data-view-content="{view}"{hidden}>{content}</div>'
+    body += (quotes_collection() if group == 'Цитаты' else
+             history_collection() if group == 'История философии' else
+             cards_collection(group))
     body += '</section>'
+
+body += ('<section id="more" class="reference-section" aria-labelledby="heading-more">'
+         '<div class="section-heading"><h2 id="heading-more">Ещё</h2></div>'
+         + resources + '</section>')
+
 (OUT / 'index.html').write_text(shell('Философия', body, hero_quote=quote_html), encoding='utf-8')
 
 search = [

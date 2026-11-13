@@ -688,8 +688,24 @@ def record_meta(group, row):
     return re.sub(r' \(%.*$', '', row.get('Автор', '') or row.get('Блок', ''))
 
 
+def death_sort_key(page):
+    """Sort philosopher profiles by death, BCE first; undated people go last."""
+    value = rows_by_id[page['id']].get('Год смерти', '').strip()
+    match = re.search(r'-?\d{1,4}', value)
+    if not match:
+        return (1, 0, page['title'].casefold())
+    year = int(match.group())
+    if 'до н' in value.casefold() or 'bce' in value.casefold():
+        year = -abs(year)
+    return (0, year, page['title'].casefold())
+
+
 def records(group):
-    return sorted(ordered[group], key=lambda page: page['title'].casefold()) if group == 'Темы' else ordered[group]
+    if group == 'Темы':
+        return sorted(ordered[group], key=lambda page: page['title'].casefold())
+    if group == 'Личности':
+        return sorted(ordered[group], key=death_sort_key)
+    return ordered[group]
 
 
 # Each entity has one purposeful presentation. Relationships are taken directly
@@ -739,16 +755,19 @@ def cards_collection(group):
 # The published history entries overlap in time: Russian philosophy covers
 # several eras, so it is presented as a cross-period tradition, not assigned
 # an arbitrary date or an invented place on a strict chronology.
-HISTORY_SEQUENCE = (
-    'antichnaya-filosofiya',
-    'srednevekovaya-filosofiya',
-    'filosofiya-novogo-vremeni-epoha-vozrozhdeniya',
-    'nemetskii-idealizm',
-    'filosofiya-xix-veka',
-    'pervaya-polovina-xx-veka',
-    'vtoraya-polovina-hh-veka',
-    'filosofiya-xxi-veka',
-)
+# Approximate period boundaries intentionally overlap: historical schools and
+# epochs are not mutually exclusive. These are navigation aids, not source facts.
+HISTORY_PERIODS = {
+    'antichnaya-filosofiya': 'ок. VI в. до н. э. — V в. н. э.',
+    'srednevekovaya-filosofiya': 'ок. V–XV вв.',
+    'filosofiya-novogo-vremeni-epoha-vozrozhdeniya': 'ок. XV–XVIII вв.',
+    'nemetskii-idealizm': 'ок. 1780–1840 гг.',
+    'filosofiya-xix-veka': 'XIX век (1801–1900)',
+    'pervaya-polovina-xx-veka': '1901–1950 гг.',
+    'vtoraya-polovina-hh-veka': '1951–2000 гг.',
+    'filosofiya-xxi-veka': 'с 2001 года',
+}
+HISTORY_SEQUENCE = tuple(HISTORY_PERIODS)
 
 
 def history_collection():
@@ -759,8 +778,12 @@ def history_collection():
     main.sort(key=lambda p: HISTORY_SEQUENCE.index(slug(p)))
     other = [p for p in entries if slug(p) not in HISTORY_SEQUENCE]
     content = ('<div class="history-timeline" aria-label="Исторические периоды">'
-               + ''.join(f'<div class="history-timeline-step">{entity_card(p)}</div>' for p in main)
-               + '</div>')
+               + ''.join(
+                   f'<div class="history-timeline-step">'
+                   f'<span class="history-timeline-period" title="Ориентировочные даты">'
+                   f'{escape(HISTORY_PERIODS[slug(p)])}</span>'
+                   f'{entity_card(p)}</div>' for p in main
+               ) + '</div>')
     if other:
         content += ('<div class="history-related"><h3>Сквозные традиции и разделы</h3>'
                     '<div class="entity-collection">' + ''.join(entity_card(p) for p in other)

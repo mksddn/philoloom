@@ -2570,9 +2570,15 @@ footer .site-container {
 }
 @media (max-width: 1000px) {
   .entity-collection { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .entity-collection:has(> .entity-card--people) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 @media (max-width: 700px) {
   .entity-collection { grid-template-columns: minmax(0, 1fr); }
+  .entity-collection:has(> .entity-card--people) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .quote-catalog { columns: 1; }
   .history-timeline-step .entity-card { display: flex; }
   .history-timeline-step .entity-card-connections {
@@ -2593,6 +2599,30 @@ footer .site-container {
   .entity-card-title { font-size: 23px; }
   .history-timeline-step .entity-card-main { padding: 18px; }
   .history-timeline-step .entity-card-connections { margin: 0 18px 18px; }
+}
+/* Compact portraits and full relation lists on narrow two-column phones. */
+@media (max-width: 700px) {
+  .entity-card--people .entity-card-main { padding: 13px 12px 12px; }
+  .entity-card--people .entity-card-title { font-size: 19px; line-height: 1.25; }
+  .entity-card--people .entity-card-meta { font-size: 11px; }
+  .entity-card--people .entity-card-media {
+    width: calc(100% + 24px);
+    margin: -13px -12px 9px;
+  }
+  .entity-card--people .card-cover,
+  .entity-card--people .person-card-placeholder { height: 125px; }
+  .entity-card--people .entity-card-connections {
+    margin: 0 11px 12px;
+    padding-top: 11px;
+    gap: 11px;
+  }
+  .entity-card--people .entity-card-connection dd { font-size: 12px; }
+  .entity-card--people .entity-card-connections .relation {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    padding: 3px 6px;
+    font-size: 11px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .entity-card,

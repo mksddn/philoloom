@@ -166,6 +166,16 @@ async function assertThemeArtwork(page, theme) {
     await home.waitForFunction(() => !document.querySelector('#search-dialog').open);
     await home.locator('.section-nav a').last().click();
     assert.ok(await home.locator('#more').isVisible());
+    // A short tab must keep the footer flush with the bottom of a tall screen.
+    await home.setViewportSize({ width: 1440, height: 1800 });
+    await home.evaluate(() => window.scrollTo(0, 0));
+    const footerPosition = await home.evaluate(() => ({
+      bottom: document.querySelector('footer').getBoundingClientRect().bottom,
+      viewport: window.innerHeight,
+      pageHeight: document.documentElement.scrollHeight
+    }));
+    assert.ok(Math.abs(footerPosition.bottom - footerPosition.viewport) <= 2,
+      'Footer should rest at bottom of tall viewport: ' + JSON.stringify(footerPosition));
     await home.locator('[data-resource-open="watch"]').click();
     assert.ok(await home.locator('#resource-dialog').evaluate(element => element.open));
     await home.locator('#resource-close').click();
@@ -179,6 +189,16 @@ async function assertThemeArtwork(page, theme) {
     assert.equal(await home.locator('.view-controls').count(), 0);
     await home.locator('.section-nav a').nth(1).click();
     assert.ok(await home.locator('.history-timeline').isVisible());
+    assert.equal(await home.locator('.history-timeline-period').count(), 8);
+    const extraHistoryCards = home.locator('.history-related .entity-collection > .entity-card');
+    if (await extraHistoryCards.count() === 1) {
+      const dimensions = await extraHistoryCards.first().evaluate(card => ({
+        cardWidth: card.getBoundingClientRect().width,
+        sectionWidth: card.parentElement.getBoundingClientRect().width
+      }));
+      assert.ok(Math.abs(dimensions.cardWidth - dimensions.sectionWidth) <= 2,
+        'Single cross-era card must occupy the full width: ' + JSON.stringify(dimensions));
+    }
     await home.locator('.section-nav a').nth(2).click();
     assert.ok(await home.locator('.quote-catalog').isVisible());
     await home.locator('.section-nav a').nth(3).click();
@@ -226,6 +246,11 @@ async function assertThemeArtwork(page, theme) {
     assert.equal(await small.locator('html').getAttribute('data-theme'), 'dark');
     assert.equal(await small.locator('.hero-brand-watermark').evaluate(el => getComputedStyle(el).opacity), '0.1');
     await assertNoOverflow(small, '390px home');
+    await small.locator('.section-nav a').nth(1).click();
+    await assertNoOverflow(small, '390px history');
+    await small.locator('.section-nav a').last().click();
+    await assertNoOverflow(small, '390px resources');
+    await small.locator('.section-nav a').first().click();
     assert.ok(await small.locator('.hero-cover').evaluate(el => el.getBoundingClientRect().height <= 620));
     assert.ok(await small.locator('.catalog-toolbar #search-open').isVisible());
     assert.equal(await small.locator('.section-nav').count(), 1);

@@ -190,6 +190,31 @@ async function assertThemeArtwork(page, theme) {
     await home.locator('#panel-close').click();
     assert.deepEqual(errors, [], 'No uncaught JavaScript errors on desktop');
     await desktop.close();
+    // A 4K desktop must not stretch the original 1440px artwork to 3840px.
+    // Verify the capped, blended composition for both approved themes.
+    const ultra = await browser.newContext({ viewport: { width: 3840, height: 2160 }, colorScheme: 'dark' });
+    const ultraPage = await ultra.newPage();
+    await ultraPage.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
+    for (const theme of ['dark', 'light']) {
+      if (theme === 'light') {
+        await ultraPage.emulateMedia({ colorScheme: 'light' });
+        await ultraPage.waitForFunction(() => document.documentElement.dataset.theme === 'light');
+      }
+      const art = await ultraPage.locator('.hero-artwork').evaluate(element => {
+        const css = getComputedStyle(element);
+        return { backgroundImage: css.backgroundImage, backgroundSize: css.backgroundSize,
+          backgroundPosition: css.backgroundPosition };
+      });
+      assert.ok(art.backgroundImage.includes('descartes-hero-' + theme + '.webp'),
+        '4K background must retain approved artwork: ' + JSON.stringify(art));
+      assert.ok(art.backgroundImage.includes('linear-gradient'),
+        '4K portrait must blend into the hero surface: ' + JSON.stringify(art));
+      assert.ok(art.backgroundSize.includes('1900px'),
+        '4K source must not be stretched to viewport width: ' + JSON.stringify(art));
+      assert.ok(art.backgroundPosition.includes('right'),
+        '4K portrait must remain right-aligned: ' + JSON.stringify(art));
+    }
+    await ultra.close();
     const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, deviceScaleFactor: 1, colorScheme: 'dark' });
     const small = await mobile.newPage();
     const mobileErrors = [];
@@ -250,7 +275,7 @@ async function assertThemeArtwork(page, theme) {
     await assertNoOverflow(narrowPage, '320px article');
 
     await narrow.close();
-    console.log('Desktop 1440px, mobile 390px and narrow mobile 320px checks passed.');
+    console.log('Desktop 1440px, ultrawide 3840px (both themes), mobile 390px and narrow mobile 320px checks passed.');
   } finally {
     await browser?.close();
     server.kill('SIGTERM');

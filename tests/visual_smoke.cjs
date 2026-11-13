@@ -211,7 +211,7 @@ async function assertThemeArtwork(page, theme) {
         '4K portrait must blend into the hero surface: ' + JSON.stringify(art));
       assert.ok(art.backgroundSize.includes('1900px'),
         '4K source must not be stretched to viewport width: ' + JSON.stringify(art));
-      assert.ok(art.backgroundPosition.includes('right'),
+      assert.ok(/right|100%/.test(art.backgroundPosition),
         '4K portrait must remain right-aligned: ' + JSON.stringify(art));
     }
     await ultra.close();

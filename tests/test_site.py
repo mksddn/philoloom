@@ -105,11 +105,25 @@ class SiteTests(unittest.TestCase):
         self.assertNotIn('<dt>Задание</dt>', page)
         self.assertNotIn('<dt>Зачтено</dt>', page)
         self.assertNotIn('<dt>Моя работа</dt>', page)
-        self.assertLess(page.index('class="entity-links"'), page.index('<article>'))
+        self.assertLess(page.index('<article>'), page.index('class="entity-links"'))
+        self.assertIn('class="entity-detail entity-detail--topics"', page)
+        self.assertIn('class="entity-kicker">Темы</span>', page)
+        self.assertIn('class="entity-links-title">Связи и упоминания</h2>', page)
         self.assertIn('id="search-open"', page)
         for item in entries:
             record = (OUT / item['url']).read_text()
             self.assertNotIn('<dt>Моя работа</dt>', record, item['title'])
+
+    def test_person_details_separate_facts_content_and_relations(self):
+        descartes = (OUT / 'c4c741fb50874c87a5d2cb4d4def5e50.html').read_text()
+        self.assertIn('class="entity-detail entity-detail--people"', descartes)
+        self.assertIn('class="entity-facts-list"', descartes)
+        self.assertIn('<dt>Год рождения</dt><dd>1596</dd>', descartes)
+        self.assertIn('<dt>Год смерти</dt><dd>1650</dd>', descartes)
+        self.assertLess(descartes.index('class="entity-facts"'),
+                        descartes.index('<article>'))
+        self.assertLess(descartes.index('<article>'),
+                        descartes.index('class="entity-links"'))
 
     def test_compact_headerless_shell_and_system_theme(self):
         home = (OUT / 'index.html').read_text(encoding='utf-8')

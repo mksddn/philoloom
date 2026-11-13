@@ -219,7 +219,13 @@ async function hidePanel() {
   panel.classList.remove('closing');
   document.documentElement.classList.remove('panel-open');
   document.title = baseTitle;
-  panelOpener?.focus({preventScroll:true});
+  // Mobile Safari can retain the dialog's restored focus on the entire tab panel.
+  // Keep keyboard focus restoration on desktop, but avoid touch-only focus rings.
+  if (matchMedia('(hover: none) and (pointer: coarse)').matches) {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  } else if (panelOpener?.isConnected) {
+    panelOpener.focus({preventScroll:true});
+  }
 }
 document.querySelector('#panel-close').addEventListener('click', closePanel);
 panelBack.addEventListener('click', () => history.back());
@@ -400,8 +406,7 @@ if (sectionNav) {
     const section = document.getElementById(id);
     section.setAttribute('role', 'tabpanel');
     section.setAttribute('aria-labelledby', tab.id);
-    // Panels contain keyboard-focusable cards; do not add a giant focus ring to the panel.
-    section.tabIndex = -1;
+    // The tab panel is not a keyboard stop; its links and cards remain focusable.
     tab.addEventListener('click', event => {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
       event.preventDefault();

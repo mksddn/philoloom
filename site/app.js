@@ -160,7 +160,8 @@ async function displayPanel(path) {
     if (!main?.querySelector('h1')) throw new Error('Invalid page');
     const breadcrumbsNode = main.querySelector('.back');
     panelPathBar.replaceChildren(...(breadcrumbsNode ? [breadcrumbsNode.cloneNode(true)] : []));
-    breadcrumbsNode?.remove();
+    // The panel has its own navigation. Do not copy a second, inert search button.
+    main.querySelector('.detail-navigation')?.remove();
     panelContent.replaceChildren(...Array.from(main.childNodes, node => document.importNode(node, true)));
     const heading = panelContent.querySelector('h1');
     heading.id = 'panel-title';

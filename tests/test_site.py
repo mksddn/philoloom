@@ -43,7 +43,10 @@ class SiteTests(unittest.TestCase):
 
     def test_all_pages_and_local_links_exist(self):
         entries = json.loads((OUT / 'search.json').read_text())
-        self.assertEqual(len(entries), len(self.slugs) + 12)  # homepage + 11 quotes
+        self.assertEqual(len(entries), len(self.slugs) + 11)  # public pages + 11 inline quotes
+        self.assertFalse(any(entry['url'] == 'index.html' for entry in entries),
+                         'Homepage must not match every entity search query')
+        self.assertEqual(sum(entry['group'] == 'Цитаты' for entry in entries), 11)
         self.assertFalse(any(entry['group'] == 'Самостоятельная работа' for entry in entries))
         for entry in entries:
             address = entry['url'].split('#', 1)[0]

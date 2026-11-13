@@ -334,7 +334,8 @@ if (sectionNav) {
     const section = document.getElementById(id);
     section.setAttribute('role', 'tabpanel');
     section.setAttribute('aria-labelledby', tab.id);
-    section.tabIndex = 0;
+    // Panels contain keyboard-focusable cards; do not add a giant focus ring to the panel.
+    section.tabIndex = -1;
     tab.addEventListener('click', event => {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
       event.preventDefault();

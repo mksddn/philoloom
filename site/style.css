@@ -1809,9 +1809,13 @@ footer .site-container {
 .footer-tree {
   display: block;
   flex: 0 0 auto;
-  width: 36px;
+  width: 52px;
   aspect-ratio: 875 / 835;
   background-color: var(--text);
   -webkit-mask: url("ui/philoloom-tree-hero.svg") center / contain no-repeat;
   mask: url("ui/philoloom-tree-hero.svg") center / contain no-repeat;
 }
+
+/* Enlarge the emblem without changing the footer's vertical rhythm. */
+.footer-brand { position: relative; }
+.footer-tree { transform: scale(1.2); transform-origin: center; }

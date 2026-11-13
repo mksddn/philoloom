@@ -2586,3 +2586,64 @@ footer .site-container {
   }
   .entity-card .card-cover { filter: none; }
 }
+
+
+/* Refine the entity catalog: readable approximate periods and a full-width
+   cross-period card when that section contains a single entity. */
+.history-timeline-period {
+  display: block;
+  width: fit-content;
+  margin: 0 0 10px 0;
+  color: var(--muted);
+  font: 600 12px/1.5 var(--sans);
+  letter-spacing: .025em;
+  font-variant-numeric: tabular-nums;
+}
+.history-timeline-step::before { top: 4px; }
+.history-related .entity-collection:has(> .entity-card:only-child) {
+  columns: 1;
+}
+.history-related .entity-collection:has(> .entity-card:only-child)
+  > .entity-card:has(.entity-card-connections) {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  align-items: start;
+}
+.history-related .entity-collection:has(> .entity-card:only-child)
+  > .entity-card:has(.entity-card-connections) .entity-card-connections {
+  margin: 0;
+  padding: 22px;
+  border-top: none;
+  border-left: 1px solid var(--line);
+}
+
+/* A short active tab (notably "Ещё") should not strand the footer
+   in the middle of a tall viewport. Content-heavy pages scroll naturally. */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+body > main {
+  flex: 1 0 auto;
+  width: 100%;
+}
+body > footer { flex-shrink: 0; }
+
+@media (max-width: 700px) {
+  .history-related .entity-collection:has(> .entity-card:only-child)
+    > .entity-card:has(.entity-card-connections) {
+    display: flex;
+  }
+  .history-related .entity-collection:has(> .entity-card:only-child)
+    > .entity-card:has(.entity-card-connections) .entity-card-connections {
+    margin: 0 18px 18px;
+    padding: 15px 0 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+}
+@media print {
+  body { display: block; min-height: 0; }
+}

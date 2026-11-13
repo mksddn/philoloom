@@ -203,6 +203,14 @@ async function assertThemeArtwork(page, theme) {
     assert.ok(await home.locator('.quote-catalog').isVisible());
     await home.locator('.section-nav a').nth(3).click();
     assert.ok(await home.locator('.entity-card--people').first().isVisible());
+    const peopleColumns = await home.locator('.entity-card--people').first().evaluate(card =>
+      getComputedStyle(card.parentElement).gridTemplateColumns.trim().split(/\s+/).length);
+    assert.equal(peopleColumns, 5, 'Desktop personalities must display five cards per row');
+    const relationLineHeight = await home.locator('.entity-card--people .relation').first().evaluate(link =>
+      ({ fontSize: parseFloat(getComputedStyle(link).fontSize),
+         lineHeight: parseFloat(getComputedStyle(link).lineHeight) }));
+    assert.ok(Math.abs(relationLineHeight.lineHeight / relationLineHeight.fontSize - 1.3) < 0.01,
+      'Entity relation links should use 1.3 line-height: ' + JSON.stringify(relationLineHeight));
     // Semantic HTML order is not enough: the visible chronology must also run
     // from left to right, then down to the next row (never down CSS columns).
     const peopleVisualOrder = await home.locator('.entity-card--people').evaluateAll(cards =>

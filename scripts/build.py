@@ -220,7 +220,7 @@ SEARCH_BUTTON = ('<button id="search-open" class="museum-search" type="button" '
 # Their local WebP files are referenced through theme-aware CSS.
 
 
-def shell(title, body, group='', hero_quote='', canonical_path='index.html'):
+def shell(title, body, group='', hero_quote='', canonical_path=''):
     # Project identity belongs inside the home page's main heading.
     cover = (f'<div class="museum-stage"><div class="hero-cover">'
              f'<div class="hero-artwork" role="img" '
@@ -537,7 +537,7 @@ search = [dict(title=p['title'],group=p['group'],url=('index.html' if p==home el
 (OUT / 'search.json').write_text(json.dumps(search,ensure_ascii=False),encoding='utf-8')
 # List only canonical URLs, never query-string theme previews.
 sitemap = ET.Element('urlset', xmlns='http://www.sitemaps.org/schemas/sitemap/0.9')
-for path in ['index.html'] + sorted(p['id'] + '.html' for p in pages.values() if p != home):
+for path in [''] + sorted(p['id'] + '.html' for p in pages.values() if p != home):
     entry = ET.SubElement(sitemap, 'url')
     ET.SubElement(entry, 'loc').text = SITE_URL + path
 ET.ElementTree(sitemap).write(OUT / 'sitemap.xml', encoding='utf-8', xml_declaration=True)

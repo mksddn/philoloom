@@ -33,6 +33,14 @@ for path in sorted(CONTENT.rglob('*.md')):
     pages[match[1]] = dict(id=match[1], path=path, title=title, text=text,
                          group=path.parent.name if path.parent != CONTENT else '')
 home = next(p for p in pages.values() if not p['group'])
+# IDs remain the source of truth; the checked-in map pins stable public URLs.
+SLUGS = json.loads((ROOT / 'content' / 'slugs.json').read_text(encoding='utf-8'))
+
+def page_url(page):
+    if page['id'] == home['id']:
+        return 'index.html'
+    return SLUGS.get(page['id'], '#')
+
 databases = {}
 for path in CONTENT.rglob('*_all.csv'):
     name = re.sub(r' [a-f0-9]{32}_all$', '', path.stem)
@@ -97,7 +105,7 @@ def resolve(url, page):
     if match:
         pid = match[1]
         if pid in pages:
-            return 'index.html' if pid == home['id'] else pid + '.html'
+            return page_url(pages[pid])
         if pid in db_ids:
             return 'index.html#' + pid
     candidate = (page['path'].parent / decoded).resolve()
@@ -206,6 +214,15 @@ for group,_ in SOURCE_GROUPS:
         ordered[group].append(p)
         rows_by_id[p['id']] = row
 
+public_ids = {page['id'] for group, _ in GROUPS for page in ordered[group]}
+if set(SLUGS) != public_ids:
+    raise ValueError('Public slug registry does not match the current published IDs. Update content/slugs.json.')
+if len(set(SLUGS.values())) != len(SLUGS) or any(
+    not re.fullmatch(r'(?:people|topics|history)/[a-z0-9]+(?:-[a-z0-9]+)*/', value)
+    for value in SLUGS.values()
+):
+    raise ValueError('Duplicate or invalid public slugs.')
+
 nav = ''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}">{label}</a>' for g,label in GROUPS)
 
 # The visual identity is a presentation layer; content remains sourced from Notion.
@@ -240,6 +257,7 @@ def shell(title, body, group='', hero_quote='', canonical_path=''):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0f0f0f">
+{('<base href="../../">' if canonical_path.count('/') == 2 else '')}
 <title>{escape(title)} · philoloom</title>
 <link rel="canonical" href="{escape(SITE_URL + canonical_path, quote=True)}">
 <meta name="description" content="{escape("Исследуйте философские идеи, мыслителей и связи между ними." if not group else title + " — история философии, направления и мыслители в справочнике philoloom.", quote=True)}">
@@ -342,7 +360,7 @@ def related_records(page, props):
     if not linked:
         return ''
     def items(records):
-        return '<ul>' + ''.join(f'<li><a href="{p["id"]}.html"><span>{escape(p["title"])}</span><small>{escape(p["group"])}</small></a></li>' for p in records) + '</ul>'
+        return '<ul>' + ''.join(f'<li><a href="{page_url(p)}"><span>{escape(p["title"])}</span><small>{escape(p["group"])}</small></a></li>' for p in records) + '</ul>'
     content = items(linked[:10])
     if len(linked) > 10:
         content += f'<details><summary>Ещё {len(linked)-10}</summary>{items(linked[10:])}</details>'
@@ -359,7 +377,7 @@ def breadcrumbs(page):
 
 
 for p in pages.values():
-    if p == home:
+    if p['id'] not in public_ids:
         continue
     props, body_text = page_parts(p)
     row = rows_by_id.get(p['id'])
@@ -401,7 +419,10 @@ for p in pages.values():
         f'<h1{quote_class}>{escape(p["title"])}</h1></header>'
         f'{facts_html}<article>{render(body_text,p)}</article>{connections_html}</div>'
     )
-    (OUT / (p['id'] + '.html')).write_text(shell(p['title'],body,p['group'],canonical_path=p['id'] + '.html'),encoding='utf-8')
+        address = page_url(p)
+    destination = OUT / address / 'index.html'
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(shell(p['title'], body, p['group'], canonical_path=address), encoding='utf-8')
 
 # Preserve the exact published quotation and resources from the untouched
 # Notion introduction; none of these are newly authored philosophical claims.

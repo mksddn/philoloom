@@ -222,6 +222,10 @@ async function assertThemeArtwork(page, theme) {
     await home.locator('#query').fill('онтология');
     await home.waitForFunction(() => document.querySelector('#search-status')?.textContent.startsWith('Найдено страниц'));
     assert.ok(await home.locator('#results a').count() > 0);
+    const searchTargets = await home.locator('#results a').evaluateAll(links =>
+      links.map(link => new URL(link.href, document.baseURI)));
+    assert.ok(searchTargets.every(url => url.pathname !== new URL('index.html', document.baseURI).pathname || url.hash.startsWith('#quote-')),
+      'Entity search should never return the homepage itself');
     await home.keyboard.press('Escape');
     await home.waitForFunction(() => !document.querySelector('#search-dialog').open);
     await home.locator('.section-nav a').last().click();

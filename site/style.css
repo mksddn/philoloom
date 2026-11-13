@@ -2075,3 +2075,251 @@ footer .site-container {
   .entity-header::after { display: none; }
   .entity-detail--people article > p:first-child > img { filter: none; }
 }
+
+
+/* Person profile and citation collection — editorial layouts driven only by
+   the source data already present in the Notion export and local image cache. */
+.person-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(24px, 4.2vw, 48px);
+  margin: 0 0 38px;
+}
+.person-portrait {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  margin: 0;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  overflow: hidden;
+}
+.person-portrait-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+  filter: grayscale(.68) contrast(1.04);
+}
+.person-portrait-placeholder,
+.person-card-placeholder {
+  display: block;
+  position: relative;
+  background:
+    radial-gradient(circle at 52% 50%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
+    var(--surface);
+  overflow: hidden;
+}
+.person-portrait-placeholder {
+  width: 100%;
+  height: 100%;
+}
+.person-portrait-placeholder::before,
+.person-card-placeholder::before {
+  content: "";
+  position: absolute;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  width: 63%;
+  aspect-ratio: 1;
+  left: 18%;
+  top: -12%;
+  opacity: .17;
+}
+.person-portrait-placeholder::after {
+  content: "Иллюстрация отсутствует";
+  position: absolute;
+  bottom: 18px;
+  left: 18px;
+  right: 18px;
+  color: var(--muted);
+  text-align: center;
+  font: 500 11px/1.5 var(--sans);
+  letter-spacing: .025em;
+}
+.person-card-placeholder {
+  height: 115px;
+  width: 100%;
+  flex: 0 0 115px;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+  color: var(--accent);
+  font: 500 67px/115px var(--serif);
+}
+.person-overview-info { min-width: 0; }
+.person-overview .entity-facts {
+  margin: 0 0 20px;
+  padding: 0 0 19px;
+}
+.person-overview .entity-facts-list { gap: 17px 36px; }
+.person-context { margin: 0; }
+.person-context > div { margin-top: 18px; }
+.person-context dt {
+  margin-bottom: 7px;
+  color: var(--muted);
+  font: 600 11px/1.5 var(--sans);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.person-context dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.8;
+}
+.person-context .relation {
+  display: inline-block;
+  padding: 4px 0;
+  margin-right: 10px;
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  color: var(--accent);
+  background: transparent;
+}
+.person-context .relation:hover { border-color: var(--accent); background: transparent; }
+.entity-detail--people article {
+  border-top: 1px solid var(--line);
+  padding-top: 25px;
+}
+.entity-detail--people article:has(> .person-no-essay) {
+  padding-top: 14px;
+}
+.person-no-essay {
+  color: var(--muted);
+  font-size: 14px;
+}
+.person-quotes, .person-sources {
+  margin-top: 40px;
+  padding-top: 25px;
+  border-top: 1px solid var(--line);
+}
+.person-quotes h2, .person-sources h2 {
+  margin: 0 0 19px;
+  font: 500 24px/1.25 var(--serif);
+}
+.person-quote-grid { display: grid; gap: 14px; }
+.person-quote-note {
+  margin-top: 13px;
+  max-width: 65ch;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.person-sources ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.person-sources li {
+  border-bottom: 1px solid var(--line);
+}
+.person-sources li a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 12px 0;
+  text-decoration: none;
+  font-size: 14px;
+}
+.person-sources li a:hover { color: var(--accent); background: transparent; }
+.person-sources small { flex: 0 0 auto; font-size: 12px; color: var(--muted); }
+.person-image-source {
+  margin: 16px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.person-image-source a { color: var(--accent); }
+.quote-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 16px;
+}
+.quote-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 23px 24px 20px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.quote-entry-label {
+  margin: 0 0 17px;
+  font: 650 10px/1.5 var(--sans);
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.quote-entry blockquote {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: 400 clamp(19px, 1.65vw, 24px)/1.43 var(--serif);
+  letter-spacing: -.018em;
+}
+.quote-entry blockquote p { margin: 0; }
+.quote-entry figcaption {
+  width: 100%;
+  margin-top: auto;
+  padding-top: 21px;
+  color: var(--muted);
+  font: 500 13px/1.55 var(--sans);
+}
+.quote-entry figcaption::before {
+  content: "— ";
+  color: var(--accent);
+}
+.quote-entry figcaption a { color: var(--accent); }
+.quotes-list {
+  display: grid;
+  gap: 14px;
+  max-width: 900px;
+}
+.quotes-list .quote-row { margin: 0; padding: 0; }
+.quotes-list .quote-entry {
+  padding: 22px 26px;
+  background: transparent;
+}
+.quote-row[id] { scroll-margin-top: 100px; }
+.quote-row:target .quote-entry { border-color: var(--accent); }
+.person-quotes .quote-entry { background: transparent; }
+.person-quotes .quote-entry blockquote { font-size: clamp(18px, 2vw, 22px); }
+@media (max-width: 650px) {
+  .person-overview {
+    grid-template-columns: minmax(0, 130px) minmax(0, 1fr);
+    gap: 17px;
+    margin-bottom: 26px;
+  }
+  .person-portrait { aspect-ratio: 3 / 4; }
+  .person-portrait-placeholder::after {
+    left: 8px; right: 8px; bottom: 10px;
+    font-size: 9px;
+  }
+  .person-context dt { font-size: 10px; }
+  .person-context dd { font-size: 13px; }
+  .person-overview .entity-facts { padding-bottom: 15px; }
+  .person-overview .entity-facts-list { gap: 10px 14px; }
+  .person-overview .entity-fact { min-width: 80px; }
+  .person-overview .entity-fact dd { font-size: 14px; }
+  .person-sources li a { display: block; }
+  .person-sources small { display: block; margin-top: 3px; }
+  .quote-entry { padding: 20px; }
+  .quote-entry blockquote { font-size: 20px; }
+  .quotes-list .quote-entry { padding: 19px; }
+}
+@media (max-width: 360px) {
+  .person-overview {
+    grid-template-columns: minmax(0, 95px) minmax(0, 1fr);
+    gap: 13px;
+  }
+  .person-context .relation { padding: 2px 0; margin-right: 6px; }
+}
+@media print {
+  .person-portrait-image { filter: none; }
+  .quote-entry { break-inside: avoid; }
+}

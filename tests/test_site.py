@@ -119,27 +119,34 @@ class SiteTests(unittest.TestCase):
                 # Cards link the same record, but duplicate titles can occur in
                 # the original export. Verify each card once, not by title alone.
                 name = row['Name']
-                match = re.search(
-                    r'<article class="entity-card entity-card--[^"]+">'
-                    r'<a class="entity-card-main" href="([^"]+)">.*?'
-                    r'<span class="entity-card-title">' + re.escape(name) + r'</span>.*?</article>',
+                kind = {'Темы': 'topics', 'Личности': 'people',
+                        'История философии': 'history'}[group]
+                cards = re.findall(
+                    r'<article class="entity-card entity-card--' + kind + r'">.*?</article>',
                     home, flags=re.DOTALL
                 )
-                self.assertIsNotNone(match, f'Catalog card absent: {group} / {name}')
-                card = match[0]
+                from html import escape as html_escape
+                candidates = [
+                    card for card in cards
+                    if '<span class="entity-card-title">' + html_escape(name) + '</span>' in card
+                ]
+                self.assertTrue(candidates, f'Catalog card absent: {group} / {name}')
+                expected = []
                 for key in keys:
                     raw = row.get(key, '').strip()
                     if not raw:
                         continue
-                    self.assertIn('<dt>' + key + '</dt>', card)
+                    expected.append('<dt>' + key + '</dt>')
                     for pid in re.findall(r'([a-f0-9]{32})\.md', raw):
                         # Only linkable public entities: unpublished homework and
                         # missing export entries never masquerade as public pages.
                         if pid not in self.slugs:
                             continue
-                        self.assertIn('href="' + self.slugs[pid] + '"', card,
-                                      f'Missing {key} relation: {name} -> {pid}')
+                        expected.append('href="' + self.slugs[pid] + '"')
                         total_relations += 1
+                self.assertTrue(any(all(fragment in card for fragment in expected)
+                                    for card in candidates),
+                                f'Missing one or more relations in {group} / {name}')
         self.assertGreater(total_relations, 0)
 
     def test_explicit_relation_is_bidirectional(self):

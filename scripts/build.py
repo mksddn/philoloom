@@ -379,13 +379,13 @@ def quote_figure(page, anchored=False):
 
 def person_portrait(page):
     """Prefer cached Wikipedia preview for the explicitly illustrated person."""
-    media = MediaLinks(page['text'])
-    original = media.images[0] if media.images else ''
+    image_match = re.search(r'!\[[^\]]*\]\((https?://[^)]+)\)', page['text'])
+    original = image_match[1] if image_match else ''
     if not original:
         return '', ''
-    for url in media.links:
-        cached = previews.get(url, {}).get('local_image', '')
-        if 'wikipedia.org/wiki/' in url and cached and image_info(cached):
+    for url, metadata in previews.items():
+        cached = metadata.get('local_image', '')
+        if 'wikipedia.org/wiki/' in url and url in page['text'] and cached and image_info(cached):
             return cached, original
     # Never silently hotlink the portrait from Commons in the public UI.
     return '', original

@@ -2350,6 +2350,15 @@ footer .site-container {
   gap: 17px;
   align-items: start;
 }
+/* JS-enhanced masonry keeps DOM/keyboard/chronological order unchanged.
+   The regular grid above remains a complete no-JavaScript fallback. */
+.entity-collection.masonry-ready { position: relative; }
+.entity-collection.masonry-ready > .entity-card {
+  position: absolute;
+  top: var(--masonry-y, 0px);
+  left: var(--masonry-x, 0px);
+  width: var(--masonry-card-width);
+}
 @media (min-width: 1001px) {
   .entity-collection:has(> .entity-card--people) {
     grid-template-columns: repeat(5, minmax(0, 1fr));

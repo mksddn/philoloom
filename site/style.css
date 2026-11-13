@@ -1717,34 +1717,60 @@ html.tabs-ready .section-heading {
 @media print { .hero-brand-watermark { display: none; } }
 
 
-/* Separate the project identity from the Descartes quotation in the Hero.
-   Keep the title near the top and anchor the quote at the bottom. */
+/* Keep the Hero copy as one balanced editorial group, clear of the portrait. */
 .hero-cover-content {
-  justify-content: space-between;
-  gap: clamp(65px, 9vw, 150px);
+  justify-content: center;
+  gap: 0;
 }
 .hero-cover-content h1,
 .hero-cover-content:has(.featured-quote) h1 {
+  max-width: min(540px, 51%);
   margin-bottom: 0;
+  font-size: clamp(40px, 4.1vw, 62px);
 }
 .hero-cover-content .featured-quote {
-  margin-top: auto;
+  width: min(100%, 480px);
+  max-width: 480px;
+  margin-top: clamp(36px, 4.5vw, 58px);
+  padding-top: 20px;
+  padding-left: 19px;
+  border-top: 1px solid var(--hero-quote-rule);
+  border-left: 0;
 }
 @media (max-width: 850px) {
-  .hero-cover-content { gap: clamp(70px, 11vw, 120px); }
+  .hero-cover-content { justify-content: center; gap: 0; }
+  .hero-cover-content h1,
+  .hero-cover-content:has(.featured-quote) h1 {
+    max-width: 54%;
+    font-size: clamp(35px, 5vw, 48px);
+  }
+  .hero-cover-content .featured-quote { max-width: 48%; margin-top: 36px; }
 }
 @media (max-width: 650px) {
   .hero-cover, .hero-cover-content { min-height: 580px; }
   .hero-cover-content {
-    justify-content: space-between;
-    gap: 110px;
-    padding-top: 45px;
-    padding-bottom: 52px;
+    justify-content: flex-end;
+    gap: 0;
+    padding: 45px 22px 52px;
   }
   .hero-cover-content h1,
-  .hero-cover-content:has(.featured-quote) h1 { margin-bottom: 0; }
+  .hero-cover-content:has(.featured-quote) h1 {
+    max-width: 100%;
+    font-size: clamp(34px, 8vw, 43px);
+    margin-bottom: 0;
+  }
+  .hero-cover-content .featured-quote {
+    width: min(100%, 370px);
+    max-width: 370px;
+    margin-top: 32px;
+    padding-top: 17px;
+    padding-left: 13px;
+  }
 }
 @media (max-width: 360px) {
   .hero-cover, .hero-cover-content { min-height: 610px; }
-  .hero-cover-content { gap: 95px; padding-top: 44px; padding-bottom: 48px; }
+  .hero-cover-content { padding: 44px 17px 48px; }
+  .hero-cover-content h1,
+  .hero-cover-content:has(.featured-quote) h1 { font-size: 33px; }
+  .hero-cover-content .featured-quote { margin-top: 26px; }
 }

@@ -72,9 +72,10 @@ def image_url(url):
     return info['variants'][-1]['url'] if info else url
 
 
-def image_html(url, css_class='', sizes='(max-width: 700px) 100vw, 700px', priority=False):
+def image_html(url, css_class='', sizes='(max-width: 700px) 100vw, 700px', priority=False, alt=''):
     info = image_info(url)
     attrs = f' class="{escape(css_class, quote=True)}"' if css_class else ''
+    attrs += f' alt="{escape(alt, quote=True)}"'
     if info:
         variants = info['variants']
         largest = variants[-1]
@@ -83,7 +84,7 @@ def image_html(url, css_class='', sizes='(max-width: 700px) 100vw, 700px', prior
                   f' width="{largest["width"]}" height="{largest["height"]}" data-full-src="{largest["url"]}"')
         url = largest['url']
     loading = 'fetchpriority="high"' if priority else 'loading="lazy"'
-    return f'<img{attrs} src="{escape(url,quote=True)}" alt="" {loading} decoding="async" referrerpolicy="no-referrer">'
+    return f'<img{attrs} src="{escape(url,quote=True)}" {loading} decoding="async" referrerpolicy="no-referrer">'
 
 
 def local_portrait(page, fallback):
@@ -367,6 +368,101 @@ def related_records(page, props):
     return '<div class="discovered-links"><h3>Также упоминается</h3><p>Автоматически найденные ссылки из других материалов справочника.</p>' + content + '</div>'
 
 
+def quote_figure(page, anchored=False):
+    author = rows_by_id[page['id']].get('Автор', '')
+    author_html = property_html(author, page) if author else 'Автор не указан'
+    anchor = f' id="quote-{page["id"]}"' if anchored else ''
+    return (f'<figure class="quote-entry"{anchor}><span class="quote-entry-label">Цитата</span>'
+            f'<blockquote><p>{escape(page["title"])}</p></blockquote>'
+            f'<figcaption>{author_html}</figcaption></figure>')
+
+
+def person_portrait(page):
+    """Prefer cached Wikipedia preview for the explicitly illustrated person."""
+    media = MediaLinks(page['text'])
+    original = media.images[0] if media.images else ''
+    if not original:
+        return '', ''
+    for url in media.links:
+        cached = previews.get(url, {}).get('local_image', '')
+        if 'wikipedia.org/wiki/' in url and cached and image_info(cached):
+            return cached, original
+    # Never silently hotlink the portrait from Commons in the public UI.
+    return '', original
+
+
+def person_document(markdown_text):
+    """Recompose existing Markdown visually; do not modify the original export."""
+    lines, resources = [], []
+    first_image_removed = False
+    for line in markdown_text.splitlines():
+        stripped = line.strip()
+        if not first_image_removed and re.fullmatch(r'!\[[^\]]*\]\(https?://[^)]+\)', stripped):
+            first_image_removed = True
+            continue
+        match = re.fullmatch(r'\[([^\]]+)\]\((https?://[^)]+)\)', stripped)
+        if match and safe_url(match[2]):
+            resources.append((match[1], match[2]))
+            continue
+        if stripped in ('Основные труды', 'Основные идеи'):
+            lines.append('### ' + stripped)
+        else:
+            lines.append(line)
+    return '\n'.join(lines).strip(), resources
+
+
+def person_sources(resources, original):
+    markup = []
+    for label, url in resources:
+        domain = urlsplit(url).netloc.removeprefix('www.')
+        markup.append(f'<li><a href="{escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">'
+                      f'<span>{escape(label)}</span><small>{escape(domain)}</small></a></li>')
+    if not markup and not original:
+        return ''
+    source_line = (
+        f'<p class="person-image-source">Изображение: '
+        f'<a href="{escape(original, quote=True)}" target="_blank" rel="noopener noreferrer">исходный файл</a></p>'
+        if original else ''
+    )
+    return ('<section class="person-sources" aria-label="Дополнительные материалы">'
+            '<h2>Дополнительные материалы</h2>'
+            + ('<ul>' + ''.join(markup) + '</ul>' if markup else '')
+            + source_line + '</section>')
+
+
+def person_quotes(page):
+    selected = [
+        quote for quote in ordered['Цитаты']
+        if page['id'] in re.findall(r'([a-f0-9]{32})\.md',
+                                    unquote(rows_by_id[quote['id']].get('Автор', '')))
+    ]
+    if not selected:
+        return ''
+    tiles = ''.join(quote_figure(quote) for quote in selected)
+    return ('<section class="person-quotes" aria-label="Высказывания в справочнике">'
+            '<h2>Высказывания в справочнике</h2>'
+            f'<div class="person-quote-grid">{tiles}</div>'
+            '<p class="person-quote-note">Атрибуция перенесена из исходной коллекции; '
+            'первоисточники цитат требуют проверки.</p></section>')
+
+
+def person_overview(page, facts_html, relations):
+    picture, original = person_portrait(page)
+    if picture:
+        media = image_html(picture, 'person-portrait-image', '(max-width: 650px) 45vw, 260px',
+                           alt=f'Иллюстрация: {page["title"]}')
+    else:
+        media = '<span class="person-portrait-placeholder" aria-hidden="true"></span>'
+    portrait = f'<figure class="person-portrait">{media}</figure>'
+    connection_html = (
+        '<dl class="person-context">'
+        + ''.join(f'<div><dt>{escape(k)}</dt><dd>{property_html(v,page)}</dd></div>' for k, v in relations)
+        + '</dl>'
+    ) if relations else ''
+    return (f'<div class="person-overview">{portrait}<div class="person-overview-info">'
+            f'{facts_html}{connection_html}</div></div>', original)
+
+
 def breadcrumbs(page):
     group_id = next((pid for pid, group in db_ids.items() if group == page['group']), '')
     group_link = f'<a href="index.html#{group_id}">{escape(page["group"])}</a>' if group_id else ''
@@ -386,8 +482,8 @@ for p in pages.values():
     hidden_meta = {'Конспект', 'Задание', 'Зачтено', 'Моя работа', 'Связанные записи'}
     props = [(k,v) for k,v in props if v.strip() and k not in hidden_meta and not k.startswith('Самостоятельная работа')]
 
-    # Keep concise biographical/bibliographic facts near the heading. Explicit
-    # relationships and backlinks are navigational, so they follow the text.
+    # Short biographical facts accompany the identity. Relationships remain
+    # an explicit part of the knowledge graph, never inferred from a portrait.
     fact_keys = {'Год рождения', 'Год смерти', 'Автор', 'Блок'}
     facts = [(k, v) for k, v in props if k in fact_keys]
     relations = [(k, v) for k, v in props if k not in fact_keys]
@@ -401,8 +497,7 @@ for p in pages.values():
         '<dl class="properties entity-relations">'
         + ''.join(f'<dt>{escape(k)}</dt><dd>{property_html(v,p)}</dd>' for k, v in relations)
         + '</dl>'
-    ) if relations else ''
-    # Keep all explicit relationships, including "Связь", and all backlinks.
+    ) if relations and p['group'] != 'Личности' else ''
     extra = related_records(p, props)
     connections_html = (
         '<section class="entity-links" aria-label="Связи и упоминания">'
@@ -410,15 +505,24 @@ for p in pages.values():
         f'{relation_list}{extra}</section>'
     ) if relation_list or extra else ''
     kind = {'Темы': 'topics', 'Личности': 'people',
-            'История философии': 'history', 'Цитаты': 'quotes'}.get(p['group'], 'other')
-    quote_class = ' class="quote-heading"' if p['group'] == 'Цитаты' else ''
-    body = (
+            'История философии': 'history'}.get(p['group'], 'other')
+    head = (
         f'<div class="detail-navigation">{breadcrumbs(p)}{SEARCH_BUTTON}</div>'
         f'<div class="entity-detail entity-detail--{kind}">'
         f'<header class="entity-header"><span class="entity-kicker">{escape(p["group"])}</span>'
-        f'<h1{quote_class}>{escape(p["title"])}</h1></header>'
-        f'{facts_html}<article>{render(body_text,p)}</article>{connections_html}</div>'
+        f'<h1>{escape(p["title"])}</h1></header>'
     )
+    if p['group'] == 'Личности':
+        overview, portrait_original = person_overview(p, facts_html, relations)
+        readable_text, sources = person_document(body_text)
+        text_html = (render(readable_text, p) if readable_text
+                     else '<p class="person-no-essay">В этой записи пока нет развёрнутого очерка. '
+                          'Связанные темы и дополнительные материалы помогут продолжить знакомство.</p>')
+        body = (head + overview + f'<article>{text_html}</article>'
+                + person_quotes(p) + connections_html
+                + person_sources(sources, portrait_original) + '</div>')
+    else:
+        body = head + facts_html + f'<article>{render(body_text,p)}</article>{connections_html}</div>'
     address = page_url(p)
     destination = OUT / address / 'index.html'
     destination.parent.mkdir(parents=True, exist_ok=True)

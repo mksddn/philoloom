@@ -1828,6 +1828,14 @@ footer .site-container {
   margin-inline: auto;
 }
 .entity-header {
+  /* Neutralize the legacy global header navigation styles. */
+  display: block;
+  height: auto;
+  top: auto;
+  gap: 0;
+  background: transparent;
+  align-items: initial;
+  z-index: auto;
   position: relative;
   isolation: isolate;
   overflow: hidden;

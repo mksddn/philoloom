@@ -139,7 +139,7 @@ class SiteTests(unittest.TestCase):
 
     def test_detail_excludes_private_assignment_metadata(self):
         entries = json.loads((OUT / 'search.json').read_text())
-        entry = next(item for item in entries if item['group'] == 'Темы')
+        entry = next(item for item in entries if item['group'] == 'Темы' and item['title'] == 'Герменевтика')
         page = (OUT / entry['url'] / 'index.html').read_text()
         self.assertNotIn('<dt>Задание</dt>', page)
         self.assertNotIn('<dt>Зачтено</dt>', page)
@@ -147,7 +147,7 @@ class SiteTests(unittest.TestCase):
         self.assertLess(page.index('<article>'), page.index('class="entity-links"'))
         self.assertIn('class="entity-detail entity-detail--topics"', page)
         self.assertIn('class="entity-kicker">Темы</span>', page)
-        self.assertIn('class="entity-links-title">Связи и упоминания</h2>', page)
+        self.assertIn('class="entity-links-title">Связанные материалы</h2>', page)
         self.assertIn('id="search-open"', page)
         for item in entries:
             address = item['url'].split('#', 1)[0]
@@ -163,8 +163,29 @@ class SiteTests(unittest.TestCase):
         self.assertIn('<dt>Год смерти</dt><dd>1650</dd>', descartes)
         self.assertLess(descartes.index('class="entity-facts"'),
                         descartes.index('<article>'))
-        self.assertLess(descartes.index('<article>'),
-                        descartes.index('class="entity-links"'))
+        self.assertNotIn('class="entity-links"', descartes)
+        self.assertNotIn('Также упоминается', descartes)
+        self.assertNotIn('Связи и упоминания', descartes)
+        self.assertEqual(descartes.count('class="quote-entry"'), 2)
+        self.assertIn('<dt>Темы</dt>', descartes)
+        self.assertIn('<dt>История философии</dt>', descartes)
+
+    def test_contextual_links_deduplicate_explicit_and_discovered_relations(self):
+        hermeneutics = self.public_page('89ecf3804396453cbc4256966e24aa27')
+        self.assertIn('<dt>Философы</dt>', hermeneutics)
+        self.assertIn('<dt>Исторический контекст</dt>', hermeneutics)
+        self.assertEqual(hermeneutics.count('href="' + self.slugs['8fdcb8310a88441da41bce0b8f4857c4'] + '"'), 1)
+        self.assertNotIn('Связи и упоминания', hermeneutics)
+        self.assertNotIn('Также упоминается', hermeneutics)
+
+        ancient = self.public_page('f79b26bcefbf45a2aa50319cd5dc1858')
+        self.assertIn('<dt>Представители</dt>', ancient)
+        self.assertIn('<dt>Темы и направления</dt>', ancient)
+
+        gadamer = self.public_page('8fdcb8310a88441da41bce0b8f4857c4')
+        self.assertNotIn('class="discovered-links"', gadamer)
+        self.assertNotIn('class="entity-links"', gadamer)
+        self.assertIn('class="person-context"', gadamer)
 
     def test_compact_headerless_shell_and_system_theme(self):
         home = (OUT / 'index.html').read_text(encoding='utf-8')

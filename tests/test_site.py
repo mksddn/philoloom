@@ -1,5 +1,7 @@
 """Integration checks for the generated reference and its image pipeline."""
+import csv
 import json
+import re
 import subprocess
 import sys
 import unittest
@@ -89,10 +91,56 @@ class SiteTests(unittest.TestCase):
 
     def test_sections_remain_in_static_html(self):
         source = (OUT / 'index.html').read_text()
-        self.assertEqual(source.count('class="reference-section"'), 4)
+        self.assertEqual(source.count('class="reference-section"'), 5)
         self.assertNotIn('💪 Мои статьи', source)
-        self.assertEqual(source.count('data-view-content='), 12)
+        self.assertNotIn('data-view-content=', source)
+        self.assertNotIn('class="view-controls"', source)
+        self.assertIn('class="history-timeline"', source)
+        self.assertIn('class="quote-catalog"', source)
+        self.assertIn('id="more"', source)
         self.assertNotIn('class="reference-section" hidden', source)
+
+    def test_catalog_cards_render_all_structured_links(self):
+        """Every published relation in a CSV field appears in that entity card."""
+        home = (OUT / 'index.html').read_text(encoding='utf-8')
+        source_root = ROOT / 'content' / 'notion'
+        relation_fields = {
+            'Темы': ('История философии', 'Личности', 'Связь'),
+            'Личности': ('Темы', 'История философии'),
+            'История философии': ('Темы', 'Личности'),
+        }
+        total_relations = 0
+        for group, keys in relation_fields.items():
+            csv_files = list(source_root.rglob(group + ' *' + '_all.csv'))
+            self.assertEqual(len(csv_files), 1, group)
+            with csv_files[0].open(encoding='utf-8-sig', newline='') as stream:
+                rows = list(csv.DictReader(stream))
+            for row in rows:
+                # Cards link the same record, but duplicate titles can occur in
+                # the original export. Verify each card once, not by title alone.
+                name = row['Name']
+                match = re.search(
+                    r'<article class="entity-card entity-card--[^"]+">'
+                    r'<a class="entity-card-main" href="([^"]+)">.*?'
+                    r'<span class="entity-card-title">' + re.escape(name) + r'</span>.*?</article>',
+                    home, flags=re.DOTALL
+                )
+                self.assertIsNotNone(match, f'Catalog card absent: {group} / {name}')
+                card = match[0]
+                for key in keys:
+                    raw = row.get(key, '').strip()
+                    if not raw:
+                        continue
+                    self.assertIn('<dt>' + key + '</dt>', card)
+                    for pid in re.findall(r'([a-f0-9]{32})\.md', raw):
+                        # Only linkable public entities: unpublished homework and
+                        # missing export entries never masquerade as public pages.
+                        if pid not in self.slugs:
+                            continue
+                        self.assertIn('href="' + self.slugs[pid] + '"', card,
+                                      f'Missing {key} relation: {name} -> {pid}')
+                        total_relations += 1
+        self.assertGreater(total_relations, 0)
 
     def test_explicit_relation_is_bidirectional(self):
         hermeneutics = self.public_page('89ecf3804396453cbc4256966e24aa27')
@@ -129,9 +177,10 @@ class SiteTests(unittest.TestCase):
         self.assertIn('class="resource-tile-cover"', home)
         self.assertLess(home.index('class="hero-cover"'), home.index('class="featured-quote"'))
         self.assertLess(home.index('class="featured-quote"'), home.index('class="resource-tiles"'))
-        self.assertLess(home.index('class="resource-tiles"'), home.index('class="section-nav"'))
+        self.assertLess(home.index('class="section-nav"'), home.index('class="resource-tiles"'))
+        self.assertIn('id="more"', home)
         self.assertIn('class="hero-cover-content"', home.split('class="featured-quote"', 1)[0])
-        self.assertNotIn('class="featured-quote"', home.split('class="home-source-strip"', 1)[1])
+        self.assertNotIn('class="featured-quote"', home.split('id="more"', 1)[1])
         self.assertNotIn('class="footer-resources"', home)
         self.assertNotIn('Философский справочник: темы, история мысли, личности и цитаты.', home)
         self.assertNotIn('class="hero-summary"', home)
@@ -216,7 +265,7 @@ class SiteTests(unittest.TestCase):
         self.assertIn('id="reference-nav"', home)
         self.assertEqual(home.count('class="featured-quote"'), 1)
         self.assertEqual(home.count('data-resource-open='), 2)
-        self.assertIn('class="home-source-strip"', home)
+        self.assertNotIn('class="home-source-strip"', home)
         self.assertIn('aria-label="Разделы"', home)
         # No sales-like CTAs, cards framing the hero or duplicated navigation.
         for fragment in ('class="museum-frame"', 'class="museum-shortcuts"',

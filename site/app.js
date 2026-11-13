@@ -310,6 +310,65 @@ if (initialPeek && pagePath(initialPeek)) {
   displayPanel(initialPeek);
 }
 
+// Genuine waterfall masonry without CSS columns: cards retain their source
+// order (and thus their death-date chronology), and always occupy the shortest
+// available column. The plain CSS Grid remains the no-JavaScript fallback.
+const masonryCollections = [...document.querySelectorAll('.entity-collection')]
+  .filter(collection => collection.querySelectorAll(':scope > .entity-card').length > 1);
+let masonryFrame = 0;
+function arrangeMasonry(collection) {
+  if (!collection.getClientRects().length || collection.clientWidth === 0) return;
+  const css = getComputedStyle(collection);
+  const columns = css.gridTemplateColumns.trim().split(/\s+/).filter(Boolean).length;
+  const cards = [...collection.children].filter(card => card.classList.contains('entity-card'));
+  if (columns <= 1) {
+    collection.classList.remove('masonry-ready');
+    collection.style.removeProperty('height');
+    collection.style.removeProperty('--masonry-card-width');
+    cards.forEach(card => {
+      card.style.removeProperty('--masonry-x');
+      card.style.removeProperty('--masonry-y');
+    });
+    return;
+  }
+
+  const horizontalGap = parseFloat(css.columnGap) || 0;
+  const verticalGap = parseFloat(css.rowGap) || 0;
+  const width = (collection.clientWidth - horizontalGap * (columns - 1)) / columns;
+  collection.style.setProperty('--masonry-card-width', width + 'px');
+  collection.classList.add('masonry-ready');
+
+  // Read dimensions as one batch before applying any positions to avoid
+  // a forced relayout for every card (especially cards with many relations).
+  const heights = cards.map(card => card.offsetHeight);
+  const bottoms = Array(columns).fill(0);
+  cards.forEach((card, index) => {
+    const y = Math.min(...bottoms);
+    const column = bottoms.indexOf(y); // leftmost in case of equal heights
+    card.style.setProperty('--masonry-x', column * (width + horizontalGap) + 'px');
+    card.style.setProperty('--masonry-y', y + 'px');
+    bottoms[column] += heights[index] + verticalGap;
+  });
+  collection.style.height = Math.max(...bottoms) - verticalGap + 'px';
+}
+function scheduleMasonry() {
+  if (masonryFrame) return;
+  masonryFrame = requestAnimationFrame(() => {
+    masonryFrame = 0;
+    masonryCollections.forEach(arrangeMasonry);
+  });
+}
+if (masonryCollections.length) {
+  const observer = new ResizeObserver(scheduleMasonry);
+  masonryCollections.forEach(collection => {
+    observer.observe(collection);
+    collection.querySelectorAll(':scope > .entity-card').forEach(card => observer.observe(card));
+  });
+  window.addEventListener('resize', scheduleMasonry);
+  document.fonts?.ready.then(scheduleMasonry);
+  scheduleMasonry();
+}
+
 // Preserve real links and all section content in static HTML; enhance navigation in the browser.
 const sectionNav = document.querySelector('.section-nav');
 const sectionTabs = sectionNav ? [...sectionNav.querySelectorAll('a')] : [];
@@ -329,6 +388,7 @@ function activateSection(id, focus = false) {
   if (quoteAnchor) {
     requestAnimationFrame(() => quoteAnchor.scrollIntoView({block:'start'}));
   }
+  scheduleMasonry();
 }
 if (sectionNav) {
   sectionNav.setAttribute('role', 'tablist');

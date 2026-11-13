@@ -240,7 +240,7 @@ def shell(title, body, group='', hero_quote=''):
 <meta name="theme-color" content="#0f0f0f">
 <title>{escape(title)} · philoloom</title>
 <meta name="description" content="{escape("Исследуйте философские идеи, мыслителей и связи между ними." if not group else title + " — история философии, направления и мыслители в справочнике philoloom.", quote=True)}">
-<script>document.documentElement.dataset.theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';</script>
+<script>const previewTheme = new URLSearchParams(location.search).get('theme'); document.documentElement.dataset.theme = ['light', 'dark'].includes(previewTheme) ? previewTheme : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta property="og:site_name" content="philoloom">
 <link rel="stylesheet" href="style.css">

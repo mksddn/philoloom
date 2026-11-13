@@ -229,7 +229,7 @@ def shell(title, body, group='', hero_quote=''):
              f'<h1><span class="hero-project-name">'
              f'<span class="brand-accessible-name">philoloom</span>'
              f'<span class="hero-wordmark" aria-hidden="true"></span></span> '
-             f'<span class="hero-title-text">Философия <em>как искусство</em> мышления</span></h1>'
+             f'<span class="hero-title-text">Атлас философской мысли</span></h1>'
              f'{hero_quote}</div></div></div>') if not group else ''
     return f'''<!doctype html>
 <html lang="ru">
@@ -239,7 +239,7 @@ def shell(title, body, group='', hero_quote=''):
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0f0f0f">
 <title>{escape(title)} · philoloom</title>
-<meta name="description" content="{escape(title, quote=True)} — история философии, направления и мыслители в справочнике philoloom.">
+<meta name="description" content="{escape("Исследуйте философские идеи, мыслителей и связи между ними." if not group else title + " — история философии, направления и мыслители в справочнике philoloom.", quote=True)}">
 <script>document.documentElement.dataset.theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';</script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta property="og:site_name" content="philoloom">

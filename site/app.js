@@ -1,7 +1,9 @@
-// Follow the device's system color scheme, including changes while the page is open.
+// A URL override is for previewing themes; otherwise follow system changes.
 const systemColorScheme = matchMedia('(prefers-color-scheme: light)');
+const requestedTheme = new URLSearchParams(location.search).get('theme');
+const themeOverride = ['light', 'dark'].includes(requestedTheme) ? requestedTheme : null;
 const syncTheme = () => {
-  const light = systemColorScheme.matches;
+  const light = themeOverride ? themeOverride === 'light' : systemColorScheme.matches;
   document.documentElement.dataset.theme = light ? 'light' : 'dark';
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', light ? '#f5f2eb' : '#111110');
 };
@@ -332,7 +334,8 @@ if (sectionNav) {
     const section = document.getElementById(id);
     section.setAttribute('role', 'tabpanel');
     section.setAttribute('aria-labelledby', tab.id);
-    section.tabIndex = 0;
+    // Panels contain keyboard-focusable cards; do not add a giant focus ring to the panel.
+    section.tabIndex = -1;
     tab.addEventListener('click', event => {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
       event.preventDefault();

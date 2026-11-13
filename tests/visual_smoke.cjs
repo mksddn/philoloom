@@ -18,6 +18,55 @@ async function assertNoOverflow(page, label) {
   }));
   assert.ok(sizes.content <= sizes.viewport + 1, label + ': horizontal overflow ' + JSON.stringify(sizes));
 }
+async function assertPeopleLayout(page, expectedColumns, label) {
+  await page.waitForFunction(columns => {
+    const collection = document.querySelector('.entity-card--people')?.parentElement;
+    return collection?.classList.contains('masonry-ready') &&
+      getComputedStyle(collection).gridTemplateColumns.trim().split(/\s+/).length === columns;
+  }, expectedColumns);
+  // The breakpoints may change the width before the next animation frame
+  // recomputes masonry positions. Allow two frames for its ResizeObserver.
+  await page.evaluate(() => new Promise(resolve =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  const outcome = await page.locator('.entity-card--people').first().evaluate(card => {
+    const collection = card.parentElement;
+    const css = getComputedStyle(collection);
+    const cards = [...collection.querySelectorAll(':scope > .entity-card')];
+    const columns = css.gridTemplateColumns.trim().split(/\s+/).length;
+    const columnGap = parseFloat(css.columnGap) || 0;
+    const rowGap = parseFloat(css.rowGap) || 0;
+    const width = cards[0].getBoundingClientRect().width;
+    const origin = collection.getBoundingClientRect();
+    const bottoms = Array(columns).fill(0);
+    const violations = [];
+    for (const entry of cards) {
+      const expectedTop = Math.min(...bottoms);
+      const column = bottoms.indexOf(expectedTop);
+      const bounds = entry.getBoundingClientRect();
+      const actualTop = bounds.top - origin.top;
+      const actualLeft = bounds.left - origin.left;
+      const expectedLeft = column * (width + columnGap);
+      if (Math.abs(actualTop - expectedTop) > 2 || Math.abs(actualLeft - expectedLeft) > 2) {
+        violations.push({ name: entry.querySelector('.entity-card-title')?.textContent,
+          actualTop, actualLeft, expectedTop, expectedLeft });
+      }
+      for (const link of entry.querySelectorAll('.entity-card-connections .relation')) {
+        const rect = link.getBoundingClientRect();
+        if (rect.right > bounds.right + 1 || rect.left < bounds.left - 1) {
+          violations.push({ name: 'Clipped relation', text: link.textContent, right: rect.right,
+            cardRight: bounds.right });
+        }
+      }
+      bottoms[column] += bounds.height + rowGap;
+    }
+    return { columns, enhanced: collection.classList.contains('masonry-ready'), violations };
+  });
+  assert.equal(outcome.columns, expectedColumns, label + ': incorrect number of columns');
+  assert.ok(outcome.enhanced && outcome.violations.length === 0,
+    label + ': masonry / connection link overflow ' + JSON.stringify(outcome.violations.slice(0, 5)));
+  await assertNoOverflow(page, label);
+}
+
 async function assertThemeArtwork(page, theme) {
   const result = await page.evaluate(async (expected) => {
     const art = document.querySelector('.hero-artwork');
@@ -294,6 +343,16 @@ async function assertThemeArtwork(page, theme) {
         '4K portrait must remain right-aligned: ' + JSON.stringify(art));
     }
     await ultra.close();
+    const tablet = await browser.newContext({ viewport: { width: 820, height: 1180 }, colorScheme: 'dark' });
+    const tabletPage = await tablet.newPage();
+    await tabletPage.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
+    await tabletPage.locator('.section-nav a').nth(3).click();
+    await assertPeopleLayout(tabletPage, 3, '820px tablet');
+    for (const [width, columns] of [[700, 2], [701, 3], [1000, 3], [1001, 5]]) {
+      await tabletPage.setViewportSize({ width, height: 1180 });
+      await assertPeopleLayout(tabletPage, columns, width + 'px breakpoint');
+    }
+    await tablet.close();
     const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, deviceScaleFactor: 1, colorScheme: 'dark' });
     const small = await mobile.newPage();
     const mobileErrors = [];
@@ -306,13 +365,7 @@ async function assertThemeArtwork(page, theme) {
     await assertNoOverflow(small, '390px history');
     await small.locator('.section-nav a').nth(3).click();
     await assertNoOverflow(small, '390px people');
-    assert.equal(await small.locator('.entity-card--people').first().evaluate(card =>
-      card.parentElement.classList.contains('masonry-ready')), false,
-      'One-column mobile must use natural document flow');
-    const mobilePeopleTops = await small.locator('.entity-card--people').evaluateAll(cards =>
-      cards.map(card => card.getBoundingClientRect().top));
-    assert.ok(mobilePeopleTops.every((top, i) => i === 0 || top > mobilePeopleTops[i - 1]),
-      'Mobile philosopher cards must be top-to-bottom chronological');
+    await assertPeopleLayout(small, 2, '390px people');
     await small.locator('.section-nav a').last().click();
     await assertNoOverflow(small, '390px resources');
     await small.locator('.section-nav a').first().click();
@@ -364,11 +417,13 @@ async function assertThemeArtwork(page, theme) {
     assert.ok(await narrowPage.locator('.hero-cover-content .featured-quote').evaluate(el =>
       el.getBoundingClientRect().bottom <= document.querySelector('.hero-cover').getBoundingClientRect().bottom),
       'Quotation must remain inside 320px Hero');
+    await narrowPage.locator('.section-nav a').nth(3).click();
+    await assertPeopleLayout(narrowPage, 2, '320px people');
     await narrowPage.goto(base + '/topics/germenevtika/', { waitUntil: 'domcontentloaded' });
     await assertNoOverflow(narrowPage, '320px article');
 
     await narrow.close();
-    console.log('Desktop 1440px, ultrawide 3840px (both themes), mobile 390px and narrow mobile 320px checks passed.');
+    console.log('Desktop 1440px, tablet breakpoints 700–1001px, ultrawide 3840px (both themes), mobile 390px and narrow mobile 320px checks passed.');
   } finally {
     await browser?.close();
     server.kill('SIGTERM');

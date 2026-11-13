@@ -206,6 +206,37 @@ async function assertThemeArtwork(page, theme) {
     const peopleColumns = await home.locator('.entity-card--people').first().evaluate(card =>
       getComputedStyle(card.parentElement).gridTemplateColumns.trim().split(/\s+/).length);
     assert.equal(peopleColumns, 5, 'Desktop personalities must display five cards per row');
+    // Verify real shortest-column masonry rather than a grid with empty row gaps:
+    // every card must sit immediately beneath the preceding card in its column.
+    const waterfall = await home.locator('.entity-card--people').first().evaluate(first => {
+      const collection = first.parentElement;
+      const css = getComputedStyle(collection);
+      const cards = [...collection.querySelectorAll(':scope > .entity-card')];
+      const columns = css.gridTemplateColumns.trim().split(/\s+/).length;
+      const width = cards[0].getBoundingClientRect().width;
+      const xGap = parseFloat(css.columnGap);
+      const yGap = parseFloat(css.rowGap);
+      const bottoms = Array(columns).fill(0);
+      const origin = collection.getBoundingClientRect();
+      const violations = [];
+      for (const card of cards) {
+        const nextTop = Math.min(...bottoms);
+        const column = bottoms.indexOf(nextTop);
+        const bounds = card.getBoundingClientRect();
+        const actualTop = bounds.top - origin.top;
+        const actualLeft = bounds.left - origin.left;
+        const desiredLeft = column * (width + xGap);
+        if (Math.abs(actualTop - nextTop) > 2 || Math.abs(actualLeft - desiredLeft) > 2) {
+          violations.push({ name: card.querySelector('.entity-card-title')?.textContent,
+            expected: { top: nextTop, left: desiredLeft },
+            actual: { top: actualTop, left: actualLeft } });
+        }
+        bottoms[column] += bounds.height + yGap;
+      }
+      return { enhanced: collection.classList.contains('masonry-ready'), violations };
+    });
+    assert.ok(waterfall.enhanced && waterfall.violations.length === 0,
+      'Philosopher cards must fill the shortest available column: ' + JSON.stringify(waterfall));
     const relationLineHeight = await home.locator('.entity-card--people .relation').first().evaluate(link =>
       ({ fontSize: parseFloat(getComputedStyle(link).fontSize),
          lineHeight: parseFloat(getComputedStyle(link).lineHeight) }));
@@ -275,6 +306,9 @@ async function assertThemeArtwork(page, theme) {
     await assertNoOverflow(small, '390px history');
     await small.locator('.section-nav a').nth(3).click();
     await assertNoOverflow(small, '390px people');
+    assert.equal(await small.locator('.entity-card--people').first().evaluate(card =>
+      card.parentElement.classList.contains('masonry-ready')), false,
+      'One-column mobile must use natural document flow');
     const mobilePeopleTops = await small.locator('.entity-card--people').evaluateAll(cards =>
       cards.map(card => card.getBoundingClientRect().top));
     assert.ok(mobilePeopleTops.every((top, i) => i === 0 || top > mobilePeopleTops[i - 1]),

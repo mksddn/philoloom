@@ -11,8 +11,12 @@ import re
 from collections import Counter, defaultdict
 from pathlib import Path
 from urllib.parse import unquote
-from editorial_entries import load_entries, relational_row
-from site_config import configured_site_url
+if __package__:
+    from .editorial_entries import load_entries, relational_row
+    from .site_config import configured_site_url
+else:
+    from editorial_entries import load_entries, relational_row
+    from site_config import configured_site_url
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'notion'

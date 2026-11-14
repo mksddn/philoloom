@@ -99,6 +99,21 @@ class SiteTests(unittest.TestCase):
         search = json.loads((OUT / 'search.json').read_text(encoding='utf-8'))
         self.assertEqual(sum(x['title'] == 'Славянофильство' for x in search), 1)
 
+    def test_foundational_philosophers_include_independent_content_and_sources(self):
+        examples = {
+            '5c62a805028a4272bd0b99d7e493d7bd': ('эленхос', 'Сократ'),
+            '44efa008da2d4553911e0d6d29e3b795': ('эйдос', 'Платон'),
+            'bed09a3399144396a503d79898e8a5ca': ('силлогизм', 'Аристотель'),
+            'd5303c3cb5d8405b8915abd0d9074c9f': ('трансцендентальный', 'Иммануил Кант'),
+        }
+        for pid, (keyword, name) in examples.items():
+            with self.subTest(philosopher=name):
+                html = self.public_page(pid)
+                self.assertIn(keyword, html.casefold())
+                self.assertIn('Stanford Encyclopedia of Philosophy', html)
+                self.assertIn('<article>', html)
+                self.assertIn('Основные', html if 'Основные' in html else name)
+
     def test_quotes_are_inline_and_deep_linkable(self):
         quote_id = '47d742c8761f4a0c86a27b43497759b0'
         home = (OUT / 'index.html').read_text()

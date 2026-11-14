@@ -51,7 +51,7 @@ async function search() {
     status.textContent = 'Не удалось загрузить поиск. Попробуй ещё раз.';
   }
 }
-document.querySelector('#search-open').addEventListener('click', () => { dialog.showModal(); query.focus(); search(); });
+document.querySelector('#search-open')?.addEventListener('click', () => { dialog.showModal(); query.focus(); search(); });
 query.addEventListener('input', search);
 dialog.addEventListener('close', () => { revision++; });
 dialog.addEventListener('keydown', event => {

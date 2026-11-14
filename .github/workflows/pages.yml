@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PHILOLOOM_SITE_URL: ${{ vars.PHILOLOOM_SITE_URL }}
+      PHILOLOOM_CNAME: ${{ vars.PHILOLOOM_CNAME }}
     steps:
       - name: Checkout with Git LFS
         uses: actions/checkout@v4

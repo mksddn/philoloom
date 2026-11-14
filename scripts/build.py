@@ -10,11 +10,14 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 from html.parser import HTMLParser
 import markdown
+from editorial_entries import load_entries, relation_fields
+from site_config import site_settings
+from semantic_links import load_semantic_links
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'notion'
 OUT = ROOT / 'dist'
-SITE_URL = 'https://mksddn.github.io/philoloom/'
+SITE_URL, CNAME = site_settings()
 GROUPS = [('Темы', 'Темы'), ('История философии', 'История философии'),
           ('Цитаты', 'Цитаты'), ('Личности', 'Личности')]
 # Retain exported homework metadata for direct article URLs, but no public section.
@@ -35,6 +38,16 @@ for path in sorted(CONTENT.rglob('*.md')):
 home = next(p for p in pages.values() if not p['group'])
 # IDs remain the source of truth; the checked-in map pins stable public URLs.
 SLUGS = json.loads((ROOT / 'content' / 'slugs.json').read_text(encoding='utf-8'))
+# Editorial additions live outside the original export and receive stable URLs.
+EDITORIAL = load_entries(ROOT)
+for entry in EDITORIAL:
+    pid = entry['id']
+    if pid in pages or pid in SLUGS:
+        raise ValueError('Editorial ID collides with exported page: ' + pid)
+    pages[pid] = {'id': pid, 'path': entry['path'], 'title': entry['title'],
+                  'text': entry['text'], 'group': entry['group']}
+    SLUGS[pid] = entry['url']
+
 
 def page_url(page):
     if page['id'] == home['id']:
@@ -217,6 +230,10 @@ for group,_ in SOURCE_GROUPS:
         ordered[group].append(p)
         rows_by_id[p['id']] = row
 
+for entry in EDITORIAL:
+    ordered[entry['group']].append(pages[entry['id']])
+    rows_by_id[entry['id']] = relation_fields(entry, pages)
+
 public_ids = {page['id'] for group, _ in GROUPS if group != 'Цитаты' for page in ordered[group]}
 if set(SLUGS) != public_ids:
     raise ValueError('Public slug registry does not match the current published IDs. Update content/slugs.json.')
@@ -241,7 +258,7 @@ SEARCH_BUTTON = ('<button id="search-open" class="museum-search" type="button" '
 # Their local WebP files are referenced through theme-aware CSS.
 
 
-def shell(title, body, group='', hero_quote='', canonical_path=''):
+def shell(title, body, group='', hero_quote='', canonical_path='', extra_script=''):
     # Project identity belongs inside the home page's main heading.
     cover = (f'<div class="museum-stage"><div class="hero-cover">'
              f'<div class="hero-artwork" role="img" '
@@ -261,7 +278,7 @@ def shell(title, body, group='', hero_quote='', canonical_path=''):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0f0f0f">
-{('<base href="../../">' if canonical_path.count('/') == 2 else '')}
+{('<base href="../../">' if canonical_path.count('/') == 2 else '<base href="../">' if canonical_path == 'map/' else '')}
 <title>{escape(title)} · philoloom</title>
 <link rel="canonical" href="{escape(SITE_URL + canonical_path, quote=True)}">
 <meta name="description" content="{escape("Интерактивная карта философских знаний Филолум. Исследуйте идеи, мыслителей и связи между ними." if not group else title + " — история философии, направления и мыслители в справочнике philoloom.", quote=True)}">
@@ -270,11 +287,12 @@ def shell(title, body, group='', hero_quote='', canonical_path=''):
 <meta property="og:site_name" content="philoloom">
 <link rel="stylesheet" href="style.css">
 <script src="app.js" defer></script>
+{extra_script}
 </head>
 <body>
 <a class="skip" href="#main">К содержимому</a>
 <main id="main" class="{'home-page' if not group else 'detail-page'}">{cover + '<div class="site-container home-inner">' + body + '</div>' if not group else body}</main>
-<footer><div class="site-container"><span class="footer-brand"><span class="brand-accessible-name">philoloom</span><span class="footer-tree" aria-hidden="true"></span><span class="footer-wordmark" aria-hidden="true"></span></span><span class="footer-description">Интерактивная карта философских знаний · Автор: <a href="https://mksddn.ru/" target="_blank" rel="author noopener noreferrer">Макс Дудин</a></span></div></footer>
+<footer><div class="site-container"><span class="footer-brand"><span class="brand-accessible-name">philoloom</span><span class="footer-tree" aria-hidden="true"></span><span class="footer-wordmark" aria-hidden="true"></span></span><span class="footer-description"><a href="map/">Карта знаний</a> · Интерактивная карта философских знаний · Автор: <a href="https://mksddn.ru/" target="_blank" rel="author noopener noreferrer">Макс Дудин</a></span></div></footer>
 <dialog id="page-panel" aria-label="Подробности страницы">
 <div class="panel-toolbar">
 <button id="panel-back" aria-label="Назад в панели">←</button>
@@ -329,7 +347,7 @@ for source, dest in assets.items():
     if source.relative_to(ROOT).as_posix() not in optimized_sources:
         copy_asset(source, OUT / dest)
 copy_asset(ROOT / 'site' / 'favicon.svg', OUT / 'favicon.svg')
-for name in ('style.css', 'app.js'):
+for name in ('style.css', 'app.js', 'map.js'):
     shutil.copyfile(ROOT / 'site' / name, OUT / name)
 
 def page_parts(page):
@@ -578,7 +596,8 @@ for p in pages.values():
         f'<div class="detail-navigation">{breadcrumbs(p)}{SEARCH_BUTTON}</div>'
         f'<div class="entity-detail entity-detail--{kind}">'
         f'<header class="entity-header"><span class="entity-kicker">{escape(p["group"])}</span>'
-        f'<h1>{escape(p["title"])}</h1></header>'
+        f'<h1>{escape(p["title"])}</h1>'
+        f'<a class="entity-map-link" href="map/?id={p["id"]}">На карте знаний</a></header>'
     )
     if p['group'] == 'Личности':
         overview, portrait_original = person_overview(p, facts_html, relations)
@@ -664,7 +683,8 @@ resources = (
     '<span class="resource-tile-arrow" aria-hidden="true">↗</span></a>'
     '</div>'
 )
-body = f'<div class="catalog-toolbar"><nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>{SEARCH_BUTTON}</div>'
+body = (f'<div class="catalog-toolbar"><nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>{SEARCH_BUTTON}</div>'
+        '<p class="map-teaser"><a href="map/">Исследовать связи на карте знаний</a></p>')
 
 class MediaLinks(HTMLParser):
     def __init__(self, text):
@@ -825,6 +845,86 @@ body += ('<section id="more" class="reference-section" aria-labelledby="heading-
 
 (OUT / 'index.html').write_text(shell('Атлас философской мысли', body, hero_quote=quote_html), encoding='utf-8')
 
+
+# Graph relations reflect links in the editorial corpus, not inferred ideas.
+relation_fields = {'Темы', 'Личности', 'История философии', 'Связь', 'Представители'}
+declared_pairs = set()
+for pid in public_ids:
+    for key in relation_fields:
+        for target in referenced_ids(rows_by_id[pid].get(key, '')):
+            if target in public_ids and target != pid:
+                declared_pairs.add(tuple(sorted((pid, target))))
+graph_nodes = [
+    {'id': p['id'], 'title': p['title'], 'group': p['group'], 'url': page_url(p)}
+    for p in sorted((pages[pid] for pid in public_ids),
+                    key=lambda p: (p['group'], p['title'].casefold()))
+]
+pairs = sorted({
+    tuple(sorted((pid, related)))
+    for pid in public_ids for related in connections[pid]
+    if related in public_ids and pid != related
+})
+graph_edges = [{'source': source, 'target': target,
+                'kind': 'relation' if (source, target) in declared_pairs else 'mention',
+                'semantics': []}
+               for source, target in pairs]
+by_pair = {(edge['source'], edge['target']): edge for edge in graph_edges}
+for link in load_semantic_links(ROOT, public_ids):
+    pair = tuple(sorted((link['source'], link['target'])))
+    if pair not in by_pair:
+        edge = {'source': pair[0], 'target': pair[1],
+                'kind': 'curated', 'semantics': []}
+        by_pair[pair] = edge
+        graph_edges.append(edge)
+    by_pair[pair]['semantics'].append(link)
+graph_edges.sort(key=lambda edge: (edge['source'], edge['target']))
+(OUT / 'graph.json').write_text(json.dumps({
+    'version': 1, 'notes': 'Explicit CSV relations and Markdown mentions only.',
+    'nodes': graph_nodes, 'edges': graph_edges
+}, ensure_ascii=False), encoding='utf-8')
+degree = {node['id']: 0 for node in graph_nodes}
+for edge in graph_edges:
+    degree[edge['source']] += 1
+    degree[edge['target']] += 1
+hub_nodes = sorted(graph_nodes, key=lambda n: (-degree[n['id']], n['title']))[:20]
+fallback = ''.join(
+    f'<li><a href="{escape(n["url"],quote=True)}">{escape(n["title"])}</a></li>'
+    for n in hub_nodes
+)
+map_body = (
+    '<div class="site-container knowledge-page">'
+    '<nav class="map-breadcrumb"><a href="index.html">Атлас философской мысли</a> / Карта знаний</nav>'
+    '<header class="knowledge-header"><span class="entity-kicker">Исследование связей</span>'
+    '<h1>Карта философских знаний</h1>'
+    '<p>Выберите идею или мыслителя, чтобы увидеть связанные записи. Линия отражает'
+    ' ссылку в справочнике, а не обязательно философское влияние или согласие.</p></header>'
+    '<form id="graph-form" class="map-controls">'
+    '<label for="graph-query">Найти запись</label>'
+    '<input type="search" id="graph-query" list="graph-suggestions"'
+    ' placeholder="Например, Онтология" required>'
+    '<datalist id="graph-suggestions"></datalist><button type="submit">Показать</button>'
+    '<label for="graph-group">Раздел</label>'
+    '<select id="graph-group"><option value="">Все разделы</option>'
+    '<option value="Темы">Темы</option><option value="Личности">Личности</option>'
+    '<option value="История философии">История философии</option></select></form>'
+    '<p id="graph-status" role="status" aria-live="polite">Загрузка карты…</p>'
+    '<div class="map-layout"><div class="map-canvas">'
+    '<svg id="graph-svg" viewBox="0 0 1000 660" role="img"'
+    ' aria-label="Связи выбранной записи">'
+    '<title>Карта знаний</title><desc>Все соседние записи также доступны списком.</desc></svg>'
+    '</div><aside class="map-neighbors" aria-labelledby="graph-heading">'
+    '<h2 id="graph-heading">Связанные материалы</h2>'
+    '<p id="graph-detail"></p><ul id="graph-list"></ul></aside></div>'
+    '<noscript><p>Без JavaScript доступны наиболее связанные записи:</p>'
+    '<ul>' + fallback + '</ul></noscript></div>'
+)
+(OUT / 'map').mkdir(exist_ok=True)
+(OUT / 'map' / 'index.html').write_text(
+    shell('Карта философских знаний', map_body, 'Карта знаний',
+          canonical_path='map/', extra_script='<script src="map.js" defer></script>'),
+    encoding='utf-8'
+)
+
 search = [
     dict(title=p['title'], group=p['group'], url=page_url(p),
          text=re.sub(r'^Конспект:.*(?:\n|$)', '', p['text'], flags=re.MULTILINE))
@@ -883,7 +983,7 @@ for alias, target in LEGACY_REDIRECTS.items():
 
 # The sitemap includes only human-readable canonical pages and the homepage.
 sitemap = ET.Element('urlset', xmlns='http://www.sitemaps.org/schemas/sitemap/0.9')
-for path in [''] + sorted(SLUGS.values()):
+for path in ['', 'map/'] + sorted(SLUGS.values()):
     entry = ET.SubElement(sitemap, 'url')
     ET.SubElement(entry, 'loc').text = SITE_URL + path
 ET.ElementTree(sitemap).write(OUT / 'sitemap.xml', encoding='utf-8', xml_declaration=True)
@@ -891,5 +991,8 @@ ET.ElementTree(sitemap).write(OUT / 'sitemap.xml', encoding='utf-8', xml_declara
     'User-agent: *\nAllow: /\nSitemap: ' + SITE_URL + 'sitemap.xml\n',
     encoding='utf-8'
 )
+if CNAME:
+    (OUT / 'CNAME').write_text(CNAME + '\n', encoding='utf-8')
+
 print(f'Built {len(public_ids)} public pages, {len(ordered["Цитаты"])} inline quotations; '
       + ', '.join(f'{g}: {len(ordered[g])}' for g, _ in GROUPS))

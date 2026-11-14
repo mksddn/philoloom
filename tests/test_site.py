@@ -41,6 +41,34 @@ class SiteTests(unittest.TestCase):
     def public_page(self, pid):
         return (OUT / self.slugs[pid] / 'index.html').read_text(encoding='utf-8')
 
+    def test_knowledge_map_uses_only_documented_public_references(self):
+        """The graph must not invent influence or include private/export-only notes."""
+        graph = json.loads((OUT / 'graph.json').read_text(encoding='utf-8'))
+        nodes = {node['id']: node for node in graph['nodes']}
+        self.assertEqual(set(nodes), set(self.slugs))
+        self.assertEqual({node['url'] for node in nodes.values()}, set(self.slugs.values()))
+        self.assertGreater(len(graph['edges']), 0)
+        pairs = set()
+        for edge in graph['edges']:
+            self.assertIn(edge['kind'], ('relation', 'mention', 'curated'))
+            self.assertIsInstance(edge['semantics'], list)
+            self.assertIn(edge['source'], nodes)
+            self.assertIn(edge['target'], nodes)
+            pair = tuple(sorted((edge['source'], edge['target'])))
+            self.assertNotEqual(pair[0], pair[1])
+            self.assertNotIn(pair, pairs)
+            pairs.add(pair)
+        page = (OUT / 'map/index.html').read_text(encoding='utf-8')
+        self.assertIn('id="graph-svg"', page)
+        self.assertIn('<base href="../">', page)
+        self.assertIn('src="map.js"', page)
+        self.assertIn('rel="canonical" href="https://mksddn.github.io/philoloom/map/"', page)
+        self.assertIn('<loc>https://mksddn.github.io/philoloom/map/</loc>',
+                      (OUT / 'sitemap.xml').read_text(encoding='utf-8'))
+        detail = self.public_page('c4c741fb50874c87a5d2cb4d4def5e50')
+        self.assertIn('map/?id=c4c741fb50874c87a5d2cb4d4def5e50', detail)
+        self.assertTrue((OUT / 'map.js').is_file())
+
     def test_all_pages_and_local_links_exist(self):
         entries = json.loads((OUT / 'search.json').read_text())
         self.assertEqual(len(entries), len(self.slugs) + 11)  # public pages + 11 inline quotes
@@ -64,6 +92,29 @@ class SiteTests(unittest.TestCase):
                     if target.is_dir():
                         target = target / 'index.html'
                     self.assertTrue(target.is_file(), (entry['title'], link))
+
+    def test_person_dates_match_between_markdown_and_csv(self):
+        """Catch inconsistencies such as Searle's missing CSV death year."""
+        with next((ROOT / 'content/notion').rglob('Личности *_all.csv')).open(
+                encoding='utf-8-sig', newline='') as stream:
+            people = list(csv.DictReader(stream))
+        texts = {}
+        for path in (ROOT / 'content/notion').rglob('*.md'):
+            if path.parent.name != 'Личности':
+                continue
+            data = path.read_text(encoding='utf-8')
+            title = data.splitlines()[0].removeprefix('# ')
+            texts[title] = data
+        for row in people:
+            self.assertIn(row['Name'], texts)
+            lines = texts[row['Name']].splitlines()
+            for key in ('Год рождения', 'Год смерти'):
+                values = [line.partition(': ')[2].strip()
+                          for line in lines if line.startswith(key + ': ')]
+                actual = values[0] if values else ''
+                self.assertEqual(actual, row[key].strip(), (row['Name'], key))
+        searle = next(row for row in people if row['Name'] == 'Джон Сёрл')
+        self.assertEqual(searle['Год смерти'], '2025')
 
     def test_pinned_slugs_and_legacy_forwarding(self):
         self.assertEqual(self.slugs['c4c741fb50874c87a5d2cb4d4def5e50'], 'people/rene-dekart/')

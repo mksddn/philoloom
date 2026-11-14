@@ -162,7 +162,7 @@ async function assertThemeArtwork(page, theme) {
       'Approved vector wordmark must load visibly: ' + JSON.stringify(visualBrand));
     assert.equal(await home.locator('#theme-toggle').count(), 0);
     assert.equal(await home.locator('.catalog-toolbar #search-open').count(), 1);
-    assert.equal(await home.locator('.section-nav a').count(), 5);
+    assert.equal(await home.locator('.section-nav a').count(), 6);
     assert.equal(await home.locator('.reference-section').count(), 5);
     assert.equal(await home.locator('.featured-quote').count(), 1);
     assert.equal(await home.locator('.hero-cover-content .featured-quote').count(), 1);
@@ -334,6 +334,19 @@ async function assertThemeArtwork(page, theme) {
     assert.equal(await home.locator('#panel-content #search-open').count(), 0);
     assert.ok(await home.locator('#page-panel').evaluate(element => element.open));
     await home.locator('#panel-close').click();
+    // The knowledge atlas uses only public CSV relations and must remain interactive.
+    await home.goto(base + '/atlas.html?focus=d5303c3cb5d8405b8915abd0d9074c9f', { waitUntil: 'domcontentloaded' });
+    await home.waitForFunction(() => document.querySelectorAll('#atlas-list li').length > 0 &&
+      document.querySelectorAll('#atlas-graph .atlas-node').length > 1);
+    assert.equal(await home.locator('#atlas-focus').inputValue(), 'd5303c3cb5d8405b8915abd0d9074c9f');
+    assert.ok(await home.locator('#atlas-list a').count() > 0, 'Philosopher must have navigable connections');
+    assert.ok(await home.locator('#atlas-list small').first().textContent().then(t => t.includes('связь из данных')));
+    await home.locator('#atlas-query').fill('Стоицизм');
+    assert.ok((await home.locator('#atlas-focus option').allTextContents()).every(t => t.includes('Стоицизм')));
+    await home.locator('#atlas-query').fill('');
+    await home.locator('.atlas-filters input[value="История философии"]').uncheck();
+    assert.ok(await home.locator('#atlas-status').textContent().then(t => t.includes('прямых связей')));
+    await assertNoOverflow(home, '1440px atlas');
     assert.deepEqual(errors, [], 'No uncaught JavaScript errors on desktop');
     await desktop.close();
     // A 4K desktop must not stretch the original 1440px artwork to 3840px.
@@ -439,6 +452,11 @@ async function assertThemeArtwork(page, theme) {
     await assertPeopleLayout(narrowPage, 2, '320px people');
     await narrowPage.goto(base + '/topics/germenevtika/', { waitUntil: 'domcontentloaded' });
     await assertNoOverflow(narrowPage, '320px article');
+    await narrowPage.goto(base + '/atlas.html?focus=d5303c3cb5d8405b8915abd0d9074c9f',
+      { waitUntil: 'domcontentloaded' });
+    await narrowPage.locator('#atlas-list a').first().waitFor();
+    await assertNoOverflow(narrowPage, '320px atlas');
+
 
     await narrow.close();
     console.log('Desktop 1440px, tablet breakpoints 700–1001px, ultrawide 3840px (both themes), mobile 390px and narrow mobile 320px checks passed.');

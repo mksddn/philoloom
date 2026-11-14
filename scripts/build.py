@@ -10,6 +10,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 from html.parser import HTMLParser
 import markdown
+from editorial_entries import load_entries, relation_fields
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'notion'
@@ -35,6 +36,16 @@ for path in sorted(CONTENT.rglob('*.md')):
 home = next(p for p in pages.values() if not p['group'])
 # IDs remain the source of truth; the checked-in map pins stable public URLs.
 SLUGS = json.loads((ROOT / 'content' / 'slugs.json').read_text(encoding='utf-8'))
+# Editorial additions live outside the original export and receive stable URLs.
+EDITORIAL = load_entries(ROOT)
+for entry in EDITORIAL:
+    pid = entry['id']
+    if pid in pages or pid in SLUGS:
+        raise ValueError('Editorial ID collides with exported page: ' + pid)
+    pages[pid] = {'id': pid, 'path': entry['path'], 'title': entry['title'],
+                  'text': entry['text'], 'group': entry['group']}
+    SLUGS[pid] = entry['url']
+
 
 def page_url(page):
     if page['id'] == home['id']:
@@ -216,6 +227,10 @@ for group,_ in SOURCE_GROUPS:
         p = matching_page(group, row)
         ordered[group].append(p)
         rows_by_id[p['id']] = row
+
+for entry in EDITORIAL:
+    ordered[entry['group']].append(pages[entry['id']])
+    rows_by_id[entry['id']] = relation_fields(entry, pages)
 
 public_ids = {page['id'] for group, _ in GROUPS if group != 'Цитаты' for page in ordered[group]}
 if set(SLUGS) != public_ids:

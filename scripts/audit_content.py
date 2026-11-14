@@ -11,6 +11,10 @@ import re
 from collections import Counter, defaultdict
 from pathlib import Path
 from urllib.parse import unquote
+if __package__:
+    from .editorial_entries import load_entries, relation_fields
+else:
+    from editorial_entries import load_entries, relation_fields
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'notion'
@@ -131,7 +135,33 @@ def audit(root=ROOT):
         records[pid] = row
         titles[(section, ' '.join(title.casefold().split()))].append(pid)
 
+    # Curated, independently authored pages augment (never rewrite) the export.
+    editorial = load_entries(root)
+    for entry in editorial:
+        pid = entry['id']
+        if pid in records:
+            duplicate_ids.append({'id': pid, 'paths': [records[pid]['path'],
+                                                     entry['path'].relative_to(root).as_posix()]})
+            continue
+        props, body = page_parts(entry['text'])
+        rel = entry['path'].relative_to(root).as_posix()
+        records[pid] = dict(
+            id=pid, title=entry['title'], section=entry['group'], path=rel,
+            scope='public', public_url=None, body_chars=prose_chars(body),
+            intro_chars=len(opening_paragraph(body)),
+            properties=props, _body=body, _source=entry['text'],
+            markdown_refs=refs(entry['text']) - {pid})
+        titles[(entry['group'], ' '.join(entry['title'].casefold().split()))].append(pid)
+        if pid in slugs or entry['url'] in slugs.values():
+            raise ValueError('Curated slug collides with legacy registry: ' + entry['url'])
+        slugs[pid] = entry['url']
+
     csv_rows, csv_warnings = load_csv_metadata(content, records)
+    page_lookup = {pid: {'title': record['title'], 'group': record['section']}
+                   for pid, record in records.items() if record['section'] in PUBLIC_GROUPS}
+    for entry in editorial:
+        if entry['id'] in records and records[entry['id']]['path'] == entry['path'].relative_to(root).as_posix():
+            csv_rows[entry['id']] = relation_fields(entry, page_lookup)
     graph_out = {pid: set() for pid in records}
     graph_in = {pid: set() for pid in records}
     unresolved = []

@@ -164,6 +164,15 @@ class SiteTests(unittest.TestCase):
         self.assertIn('class="person-quotes"', descartes)
 
 
+    def test_quotation_provenance_is_visible_without_changing_text(self):
+        """Never silently present an unverified Russian quotation as established."""
+        home = (OUT / 'index.html').read_text(encoding='utf-8')
+        self.assertEqual(home.count('class="quote-source-note"'), 11)
+        self.assertIn('Точность русского перевода не сверена', home)
+        self.assertIn('Возможный пересказ, не дословная цитата', home)
+        self.assertIn('Первоисточник не подтверждён', home)
+        self.assertIn('Если наказывать ребенка за дурное и награждать за доброе', home)
+
     def test_sections_remain_in_static_html(self):
         source = (OUT / 'index.html').read_text()
         self.assertEqual(source.count('class="reference-section"'), 5)

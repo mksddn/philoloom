@@ -419,13 +419,28 @@ def related_records(page, already_shown):
             '<p>Ссылки из других материалов справочника.</p>' + content + '</div>')
 
 
+QUOTE_PROVENANCE = json.loads((ROOT / 'content' / 'quote-provenance.json').read_text(encoding='utf-8'))['quotes']
+QUOTE_STATUS_NOTES = {
+    'source_located': 'Точность русского перевода не сверена',
+    'paraphrase_review': 'Возможный пересказ, не дословная цитата',
+    'unverified': 'Первоисточник не подтверждён',
+}
+
+
 def quote_figure(page, anchored=False):
     author = rows_by_id[page['id']].get('Автор', '')
     author_html = property_html(author, page) if author else 'Автор не указан'
     anchor = f' id="quote-{page["id"]}"' if anchored else ''
+    info = QUOTE_PROVENANCE.get(page['id'])
+    if not info:
+        raise ValueError(f'No quotation provenance record for {page["id"]}')
+    status = info.get('status')
+    if status not in QUOTE_STATUS_NOTES:
+        raise ValueError(f'Unexpected quotation review status for {page["id"]}: {status}')
+    note = escape(QUOTE_STATUS_NOTES[status])
     return (f'<figure class="quote-entry"{anchor}><span class="quote-entry-label">Цитата</span>'
             f'<blockquote><p>{escape(page["title"])}</p></blockquote>'
-            f'<figcaption>{author_html}</figcaption></figure>')
+            f'<figcaption>{author_html}<small class="quote-source-note"> · {note}</small></figcaption></figure>')
 
 
 def person_portrait(page):

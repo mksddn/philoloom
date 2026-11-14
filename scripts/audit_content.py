@@ -11,6 +11,7 @@ import re
 from collections import Counter, defaultdict
 from pathlib import Path
 from urllib.parse import unquote
+from editorial_entries import load_entries, relational_row
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'notion'
@@ -131,7 +132,34 @@ def audit(root=ROOT):
         records[pid] = row
         titles[(section, ' '.join(title.casefold().split()))].append(pid)
 
+    # The Notion files remain untouched: editorial additions live in a
+    # separate registry and are inventoried under their declared public group.
+    editorial = load_entries(root)
+    for entry in editorial:
+        pid, title, section = entry['id'], entry['title'], entry['group']
+        rel = entry['path'].relative_to(root).as_posix()
+        if pid in records:
+            duplicate_ids.append({'id':pid,'paths':[records[pid]['path'],rel]})
+            continue
+        if (section, ' '.join(title.casefold().split())) in titles:
+            # The duplicate-title gate below will catch this safely.
+            pass
+        props, body = page_parts(entry['text'])
+        records[pid] = dict(
+            id=pid,title=title,section=section,path=rel,scope='public',
+            public_url=None,body_chars=prose_chars(body),
+            intro_chars=len(opening_paragraph(body)), properties=props,
+            _body=body,_source=entry['text'],
+            markdown_refs=refs(entry['text']) - {pid},
+        )
+        titles[(section, ' '.join(title.casefold().split()))].append(pid)
+
     csv_rows, csv_warnings = load_csv_metadata(content, records)
+    for entry in editorial:
+        if entry['id'] in records:
+            pages_by_id = {pid: {'title': row['title'], 'group': row['section']}
+                           for pid, row in records.items()}
+            csv_rows[entry['id']] = relational_row(entry, pages_by_id)
     graph_out = {pid: set() for pid in records}
     graph_in = {pid: set() for pid in records}
     unresolved = []

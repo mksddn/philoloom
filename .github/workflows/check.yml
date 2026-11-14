@@ -2,7 +2,7 @@ name: Validate PhiloLoom changes
 
 on:
   pull_request:
-    branches: [main, design/approved-visual-direction]
+    # Also run stacked feature PRs that target other branches.
 
 # New commits supersede older runs for the same PR. Other PRs remain independent.
 concurrency:

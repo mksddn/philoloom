@@ -32,6 +32,8 @@ jobs:
       - name: Check exported content
         run: python scripts/audit_content.py --report editorial-report.json
       - name: Build and test
+        env:
+          PHILOLOOM_SITE_URL: ${{ vars.PHILOLOOM_SITE_URL || 'https://mksddn.github.io/philoloom/' }}
         run: make check
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

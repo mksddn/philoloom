@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "relations": [
+    {
+      "source": "d5303c3cb5d8405b8915abd0d9074c9f",
+      "target": "ba21d53fa1ee428f9f0fdc01cde8ea14",
+      "type": "responds_to",
+      "statement": "Кант переосмысливает поставленную Юмом проблему причинности: обоснование необходимой связи событий становится задачей критики познания.",
+      "evidence": {
+        "work": "Иммануил Кант, «Пролегомены ко всякой будущей метафизике»",
+        "locator": "Предисловие; §§ 27–30",
+        "url": "https://plato.stanford.edu/entries/kant-hume-causality/"
+      }
+    },
+    {
+      "source": "eb3b20a973e0439399515775fe251c97",
+      "target": "d5303c3cb5d8405b8915abd0d9074c9f",
+      "type": "develops",
+      "statement": "Фихте развивает трансцендентальную философию Канта, предлагая более единое основание теоретического и практического разума.",
+      "evidence": {
+        "work": "И. Г. Фихте, «Наукоучение» (Wissenschaftslehre)",
+        "locator": "Философский проект Фихте, раздел 2 справки SEP",
+        "url": "https://plato.stanford.edu/entries/johann-fichte/"
+      }
+    },
+    {
+      "source": "bed09a3399144396a503d79898e8a5ca",
+      "target": "44efa008da2d4553911e0d6d29e3b795",
+      "type": "criticizes",
+      "statement": "Аристотель критикует платоновское отделение умопостигаемых форм от отдельных вещей и рассматривает универсалии как связанные с вещами.",
+      "evidence": {
+        "work": "Аристотель, «Метафизика»",
+        "locator": "Книги Α и Μ; обсуждение форм Платона в справке SEP",
+        "url": "https://plato.stanford.edu/entries/aristotle-metaphysics/"
+      }
+    }
+  ]
+}

@@ -12,6 +12,7 @@ from html.parser import HTMLParser
 import markdown
 from editorial_entries import load_entries, relation_fields
 from site_config import site_settings
+from semantic_links import load_semantic_links
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'notion'
@@ -864,8 +865,19 @@ pairs = sorted({
     if related in public_ids and pid != related
 })
 graph_edges = [{'source': source, 'target': target,
-                'kind': 'relation' if (source, target) in declared_pairs else 'mention'}
+                'kind': 'relation' if (source, target) in declared_pairs else 'mention',
+                'semantics': []}
                for source, target in pairs]
+by_pair = {(edge['source'], edge['target']): edge for edge in graph_edges}
+for link in load_semantic_links(ROOT, public_ids):
+    pair = tuple(sorted((link['source'], link['target'])))
+    if pair not in by_pair:
+        edge = {'source': pair[0], 'target': pair[1],
+                'kind': 'curated', 'semantics': []}
+        by_pair[pair] = edge
+        graph_edges.append(edge)
+    by_pair[pair]['semantics'].append(link)
+graph_edges.sort(key=lambda edge: (edge['source'], edge['target']))
 (OUT / 'graph.json').write_text(json.dumps({
     'version': 1, 'notes': 'Explicit CSV relations and Markdown mentions only.',
     'nodes': graph_nodes, 'edges': graph_edges

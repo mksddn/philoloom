@@ -12,6 +12,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from urllib.parse import unquote
 from editorial_entries import load_entries, relational_row
+from site_config import configured_site_url
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'notion'
@@ -182,7 +183,7 @@ def audit(root=ROOT):
     ]
     duplicated = {pid for item in duplicate_titles for pid in item['ids']}
     broken_by_id = Counter(x['source_id'] for x in unresolved)
-    home_url = 'https://mksddn.github.io/philoloom/'
+    home_url = configured_site_url()
     entries, placeholders = [], []
     for pid, row in records.items():
         section, title, body = row['section'], row['title'], row['_body']

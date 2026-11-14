@@ -12,11 +12,12 @@ from html.parser import HTMLParser
 import markdown
 from knowledge_graph import build_graph
 from editorial_entries import load_entries, relational_row
+from site_config import configured_site_url, custom_domain
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'notion'
 OUT = ROOT / 'dist'
-SITE_URL = 'https://mksddn.github.io/philoloom/'
+SITE_URL = configured_site_url()
 GROUPS = [('Темы', 'Темы'), ('История философии', 'История философии'),
           ('Цитаты', 'Цитаты'), ('Личности', 'Личности')]
 # Retain exported homework metadata for direct article URLs, but no public section.
@@ -961,6 +962,11 @@ ET.ElementTree(sitemap).write(OUT / 'sitemap.xml', encoding='utf-8', xml_declara
     'User-agent: *\nAllow: /\nSitemap: ' + SITE_URL + 'sitemap.xml\n',
     encoding='utf-8'
 )
+# GitHub Pages uses CNAME only for a custom apex/subdomain deployment.
+domain = custom_domain(SITE_URL)
+if domain:
+    (OUT / 'CNAME').write_text(domain + '\n', encoding='utf-8')
+
 print(f'Built {len(public_ids)} public pages, {len(ordered["Цитаты"])} inline quotations; '
       + ', '.join(f'{g}: {len(ordered[g])}' for g, _ in GROUPS))
 , '', p.stem)

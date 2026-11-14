@@ -839,6 +839,35 @@ for page in pages.values():
     if page['id'] in public_ids or page['group'] == 'Цитаты' and page['id'] in rows_by_id:
         write_legacy_alias(page, page_url(page))
 
+# Explicit legacy redirects for merged or renamed public records.
+# These supplement the automatic Notion-ID forwarding pages.
+LEGACY_REDIRECTS = json.loads((ROOT / 'content' / 'redirects.json').read_text(encoding='utf-8'))
+for alias, target in LEGACY_REDIRECTS.items():
+    if target not in SLUGS.values():
+        raise ValueError(f'Legacy redirect target is not published: {target}')
+    if not (re.fullmatch(r'[a-f0-9]{32}\\.html', alias)
+            or re.fullmatch(r'(?:topics|people|history)/[a-z0-9-]+/', alias)):
+        raise ValueError(f'Invalid legacy redirect source: {alias}')
+    destination = OUT / alias
+    if alias.endswith('/'):
+        destination = destination / 'index.html'
+    if destination.exists():
+        raise ValueError(f'Legacy redirect conflicts with an existing page: {alias}')
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    canonical_url = SITE_URL + target
+    title = next(p['title'] for p in pages.values()
+                 if SLUGS.get(p['id']) == target)
+    destination.write_text(
+        '<!doctype html><html lang="ru"><head><meta charset="utf-8">'
+        '<meta name="robots" content="noindex,follow">'
+        f'<link rel="canonical" href="{escape(canonical_url, quote=True)}">'
+        f'<meta http-equiv="refresh" content="0;url={escape(canonical_url, quote=True)}">'
+        f'<title>{escape(title)} · philoloom</title></head>'
+        f'<body><p>Страница переехала: <a href="{escape(canonical_url, quote=True)}">'
+        f'{escape(title)}</a></p></body></html>', encoding='utf-8'
+    )
+
+
 # The sitemap includes only human-readable canonical pages and the homepage.
 sitemap = ET.Element('urlset', xmlns='http://www.sitemaps.org/schemas/sitemap/0.9')
 for path in [''] + sorted(SLUGS.values()):

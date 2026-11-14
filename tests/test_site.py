@@ -80,6 +80,25 @@ class SiteTests(unittest.TestCase):
         self.assertIn('/people/rene-dekart/', sitemap)
         self.assertNotIn('c4c741fb50874c87a5d2cb4d4def5e50.html', sitemap)
 
+    def test_slavophilism_merge_preserves_canonical_and_old_urls(self):
+        canonical_id = '21618a276d8d80fd8c45c76380b480ba'
+        retired_id = '21618a276d8d80b181ccf9d91811bd41'
+        self.assertEqual(self.slugs[canonical_id], 'topics/slavyanofilstvo/')
+        self.assertNotIn(retired_id, self.slugs)
+        article = self.public_page(canonical_id)
+        self.assertIn('Славянофильство', article)
+        self.assertIn('Хомяков', article)
+        for legacy in (retired_id + '.html', 'topics/slavyanofilstvo-21618a27/index.html'):
+            page = (OUT / legacy).read_text(encoding='utf-8')
+            self.assertIn('name="robots" content="noindex,follow"', page)
+            self.assertIn('https://mksddn.github.io/philoloom/topics/slavyanofilstvo/', page)
+        with next((ROOT / 'content/notion').rglob('Темы *_all.csv')).open(
+                encoding='utf-8-sig', newline='') as stream:
+            names = [row['Name'] for row in csv.DictReader(stream)]
+        self.assertEqual(names.count('Славянофильство'), 1)
+        search = json.loads((OUT / 'search.json').read_text(encoding='utf-8'))
+        self.assertEqual(sum(x['title'] == 'Славянофильство' for x in search), 1)
+
     def test_quotes_are_inline_and_deep_linkable(self):
         quote_id = '47d742c8761f4a0c86a27b43497759b0'
         home = (OUT / 'index.html').read_text()

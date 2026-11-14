@@ -16,7 +16,8 @@ from audit_content import opening_paragraph, prose_chars
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def create_entry(root, group, title, slug, body, relations=None, dry_run=False):
+def create_entry(root, group, title, slug, body, relations=None, dry_run=False,
+                 birth=None, death=None):
     root = Path(root)
     title = title.strip()
     if group not in GROUP_PREFIX or not title or len(title) > 180:
@@ -56,7 +57,14 @@ def create_entry(root, group, title, slug, body, relations=None, dry_run=False):
             raise ValueError('Relations must point to published stable IDs: ' + field)
 
     pid = uuid.uuid4().hex
-    markdown = '# ' + title + '\n\n' + body.strip() + '\n'
+    props = ''
+    if group == 'Личности':
+        if not birth or not str(birth).strip():
+            raise ValueError('For a philosopher specify the birth year')
+        props = 'Год рождения: ' + str(birth).strip() + '\n'
+        if death:
+            props += 'Год смерти: ' + str(death).strip() + '\n'
+    markdown = '# ' + title + '\n\n' + props + ('\n' if props else '') + body.strip() + '\n'
     record = {'id':pid,'title':title,'group':group,'slug':slug,'relations':relations}
     if dry_run:
         return {'id':pid, 'url':canonical, 'path':None, 'dry_run':True}
@@ -89,6 +97,8 @@ def main():
     parser.add_argument('--title', required=True)
     parser.add_argument('--slug', required=True)
     parser.add_argument('--body-file', type=Path, required=True)
+    parser.add_argument('--birth', help='Birth year for biographies (negative for BCE)')
+    parser.add_argument('--death', help='Death year for biographies, when applicable')
     parser.add_argument('--relation', action='append', default=[], metavar='FIELD=ID',
                         help='Repeat for multiple relationships; only existing public IDs')
     parser.add_argument('--dry-run', action='store_true')
@@ -101,7 +111,8 @@ def main():
         relations.setdefault(key, []).append(pid)
     result = create_entry(args.root,args.group,args.title,args.slug,
                           args.body_file.read_text(encoding='utf-8'),
-                          relations,dry_run=args.dry_run)
+                          relations,dry_run=args.dry_run,
+                          birth=args.birth,death=args.death)
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 

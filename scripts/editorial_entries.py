@@ -69,6 +69,17 @@ def load_entries(root):
 def relational_row(entry, pages):
     """Adapt stable ID relations to the legacy CSV row interface."""
     row = {'Name': entry['title']}
+    # Editorial biography facts are carried in the Markdown front matter,
+    # rather than modifying Notion's exported CSV tables.
+    for line in entry['text'].splitlines()[1:]:
+        value = line.strip()
+        if not value:
+            continue
+        if not re.match(r'^[^#>\\-*\\[\\n]{1,35}: ', value):
+            break
+        key, text = value.split(': ', 1)
+        if key in {'Год рождения', 'Год смерти'}:
+            row[key] = text
     for field, targets in entry['relations'].items():
         for pid in targets:
             if pid not in pages or pages[pid]['group'] not in GROUP_PREFIX:

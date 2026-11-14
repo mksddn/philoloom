@@ -845,7 +845,7 @@ LEGACY_REDIRECTS = json.loads((ROOT / 'content' / 'redirects.json').read_text(en
 for alias, target in LEGACY_REDIRECTS.items():
     if target not in SLUGS.values():
         raise ValueError(f'Legacy redirect target is not published: {target}')
-    if not (re.fullmatch(r'[a-f0-9]{32}\\.html', alias)
+    if not (re.fullmatch(r'[a-f0-9]{32}\.html', alias)
             or re.fullmatch(r'(?:topics|people|history)/[a-z0-9-]+/', alias)):
         raise ValueError(f'Invalid legacy redirect source: {alias}')
     destination = OUT / alias

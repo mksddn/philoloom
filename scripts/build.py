@@ -838,7 +838,10 @@ search = [
 
 # A separately navigable atlas is a static, indexable page. The graph contains
 # only source-backed links from the public CSV rows and preserves provenance.
-graph = build_graph(pages, rows_by_id, ordered, SLUGS)
+semantic_relations = json.loads((ROOT / 'content' / 'semantic-relations.json').read_text(encoding='utf-8'))
+if semantic_relations.get('version') != 1 or not isinstance(semantic_relations.get('relations'), list):
+    raise ValueError('Unsupported curated relations format')
+graph = build_graph(pages, rows_by_id, ordered, SLUGS, semantic_relations['relations'])
 (OUT / 'graph.json').write_text(
     json.dumps(graph, ensure_ascii=False, separators=(',', ':')), encoding='utf-8'
 )

@@ -2734,3 +2734,7 @@ body > footer { flex-shrink: 0; }
  .map-neighbors { padding: 16px; }
  #graph-list { max-height: none; }
 }
+
+.graph-edges .graph-edge--mention { stroke-dasharray: 6 7; opacity: .72; }
+.map-neighbour-copy { display: flex; flex-direction: column; min-width: 0; gap: 4px; }
+.map-neighbour-copy small { font-size: 11px; line-height: 1.35; color: var(--muted); }

@@ -18,7 +18,8 @@
     return el;
   };
   const normalize = text => text.trim().toLocaleLowerCase('ru');
-  let nodes, links, current;
+  let nodes, links, edges, current;
+  const pairKey = (a, b) => [a, b].sort().join(':');
 
   function select(id) {
     if (!nodes.has(id)) return;
@@ -48,7 +49,25 @@
       button.textContent = 'В центр';
       button.setAttribute('aria-label', 'Показать связи: ' + node.title);
       button.addEventListener('click', () => select(node.id));
-      li.append(link, button);
+      const relationship = edges.get(pairKey(current.id, node.id));
+      const note = document.createElement('small');
+      if (relationship.semantics?.length) {
+        const item = relationship.semantics[0];
+        const verbs = {'develops':'развивает идеи', 'criticizes':'критикует',
+          'influences':'повлиял на', 'belongs_to':'относится к',
+          'responds_to':'полемизирует с'};
+        const subject = nodes.get(item.source).title;
+        const object = nodes.get(item.target).title;
+        note.textContent = subject + ' ' + verbs[item.relation] + ' ' + object;
+        note.title = item.evidence.work + ', ' + item.evidence.locator;
+      } else {
+        note.textContent = relationship.kind === 'relation' ?
+          'Явная связь' : 'Упоминание';
+      }
+      const content = document.createElement('span');
+      content.className = 'map-neighbour-copy';
+      content.append(link, note);
+      li.append(content, button);
       list.append(li);
     });
     if (connected.length === 0) {
@@ -64,7 +83,8 @@
       const angle = -Math.PI / 2 + 2 * Math.PI * index / displayed.length;
       const x = 500 + 355 * Math.cos(angle);
       const y = 330 + 240 * Math.sin(angle);
-      edgeGroup.append(make('line', {x1: 500, y1: 330, x2: x, y2: y}));
+      edgeGroup.append(make('line', {x1: 500, y1: 330, x2: x, y2: y,
+        'class': 'graph-edge--' + edges.get(pairKey(current.id, node.id)).kind}));
       const item = make('g', {
         transform: 'translate(' + x + ' ' + y + ')',
         'class': 'graph-node graph-' + type[node.group],
@@ -110,8 +130,10 @@
     if (!Array.isArray(graph.nodes) || !Array.isArray(graph.edges)) throw Error('Graph format');
     nodes = new Map(graph.nodes.map(node => [node.id, node]));
     links = new Map(graph.nodes.map(node => [node.id, new Set()]));
+    edges = new Map();
     graph.edges.forEach(edge => {
       if (!nodes.has(edge.source) || !nodes.has(edge.target)) throw Error('Unknown reference');
+      edges.set(pairKey(edge.source, edge.target), edge);
       links.get(edge.source).add(edge.target);
       links.get(edge.target).add(edge.source);
     });

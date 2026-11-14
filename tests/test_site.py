@@ -50,7 +50,8 @@ class SiteTests(unittest.TestCase):
         self.assertGreater(len(graph['edges']), 0)
         pairs = set()
         for edge in graph['edges']:
-            self.assertIn(edge['kind'], ('relation', 'mention'))
+            self.assertIn(edge['kind'], ('relation', 'mention', 'curated'))
+            self.assertIsInstance(edge['semantics'], list)
             self.assertIn(edge['source'], nodes)
             self.assertIn(edge['target'], nodes)
             pair = tuple(sorted((edge['source'], edge['target'])))

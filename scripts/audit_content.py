@@ -19,21 +19,21 @@ def substantive_body(lines):
     remaining = list(lines[1:])
     while remaining and not remaining[0].strip():
         remaining.pop(0)
-    while remaining and re.match(r'^[^#>\\-*\\[\\n]{1,35}: ', remaining[0]):
+    while remaining and re.match(r'^[^#>\-*\[\n]{1,35}: ', remaining[0]):
         remaining.pop(0)
-    return "\\n".join(remaining).strip()
+    return "\n".join(remaining).strip()
 
 
 def opening_paragraph(body):
     """Return the first prose block, ignoring leading Markdown headings."""
-    blocks = re.split(r'\\n\\s*\\n', body)
+    blocks = re.split(r'\n\s*\n', body)
     for block in blocks:
         block = block.strip()
         if not block or block.startswith(('#', '!', '|', '-', '*', '>', '```')):
             continue
-        if re.fullmatch(r'\\[[^]]+\\]\\([^)]*\\)', block):
+        if re.fullmatch(r'\[[^]]+\]\([^)]*\)', block):
             continue
-        return re.sub(r'\\[[^]]+\\]\\([^)]*\\)', '', block).strip()
+        return re.sub(r'\[[^]]+\]\([^)]*\)', '', block).strip()
     return ""
 
 
@@ -55,8 +55,8 @@ def audit():
         titles[(section, title.casefold())].append(relative)
         body = substantive_body(lines)
         intro = opening_paragraph(body)
-        relations = len(set(re.findall(r'[a-f0-9]{32}\\.md', file.read_text(encoding="utf-8"), re.I)))
-        body_chars = len(re.sub(r'\\s+', ' ', body).strip())
+        relations = len(set(re.findall(r'[a-f0-9]{32}\.md', file.read_text(encoding="utf-8"), re.I)))
+        body_chars = len(re.sub(r'\s+', ' ', body).strip())
         findings = []
         if body_chars == 0:
             findings.append("empty_body")

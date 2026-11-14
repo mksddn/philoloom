@@ -69,7 +69,7 @@ for path in CONTENT.rglob('*_all.csv'):
         databases[name] = list(csv.DictReader(stream))
 for entry in editorial_entries:
     databases[entry['group']].append(relational_row(entry, pages))
-db_ids = {ID.search(p.name)[1]: re.sub(r' [a-f0-9]{32}_all
+db_ids = {ID.search(p.name)[1]: re.sub(r' [a-f0-9]{32}_all$', '', p.stem)
           for p in CONTENT.rglob('*_all.csv')}
 assets = {p.resolve(): 'assets/' + p.relative_to(CONTENT).as_posix()
           for p in CONTENT.rglob('*') if p.is_file() and p.suffix not in ('.md', '.csv')}

@@ -437,10 +437,9 @@ def quote_figure(page, anchored=False):
     status = info.get('status')
     if status not in QUOTE_STATUS_NOTES:
         raise ValueError(f'Unexpected quotation review status for {page["id"]}: {status}')
-    note = escape(QUOTE_STATUS_NOTES[status])
     return (f'<figure class="quote-entry"{anchor}><span class="quote-entry-label">Цитата</span>'
             f'<blockquote><p>{escape(page["title"])}</p></blockquote>'
-            f'<figcaption>{author_html}<small class="quote-source-note"> · {note}</small></figcaption></figure>')
+            f'<figcaption>{author_html}</figcaption></figure>')
 
 
 def person_portrait(page):
@@ -508,8 +507,7 @@ def person_quotes(page):
     return ('<section class="person-quotes" aria-label="Высказывания в справочнике">'
             '<h2>Высказывания в справочнике</h2>'
             f'<div class="person-quote-grid">{tiles}</div>'
-            '<p class="person-quote-note">Атрибуция перенесена из исходной коллекции; '
-            'первоисточники цитат требуют проверки.</p></section>')
+            '</section>')
 
 
 def person_overview(page, facts_html, relations):

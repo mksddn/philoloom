@@ -2200,13 +2200,6 @@ footer .site-container {
   font: 500 24px/1.25 var(--serif);
 }
 .person-quote-grid { display: grid; gap: 14px; }
-.person-quote-note {
-  margin-top: 13px;
-  max-width: 65ch;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.6;
-}
 .person-sources ul {
   list-style: none;
   margin: 0;

@@ -41,6 +41,31 @@ class SiteTests(unittest.TestCase):
     def public_page(self, pid):
         return (OUT / self.slugs[pid] / 'index.html').read_text(encoding='utf-8')
 
+    def test_atlas_has_public_source_backed_links(self):
+        atlas = (OUT / 'atlas.html').read_text(encoding='utf-8')
+        graph = json.loads((OUT / 'graph.json').read_text(encoding='utf-8'))
+        self.assertIn('<h1>Атлас связей</h1>', atlas)
+        self.assertIn('atlas.js', atlas)
+        self.assertIn('id="atlas-graph"', atlas)
+        self.assertIn('atlas.html', (OUT / 'index.html').read_text(encoding='utf-8'))
+        self.assertEqual(set(node['id'] for node in graph['nodes']), set(self.slugs))
+        self.assertEqual(len(graph['nodes']), 113)
+        self.assertTrue(graph['edges'])
+        self.assertEqual(len(graph['edges']),
+                         len({(edge['source'], edge['target']) for edge in graph['edges']}))
+        for edge in graph['edges']:
+            self.assertLess(edge['source'], edge['target'])
+            self.assertEqual(edge['type'], 'explicit_relation')
+            self.assertTrue(edge['evidence'])
+            for evidence in edge['evidence']:
+                self.assertIn(evidence['from'], (edge['source'],edge['target']))
+                self.assertIn(evidence['field'], ('История философии','Личности','Темы','Связь'))
+        self.assertIn('atlas.html', (OUT / 'sitemap.xml').read_text(encoding='utf-8'))
+        for identifier in ('10ebde78a3c349b29057a45caee57a92',
+                           'c4c741fb50874c87a5d2cb4d4def5e50'):
+            self.assertIn('atlas.html?focus=' + identifier, self.public_page(identifier))
+        self.assertNotIn('Самостоятельная работа', json.dumps(graph,ensure_ascii=False))
+
     def test_all_pages_and_local_links_exist(self):
         entries = json.loads((OUT / 'search.json').read_text())
         self.assertEqual(len(entries), len(self.slugs) + 11)  # public pages + 11 inline quotes

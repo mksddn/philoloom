@@ -170,7 +170,7 @@ class SiteTests(unittest.TestCase):
         self.assertEqual(home.count('class="quote-source-note"'), 11)
         self.assertIn('Точность русского перевода не сверена', home)
         self.assertIn('Возможный пересказ, не дословная цитата', home)
-        self.assertIn('Первоисточник не подтверждён', home)
+        self.assertNotIn('Первоисточник не подтверждён', home)
         self.assertIn('Если наказывать ребенка за дурное и награждать за доброе', home)
 
     def test_sections_remain_in_static_html(self):

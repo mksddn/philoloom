@@ -11,11 +11,12 @@ from urllib.parse import unquote, urlsplit
 from html.parser import HTMLParser
 import markdown
 from editorial_entries import load_entries, relation_fields
+from site_config import site_settings
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'notion'
 OUT = ROOT / 'dist'
-SITE_URL = 'https://mksddn.github.io/philoloom/'
+SITE_URL, CNAME = site_settings()
 GROUPS = [('Темы', 'Темы'), ('История философии', 'История философии'),
           ('Цитаты', 'Цитаты'), ('Личности', 'Личности')]
 # Retain exported homework metadata for direct article URLs, but no public section.
@@ -978,5 +979,8 @@ ET.ElementTree(sitemap).write(OUT / 'sitemap.xml', encoding='utf-8', xml_declara
     'User-agent: *\nAllow: /\nSitemap: ' + SITE_URL + 'sitemap.xml\n',
     encoding='utf-8'
 )
+if CNAME:
+    (OUT / 'CNAME').write_text(CNAME + '\n', encoding='utf-8')
+
 print(f'Built {len(public_ids)} public pages, {len(ordered["Цитаты"])} inline quotations; '
       + ', '.join(f'{g}: {len(ordered[g])}' for g, _ in GROUPS))

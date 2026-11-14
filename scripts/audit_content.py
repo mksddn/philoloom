@@ -221,6 +221,11 @@ def audit(root=ROOT):
         elif section == 'Личности':
             if not row['properties'].get('Год рождения') or not row['properties'].get('Год смерти'):
                 findings.append('biographical_dates_review')
+            # CSV drives visible biographical facts; source Markdown must agree.
+            csv_data = csv_rows.get(pid, {})
+            for date_field in ('Год рождения', 'Год смерти'):
+                if row['properties'].get(date_field, '').strip() != csv_data.get(date_field, '').strip():
+                    findings.append('biographical_metadata_conflict')
         elif section in ('Темы', 'История философии') and not re.search(
                 r'(?im)^#{2,4}\s*(источники|литература|библиография)', body):
             findings.append('sources_review')
@@ -281,6 +286,7 @@ PUBLIC_GATE_FINDINGS = {
     'placeholder', 'empty_body', 'stub_review', 'missing_intro',
     'intro_length_review', 'duplicate_title_review', 'missing_public_slug',
     'broken_internal_references', 'isolated_review', 'sources_review',
+    'biographical_metadata_conflict',
 }
 
 

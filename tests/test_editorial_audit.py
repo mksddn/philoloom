@@ -1,5 +1,6 @@
 """Regression tests for the source-preserving content inventory."""
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -35,7 +36,7 @@ class EditorialAuditTests(unittest.TestCase):
             with self.subTest(title=row['title']):
                 text = (Path(__file__).resolve().parents[1] / row['path']).read_text(encoding='utf-8')
                 _, body = page_parts(text)
-                lead = next((paragraph for block in __import__('re').split(r'\\n\\s*\\n', body)
+                lead = next((paragraph for block in re.split(r'\n\s*\n', body)
                              if (paragraph := opening_paragraph(block))), '')
                 self.assertGreaterEqual(len(lead), 100)
                 self.assertLessEqual(len(lead), 650)

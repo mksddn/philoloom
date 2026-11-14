@@ -440,6 +440,24 @@ async function assertThemeArtwork(page, theme) {
     await narrowPage.goto(base + '/topics/germenevtika/', { waitUntil: 'domcontentloaded' });
     await assertNoOverflow(narrowPage, '320px article');
 
+
+    // The knowledge graph must work as a page, not merely build valid HTML.
+    await narrowPage.goto(base + '/map/?id=10ebde78a3c349b29057a45caee57a92',
+      {waitUntil: 'domcontentloaded'});
+    await narrowPage.locator('.graph-center circle').waitFor({state: 'visible'});
+    assert.ok(await narrowPage.locator('#graph-list li a').count() > 0,
+      'Ontology must have documented neighbours');
+    assert.equal(await narrowPage.locator('#graph-suggestions option').count(), 113);
+    await assertNoOverflow(narrowPage, '320px knowledge map');
+    await narrowPage.locator('#graph-query').fill('Стоицизм');
+    await narrowPage.locator('#graph-form button[type="submit"]').click();
+    await narrowPage.waitForFunction(() =>
+      document.querySelector('#graph-status')?.textContent.includes('Стоицизм'));
+    assert.ok((await narrowPage.url()).includes('id=64ce57239e924e6792da00fc8eff63a2'));
+    await narrowPage.locator('#graph-group').selectOption('Личности');
+    assert.ok((await narrowPage.locator('#graph-status').textContent()).includes('Стоицизм'));
+    await assertNoOverflow(narrowPage, '320px filtered map');
+
     await narrow.close();
     console.log('Desktop 1440px, tablet breakpoints 700–1001px, ultrawide 3840px (both themes), mobile 390px and narrow mobile 320px checks passed.');
   } finally {

@@ -2733,3 +2733,17 @@ body > footer { flex-shrink: 0; }
  .atlas-relations ul { grid-template-columns: 1fr; }
  #atlas-graph .atlas-label { font-size: 15px; }
 }
+
+
+.catalog-toolbar .atlas-nav-link {
+  flex: 0 0 auto; margin-left: 8px; padding: 10px 12px;
+  color: var(--accent); border: 1px solid var(--line);
+  border-radius: 3px; text-decoration: none; font-size: 13px;
+  white-space: nowrap;
+}
+.catalog-toolbar .atlas-nav-link:hover,
+.catalog-toolbar .atlas-nav-link:focus-visible { background: var(--surface); }
+@media (max-width: 650px) {
+  .catalog-toolbar .atlas-nav-link { font-size: 0; padding: 9px; }
+  .catalog-toolbar .atlas-nav-link::before { content: 'Карта'; font-size: 12px; }
+}

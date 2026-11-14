@@ -162,7 +162,8 @@ async function assertThemeArtwork(page, theme) {
       'Approved vector wordmark must load visibly: ' + JSON.stringify(visualBrand));
     assert.equal(await home.locator('#theme-toggle').count(), 0);
     assert.equal(await home.locator('.catalog-toolbar #search-open').count(), 1);
-    assert.equal(await home.locator('.section-nav a').count(), 6);
+    assert.equal(await home.locator('.section-nav a').count(), 5);
+    assert.equal(await home.locator('.atlas-nav-link').count(), 1);
     assert.equal(await home.locator('.reference-section').count(), 5);
     assert.equal(await home.locator('.featured-quote').count(), 1);
     assert.equal(await home.locator('.hero-cover-content .featured-quote').count(), 1);

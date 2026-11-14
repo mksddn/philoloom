@@ -228,7 +228,6 @@ if len(set(SLUGS.values())) != len(SLUGS) or any(
     raise ValueError('Duplicate or invalid public slugs.')
 
 nav = (''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}">{label}</a>' for g,label in GROUPS)
-       + '<a href="atlas.html">Атлас связей</a>'
        + '<a href="index.html#more">Ещё</a>')
 
 # The visual identity is a presentation layer; content remains sourced from Notion.
@@ -667,7 +666,9 @@ resources = (
     '<span class="resource-tile-arrow" aria-hidden="true">↗</span></a>'
     '</div>'
 )
-body = f'<div class="catalog-toolbar"><nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>{SEARCH_BUTTON}</div>'
+body = (f'<div class="catalog-toolbar"><nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>'
+        '<a class="atlas-nav-link" href="atlas.html">Атлас связей</a>'
+        f'{SEARCH_BUTTON}</div>')
 
 class MediaLinks(HTMLParser):
     def __init__(self, text):

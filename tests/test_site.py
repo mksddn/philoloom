@@ -130,6 +130,27 @@ class SiteTests(unittest.TestCase):
                 self.assertIn('<article>', page)
                 self.assertIn('Источники и исследования', page)
 
+    def test_next_philosopher_batch_has_independent_explanations(self):
+        """Eight philosopher cards have substantive text and retained metadata."""
+        expected = {
+            '6eda584ca34948838eae6bba482a1ea2': 'первичные качества',
+            'ba21d53fa1ee428f9f0fdc01cde8ea14': 'индукции',
+            '43d6e4e552094f21bd5e0de378f311fd': 'пограничных ситуаций',
+            'f86d8811cb4446978333cb13528ee88e': 'идеология',
+            'a6c8256c59de4bd0bdeb2f80bfa1e3cf': 'диалектика',
+            '901b9cac4f5b412b9f1cd2084f255032': 'сверхчеловека',
+            '10739540eb1a4ed594f8b542b7317867': 'бытие-в-мире',
+            '3132d7f8d0844f899c62d7db011891b8': 'языковые игры',
+        }
+        for pid, term in expected.items():
+            with self.subTest(pid=pid):
+                article = self.public_page(pid)
+                self.assertIn(term, article.casefold())
+                self.assertIn('Основные произведения и исследования', article)
+                self.assertIn('Год рождения', article)
+                self.assertIn('entity-detail--people', article)
+                self.assertIn('href="https://', article)
+
     def test_quotes_are_inline_and_deep_linkable(self):
         quote_id = '47d742c8761f4a0c86a27b43497759b0'
         home = (OUT / 'index.html').read_text()

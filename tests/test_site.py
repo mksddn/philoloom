@@ -115,6 +115,21 @@ class SiteTests(unittest.TestCase):
                 self.assertTrue(any(label in html for label in (
                     'Первоисточники', 'Основные сочинения', 'основные произведения')))
 
+    def test_foundational_topics_have_clear_introductions(self):
+        titles = {
+            '2f72ef4fe8234fac95e4f7386c6828ff': 'Эллинизм',
+            '680f3c6b79564cf7a4176bcd07c8f61b': 'Неоплатонизм',
+            '6a3b16ed93cf45cfbe6c86b1c11bc000': 'Патристика',
+            'a6f686e17d3149ac9b4ba3b31457a84e': 'Гуманизм',
+            'c6def37927ee4cdb8cba31ceaebf68bd': 'Пифагорейская школа',
+        }
+        for pid, title in titles.items():
+            with self.subTest(topic=title):
+                page = self.public_page(pid)
+                self.assertIn(title, page)
+                self.assertIn('<article>', page)
+                self.assertIn('Источники и исследования', page)
+
     def test_quotes_are_inline_and_deep_linkable(self):
         quote_id = '47d742c8761f4a0c86a27b43497759b0'
         home = (OUT / 'index.html').read_text()

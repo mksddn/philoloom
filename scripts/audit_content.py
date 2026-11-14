@@ -43,7 +43,10 @@ def opening_paragraph(body):
     """The *first* visible block must be prose (not prose after a heading)."""
     blocks = re.split(r'\n\s*\n', body.strip()) if body.strip() else []
     first = blocks[0].strip() if blocks else ''
-    if (not first or first.startswith(('#', '!', '|', '-', '*', '>', chr(96) * 3, '<'))
+    # Markdown emphasis at the start (e.g. **Русский космизм**) is prose,
+    # unlike lists, headings, media blocks and standalone links.
+    if (not first or first.startswith(('#', '![', '|', '>', chr(96) * 3, '<'))
+            or re.match(r'^(?:[-+*]\s+|[0-9]+[.)]\s+)', first)
             or SOLO_LINK.fullmatch(first)):
         return ''
     return re.sub(r'\[([^]]+)\]\([^)]*\)', r'\1', first).strip()

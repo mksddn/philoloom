@@ -18,6 +18,12 @@ class EditorialAuditTests(unittest.TestCase):
         self.assertEqual(opening_paragraph('## Заголовок\n\nПотом идёт объяснение.'), '')
         self.assertEqual(opening_paragraph('[Внешняя ссылка](https://example.org)'), '')
         self.assertTrue(opening_paragraph('Понятие — объяснение.'))
+        self.assertTrue(opening_paragraph('**Русский космизм** — направление.'))
+        self.assertTrue(opening_paragraph('*Гуманизм* — историческая традиция.'))
+        self.assertEqual(opening_paragraph('* Пункт списка'), '')
+        self.assertEqual(opening_paragraph('- Пункт списка'), '')
+        self.assertEqual(opening_paragraph('1. Первый пункт'), '')
+        self.assertEqual(opening_paragraph('![Портрет](portrait.jpg)'), '')
 
     def test_property_stripping_matches_site_builder(self):
         props, body = page_parts('# Тема\n\nЛичности: Текст\nГод: 2026\n\nВступление.\n')

@@ -75,7 +75,7 @@ def relational_row(entry, pages):
         value = line.strip()
         if not value:
             continue
-        if not re.match(r'^[^#>\\-*\\[\\n]{1,35}: ', value):
+        if not value.startswith(('Год рождения: ', 'Год смерти: ')):
             break
         key, text = value.split(': ', 1)
         if key in {'Год рождения', 'Год смерти'}:

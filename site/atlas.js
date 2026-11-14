@@ -34,6 +34,25 @@
       adjacency.get(edge.source).push({node: map.get(edge.target), edge});
       adjacency.get(edge.target).push({node: map.get(edge.source), edge});
     }
+    for (const relation of graph.semantic_edges || []) {
+      if (!ids.has(relation.source) || !ids.has(relation.target) ||
+          relation.source === relation.target ||
+          !['responds_to', 'develops', 'criticizes'].includes(relation.type) ||
+          !relation.evidence?.url?.startsWith('https://') ||
+          !relation.evidence?.work || !relation.evidence?.locator || !relation.statement) {
+        throw new Error('Invalid sourced philosophical relationship');
+      }
+      let joined = adjacency.get(relation.source)
+        .find(value => value.node.id === relation.target)?.edge;
+      if (!joined) {
+        joined = {source:relation.source,target:relation.target,
+          type:'semantic', evidence:[], interpretations:[]};
+        adjacency.get(relation.source).push({node:map.get(relation.target),edge:joined});
+        adjacency.get(relation.target).push({node:map.get(relation.source),edge:joined});
+      }
+      joined.interpretations ??= [];
+      joined.interpretations.push(relation);
+    }
     for (const values of adjacency.values()) {
       values.sort((a, b) => a.node.title.localeCompare(b.node.title, 'ru'));
     }
@@ -120,7 +139,7 @@
     });
     for (const point of coordinates) {
       root.append(el('line', {x1:centerX,y1:centerY,x2:point.x,y2:point.y,
-        'class':'atlas-edge'}));
+        'class':point.item.edge.interpretations?.length ? 'atlas-edge atlas-edge--semantic' : 'atlas-edge'}));
     }
     for (const point of coordinates) {
       root.append(drawNode(point.item.node, point.x, point.y, false));
@@ -135,8 +154,32 @@
       const small = document.createElement('small');
       const sourceFields = edge.evidence.map(item =>
         nodeMap.get(item.from).title + ' · ' + item.field);
-      small.textContent = node.group + ' · связь из данных: ' + sourceFields.join('; ');
+      small.textContent = node.group +
+        (sourceFields.length ? ' · связь из данных: ' + sourceFields.join('; ') :
+          ' · редакционно подтверждённая связь');
       li.append(a, small);
+      for (const relation of edge.interpretations || []) {
+        const claim = document.createElement('p');
+        claim.className = 'atlas-semantic-claim';
+        const verbs = {
+          responds_to: ['Отвечает на проблему', 'На его проблему отвечает'],
+          develops: ['Развивает идеи', 'Его идеи развивает'],
+          criticizes: ['Критикует', 'Его идеи критикует'],
+        };
+        const direction = selected.id === relation.source ? 0 : 1;
+        const lead = document.createElement('strong');
+        lead.textContent = verbs[relation.type][direction] + ': ';
+        claim.append(lead, document.createTextNode(relation.statement));
+        li.append(claim);
+        const source = document.createElement('a');
+        source.href = relation.evidence.url;
+        source.target = '_blank';
+        source.rel = 'noopener noreferrer';
+        source.className = 'atlas-claim-source';
+        source.textContent = 'Источник: ' + relation.evidence.work +
+          ' (' + relation.evidence.locator + ')';
+        li.append(source);
+      }
       list.append(li);
     }
     if (!linked.length) {

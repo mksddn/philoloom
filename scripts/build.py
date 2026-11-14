@@ -872,9 +872,9 @@ atlas_body = (
     '<section class="atlas-relations" aria-labelledby="atlas-relations-heading">'
     '<h2 id="atlas-relations-heading">Связанные материалы</h2>'
     '<ul id="atlas-list"></ul></section>'
-    '<p class="atlas-disclaimer">Линии показывают связи, прямо указанные '
-    'в исходных данных. Они не означают автоматически влияние, согласие '
-    'или философскую полемику.</p>'
+    '<p class="atlas-disclaimer">Тонкие линии показывают связи из исходных CSV; '
+    'выделенные линии — редакционно подтверждённые отношения с источниками. '
+    'Обычная связь не означает автоматически влияние, согласие или полемику.</p>'
     '</div><script src="atlas.js" defer></script>'
 )
 (OUT / 'atlas.html').write_text(

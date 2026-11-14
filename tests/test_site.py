@@ -51,6 +51,13 @@ class SiteTests(unittest.TestCase):
         self.assertEqual(set(node['id'] for node in graph['nodes']), set(self.slugs))
         self.assertEqual(len(graph['nodes']), 113)
         self.assertTrue(graph['edges'])
+        self.assertEqual(len(graph['semantic_edges']), 3)
+        for relation in graph['semantic_edges']:
+            self.assertIn(relation['source'], self.slugs)
+            self.assertIn(relation['target'], self.slugs)
+            self.assertTrue(relation['evidence']['url'].startswith('https://'))
+            self.assertTrue(relation['evidence']['locator'])
+
         self.assertEqual(len(graph['edges']),
                          len({(edge['source'], edge['target']) for edge in graph['edges']}))
         for edge in graph['edges']:

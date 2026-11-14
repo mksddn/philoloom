@@ -50,6 +50,26 @@ class KnowledgeGraphUnitTests(unittest.TestCase):
         graph = build_graph(self.pages,self.rows,self.ordered,self.slugs)
         self.assertEqual(graph['edges'],[])
 
+    def test_semantic_relation_requires_verified_source(self):
+        from knowledge_graph import validate_semantic_relations
+        relation = {
+            'source': self.person['id'], 'target': self.topic['id'],
+            'type': 'develops',
+            'statement': 'Философ развивает исследование формы и порядка правильного рассуждения.',
+            'evidence': {'work':'Пример произведения', 'locator':'Книга I, глава 1',
+                         'url':'https://plato.stanford.edu/entries/aristotle-logic/'},
+        }
+        self.assertEqual(len(validate_semantic_relations([relation], set(self.slugs))), 1)
+        for invalid in [
+            {**relation, 'target':self.private['id']},
+            {**relation, 'evidence':{'work':'Без точной страницы', 'url':'https://example.com'}},
+            {**relation, 'type':'influenced_by'},
+        ]:
+            with self.assertRaises(ValueError):
+                validate_semantic_relations([invalid], set(self.slugs))
+        with self.assertRaises(ValueError):
+            validate_semantic_relations([relation,relation], set(self.slugs))
+
     def test_unpublished_nodes_are_rejected(self):
         self.slugs[self.private['id']] = 'topics/private/'
         with self.assertRaises(ValueError):

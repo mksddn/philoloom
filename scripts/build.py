@@ -10,6 +10,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 from html.parser import HTMLParser
 import markdown
+from knowledge_graph import build_graph
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'notion'
@@ -227,6 +228,7 @@ if len(set(SLUGS.values())) != len(SLUGS) or any(
     raise ValueError('Duplicate or invalid public slugs.')
 
 nav = (''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}">{label}</a>' for g,label in GROUPS)
+       + '<a href="atlas.html">Атлас связей</a>'
        + '<a href="index.html#more">Ещё</a>')
 
 # The visual identity is a presentation layer; content remains sourced from Notion.
@@ -329,7 +331,7 @@ for source, dest in assets.items():
     if source.relative_to(ROOT).as_posix() not in optimized_sources:
         copy_asset(source, OUT / dest)
 copy_asset(ROOT / 'site' / 'favicon.svg', OUT / 'favicon.svg')
-for name in ('style.css', 'app.js'):
+for name in ('style.css', 'app.js', 'atlas.js'):
     shutil.copyfile(ROOT / 'site' / name, OUT / name)
 
 def page_parts(page):
@@ -578,7 +580,8 @@ for p in pages.values():
         f'<div class="detail-navigation">{breadcrumbs(p)}{SEARCH_BUTTON}</div>'
         f'<div class="entity-detail entity-detail--{kind}">'
         f'<header class="entity-header"><span class="entity-kicker">{escape(p["group"])}</span>'
-        f'<h1>{escape(p["title"])}</h1></header>'
+        f'<h1>{escape(p["title"])}</h1>'
+        f'<a class="atlas-discover" href="atlas.html?focus={p["id"]}">Исследовать связи →</a></header>'
     )
     if p['group'] == 'Личности':
         overview, portrait_original = person_overview(p, facts_html, relations)
@@ -832,6 +835,50 @@ search = [
 ]
 (OUT / 'search.json').write_text(json.dumps(search, ensure_ascii=False), encoding='utf-8')
 
+# A separately navigable atlas is a static, indexable page. The graph contains
+# only source-backed links from the public CSV rows and preserves provenance.
+graph = build_graph(pages, rows_by_id, ordered, SLUGS)
+(OUT / 'graph.json').write_text(
+    json.dumps(graph, ensure_ascii=False, separators=(',', ':')), encoding='utf-8'
+)
+atlas_body = (
+    '<div class="atlas-wrap">'
+    '<div class="detail-navigation"><nav class="back page-breadcrumbs" '
+    'aria-label="Путь по справочнику"><a href="index.html">philoloom</a>'
+    '<span aria-hidden="true">/</span><span aria-current="page">Атлас связей</span></nav>'
+    + SEARCH_BUTTON + '</div>'
+    '<header class="atlas-header"><span class="entity-kicker">Исследование идей</span>'
+    '<h1>Атлас связей</h1>'
+    '<p>Выбери идею, мыслителя или исторический раздел и исследуй подтверждённые '
+    'связи с другими материалами справочника.</p></header>'
+    '<section class="atlas-controls" aria-label="Фильтры атласа">'
+    '<label for="atlas-query">Найти сущность</label>'
+    '<input id="atlas-query" type="search" autocomplete="off" '
+    'placeholder="Название или имя…" />'
+    '<label for="atlas-focus">Центр карты</label>'
+    '<select id="atlas-focus"></select>'
+    '<fieldset class="atlas-filters"><legend>Показывать</legend>'
+    '<label><input type="checkbox" value="Темы" checked> Темы</label>'
+    '<label><input type="checkbox" value="Личности" checked> Личности</label>'
+    '<label><input type="checkbox" value="История философии" checked> Историю философии</label>'
+    '</fieldset></section>'
+    '<p class="atlas-status" id="atlas-status" role="status">Загрузка связей…</p>'
+    '<div class="atlas-viewport"><svg id="atlas-graph" viewBox="0 0 920 580" '
+    'role="img" aria-label="Граф связанных философских материалов"></svg></div>'
+    '<section class="atlas-relations" aria-labelledby="atlas-relations-heading">'
+    '<h2 id="atlas-relations-heading">Связанные материалы</h2>'
+    '<ul id="atlas-list"></ul></section>'
+    '<p class="atlas-disclaimer">Линии показывают связи, прямо указанные '
+    'в исходных данных. Они не означают автоматически влияние, согласие '
+    'или философскую полемику.</p>'
+    '</div><script src="atlas.js" defer></script>'
+)
+(OUT / 'atlas.html').write_text(
+    shell('Атлас связей', atlas_body, group='Атлас', canonical_path='atlas.html'),
+    encoding='utf-8'
+)
+
+
 # Old Notion-ID URLs remain as noindex HTML forwarding pages. GitHub Pages
 # cannot produce real HTTP 301 redirects on its own; never list aliases
 # in the sitemap or point canonical URLs back to the aliases.
@@ -883,7 +930,7 @@ for alias, target in LEGACY_REDIRECTS.items():
 
 # The sitemap includes only human-readable canonical pages and the homepage.
 sitemap = ET.Element('urlset', xmlns='http://www.sitemaps.org/schemas/sitemap/0.9')
-for path in [''] + sorted(SLUGS.values()):
+for path in ['', 'atlas.html'] + sorted(SLUGS.values()):
     entry = ET.SubElement(sitemap, 'url')
     ET.SubElement(entry, 'loc').text = SITE_URL + path
 ET.ElementTree(sitemap).write(OUT / 'sitemap.xml', encoding='utf-8', xml_declaration=True)

@@ -10,8 +10,12 @@ import json
 import uuid
 from pathlib import Path
 
-from editorial_entries import ID, KINDS, SLUG, editorial_paths, load_entries
-from audit_content import opening_paragraph, page_parts, prose_chars
+if __package__:
+    from .editorial_entries import ID, KINDS, SLUG, editorial_paths, load_entries
+    from .audit_content import opening_paragraph, page_parts, prose_chars
+else:
+    from editorial_entries import ID, KINDS, SLUG, editorial_paths, load_entries
+    from audit_content import opening_paragraph, page_parts, prose_chars
 
 ROOT = Path(__file__).resolve().parents[1]
 

@@ -2688,3 +2688,48 @@ body > footer { flex-shrink: 0; }
 @media print {
   body { display: block; min-height: 0; }
 }
+
+
+/* Knowledge atlas. It does not pretend that a CSV link implies philosophical influence. */
+.atlas-wrap { width: min(1160px, calc(100% - 48px)); margin: 30px auto 80px; }
+.atlas-header { max-width: 760px; padding: 26px 0 20px; }
+.atlas-header h1 { font: 500 clamp(35px, 5vw, 58px)/1.1 var(--serif); margin: 12px 0; }
+.atlas-header p { color: var(--muted); line-height: 1.7; }
+.atlas-controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin: 22px 0 15px; }
+.atlas-controls > label { font-size: 13px; }
+.atlas-controls > input, .atlas-controls > select { box-sizing: border-box; min-height: 42px; border: 1px solid var(--line); background: var(--surface); color: var(--text); border-radius: 7px; padding: 8px 12px; max-width: 100%; }
+.atlas-controls > input { flex: 1 1 185px; }
+.atlas-controls > select { flex: 1 1 260px; }
+.atlas-filters { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; width: 100%; padding: 12px 0; border: 0; margin: 0; }
+.atlas-filters legend { color: var(--muted); font-size: 12px; }
+.atlas-filters label { display: inline-flex; gap: 5px; align-items: center; font-size: 13px; }
+.atlas-filters input { accent-color: var(--accent); }
+.atlas-status { color: var(--muted); font-size: 13px; min-height: 1.6em; }
+.atlas-viewport { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+#atlas-graph { display: block; width: 100%; height: auto; min-height: 230px; }
+.atlas-edge { stroke: var(--muted); stroke-opacity: .32; stroke-width: 1.2; }
+.atlas-center-circle { fill: var(--accent); stroke: var(--paper); stroke-width: 5; }
+.atlas-neighbor-circle { fill: var(--paper); stroke: var(--accent); stroke-width: 2.2; }
+.atlas-node--people .atlas-neighbor-circle { stroke: #a6794c; }
+.atlas-node--history .atlas-neighbor-circle { stroke: #737ca8; }
+.atlas-node a { color: inherit; cursor: pointer; }
+.atlas-node a:hover .atlas-neighbor-circle, .atlas-node a:focus .atlas-neighbor-circle { fill: var(--accent); }
+.atlas-node a:focus-visible { outline: none; }
+.atlas-node a:focus-visible circle { stroke-width: 5; }
+.atlas-label { fill: var(--text); font-size: 13px; font-weight: 500; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.atlas-relations { margin: 27px 0; }
+.atlas-relations h2 { font: 500 25px/1.3 var(--serif); }
+.atlas-relations ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 22px; }
+.atlas-relations li { border-bottom: 1px solid var(--line); padding: 12px 0; min-width: 0; }
+.atlas-relations a { display: block; color: var(--text); overflow-wrap: anywhere; }
+.atlas-relations small { display: block; color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 5px; overflow-wrap: anywhere; }
+.atlas-disclaimer { max-width: 750px; color: var(--muted); font-size: 12px; }
+.atlas-discover { display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 650px) {
+ .atlas-wrap { width: calc(100% - 32px); margin: 16px auto 60px; }
+ .atlas-controls { align-items: stretch; flex-direction: column; }
+ .atlas-controls > input, .atlas-controls > select { flex: auto; width: 100%; }
+ .atlas-filters { gap: 10px; }
+ .atlas-relations ul { grid-template-columns: 1fr; }
+ #atlas-graph .atlas-label { font-size: 15px; }
+}

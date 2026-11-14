@@ -112,7 +112,8 @@ class SiteTests(unittest.TestCase):
                 self.assertIn(keyword, html.casefold())
                 self.assertIn('Stanford Encyclopedia of Philosophy', html)
                 self.assertIn('<article>', html)
-                self.assertIn('Основные', html if 'Основные' in html else name)
+                self.assertTrue(any(label in html for label in (
+                    'Первоисточники', 'Основные сочинения', 'основные произведения')))
 
     def test_quotes_are_inline_and_deep_linkable(self):
         quote_id = '47d742c8761f4a0c86a27b43497759b0'

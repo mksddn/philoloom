@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.audit_content import audit, opening_paragraph, page_parts, prose_chars
+from scripts.audit_content import audit, opening_paragraph, page_parts, prose_chars, public_gate_issues
 
 
 A = 'a' * 32
@@ -24,6 +24,16 @@ class EditorialAuditTests(unittest.TestCase):
         self.assertEqual(opening_paragraph('- Пункт списка'), '')
         self.assertEqual(opening_paragraph('1. Первый пункт'), '')
         self.assertEqual(opening_paragraph('![Портрет](portrait.jpg)'), '')
+
+    def test_release_gate_ignores_excluded_legacy_references(self):
+        result = audit()
+        self.assertEqual(public_gate_issues(result), [])
+        self.assertGreaterEqual(len(result['unresolved_references']), 1)
+        self.assertTrue(all(
+            item['source_id'] in {row['id'] for row in result['entries']
+                                  if row['scope'] == 'excluded'}
+            for item in result['unresolved_references']
+        ))
 
     def test_public_corpus_has_no_empty_or_unsourced_articles(self):
         """Final corpus-level checks: all published long-form records have text and citations."""

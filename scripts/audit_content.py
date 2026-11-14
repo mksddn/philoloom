@@ -244,19 +244,59 @@ def audit(root=ROOT):
     }
 
 
+
+# The public build must have no structural/editorial completeness regressions.
+# The private Notion-export homework remains inventoried, not release-blocking.
+PUBLIC_GATE_FINDINGS = {
+    'placeholder', 'empty_body', 'stub_review', 'missing_intro',
+    'intro_length_review', 'duplicate_title_review', 'missing_public_slug',
+    'broken_internal_references', 'isolated_review', 'sources_review',
+}
+
+
+def public_gate_issues(result):
+    issues = []
+    pub = {row['id'] for row in result['entries'] if row['scope'] == 'public'}
+    for row in result['entries']:
+        if row['scope'] != 'public':
+            continue
+        for kind in row['findings']:
+            if kind in PUBLIC_GATE_FINDINGS:
+                issues.append({'path': row['path'], 'issue': kind})
+    for item in result['invalid_filenames']:
+        # Only exact public section paths are release blocking.
+        parts = Path(item).parts
+        if len(parts) > 3 and parts[3] in PUBLIC_GROUPS:
+            issues.append({'path': item, 'issue': 'invalid_filename'})
+    for item in result['duplicate_ids']:
+        if item['id'] in pub:
+            issues.append({'path': ', '.join(item['paths']), 'issue': 'duplicate_id'})
+    for item in result['unresolved_references']:
+        if item['source_id'] in pub:
+            issues.append({'path': item['source'], 'issue': 'unresolved_reference'})
+    for item in result['csv_warnings']:
+        name = Path(item['csv']).name
+        if any(name.startswith(section + ' ') for section in PUBLIC_GROUPS):
+            issues.append({'path': item['csv'], 'issue': item['issue']})
+    return issues
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--report', type=Path, help='Write JSON report to this path')
     parser.add_argument('--root', type=Path, default=ROOT, help='Repository root (for fixtures)')
     parser.add_argument('--summary', action='store_true', help='Print concise aggregate results')
-    parser.add_argument('--strict', action='store_true', help='Fail on structural anomalies (opt-in)')
+    parser.add_argument('--strict', action='store_true', help='Reject regressions in the published corpus')
+    parser.add_argument('--strict-all', action='store_true', help='Include legacy excluded-source anomalies')
     args = parser.parse_args()
     result = audit(args.root)
     if args.report:
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.report.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(result['summary'] if args.summary else result, ensure_ascii=False, indent=2))
-    if args.strict and any(result[k] for k in (
+    if args.strict and public_gate_issues(result):
+        raise SystemExit(1)
+    if args.strict_all and any(result[k] for k in (
             'possible_duplicates', 'possible_placeholders', 'invalid_filenames',
             'duplicate_ids', 'csv_warnings', 'unresolved_references')):
         raise SystemExit(1)

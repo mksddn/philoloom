@@ -25,6 +25,34 @@ class EditorialAuditTests(unittest.TestCase):
         self.assertEqual(opening_paragraph('1. Первый пункт'), '')
         self.assertEqual(opening_paragraph('![Портрет](portrait.jpg)'), '')
 
+    def test_public_corpus_has_no_empty_or_unsourced_articles(self):
+        """Final corpus-level checks: all published long-form records have text and citations."""
+        result = audit()
+        public = [r for r in result['entries'] if r['scope'] == 'public']
+        self.assertEqual(len(public), 124)
+        self.assertEqual(result['summary']['by_status'], {'needs-review': 124})
+        for row in public:
+            with self.subTest(title=row['title'], section=row['section']):
+                self.assertNotIn('empty_body', row['findings'])
+                self.assertNotIn('stub_review', row['findings'])
+                self.assertNotIn('duplicate_title_review', row['findings'])
+                self.assertNotIn('missing_public_slug', row['findings'])
+                self.assertNotIn('broken_internal_references', row['findings'])
+                if row['section'] in ('Темы', 'История философии'):
+                    self.assertNotIn('sources_review', row['findings'])
+                if row['section'] == 'Темы':
+                    self.assertNotIn('missing_intro', row['findings'])
+                    self.assertNotIn('intro_length_review', row['findings'])
+                if row['section'] == 'Личности':
+                    self.assertGreaterEqual(row['body_chars'], 250)
+        self.assertFalse(result['possible_duplicates'])
+        self.assertFalse(result['csv_warnings'])
+        self.assertFalse(result['invalid_filenames'])
+        self.assertFalse(result['duplicate_ids'])
+        self.assertFalse(any(row['scope'] == 'public' and row['unresolved_links']
+                             for row in result['entries']))
+        self.assertEqual(sum('isolated_review' in e['findings'] for e in public), 0)
+
     def test_property_stripping_matches_site_builder(self):
         props, body = page_parts('# Тема\n\nЛичности: Текст\nГод: 2026\n\nВступление.\n')
         self.assertEqual(list(props), ['Личности', 'Год'])

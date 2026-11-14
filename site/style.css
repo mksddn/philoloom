@@ -2747,3 +2747,9 @@ body > footer { flex-shrink: 0; }
   .catalog-toolbar .atlas-nav-link { font-size: 0; padding: 9px; }
   .catalog-toolbar .atlas-nav-link::before { content: 'Карта'; font-size: 12px; }
 }
+
+/* Editorially sourced philosophical arguments are visibly distinct from CSV associations. */
+.atlas-edge--semantic { stroke: var(--accent); stroke-width: 3; stroke-opacity: .78; }
+.atlas-semantic-claim { font-size: 13px; line-height: 1.55; margin: 7px 0 4px; }
+.atlas-semantic-claim strong { color: var(--accent); font-weight: 650; }
+.atlas-relations .atlas-claim-source { color: var(--accent); font-size: 12px; line-height: 1.5; margin-top: 5px; text-decoration: underline; text-underline-offset: 2px; }

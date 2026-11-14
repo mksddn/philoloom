@@ -341,7 +341,12 @@ async function assertThemeArtwork(page, theme) {
       document.querySelectorAll('#atlas-graph .atlas-node').length > 1);
     assert.equal(await home.locator('#atlas-focus').inputValue(), 'd5303c3cb5d8405b8915abd0d9074c9f');
     assert.ok(await home.locator('#atlas-list a').count() > 0, 'Philosopher must have navigable connections');
-    assert.ok(await home.locator('#atlas-list small').first().textContent().then(t => t.includes('связь из данных')));
+    assert.ok(await home.locator('#atlas-list small').allTextContents().then(values =>
+      values.some(value => value.includes('связь из данных'))));
+    await home.locator('.atlas-semantic-claim').first().waitFor();
+    assert.ok(await home.locator('.atlas-claim-source').first().getAttribute('href')
+      .then(url => url.startsWith('https://plato.stanford.edu/')));
+    assert.ok(await home.locator('.atlas-edge--semantic').count() > 0);
     await home.locator('#atlas-query').fill('Стоицизм');
     assert.ok((await home.locator('#atlas-focus option').allTextContents()).every(t => t.includes('Стоицизм')));
     await home.locator('#atlas-query').fill('');

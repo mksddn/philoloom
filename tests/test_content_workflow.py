@@ -54,6 +54,17 @@ class ContentWorkflowTests(unittest.TestCase):
         self.assertEqual(public[0]['relations'], [self.old_id])
         self.assertEqual(before, self.original.read_bytes())
 
+    def test_reject_title_already_present_in_notion_export(self):
+        group = self.root / 'content/notion/Философия/Темы'
+        group.mkdir(parents=True)
+        (group / ('Исходная идея ' + self.old_id + '.md')).write_text(
+            '# Уникальность\\n\\nОригинальный текст.\\n'.replace('\\n', '\n'),
+            encoding='utf-8')
+        with self.assertRaises(SystemExit):
+            main(['--root', str(self.root), 'create', '--group', 'Темы',
+                  '--title', 'уникальность', '--slug', 'unikalnost'])
+        self.assertFalse((self.root / 'content/editorial/entries.json').exists())
+
     def test_reject_duplicate_or_unsafe_slugs(self):
         for slug in ('staraya-tema', '../escape', 'Русское название'):
             with self.subTest(slug=slug):

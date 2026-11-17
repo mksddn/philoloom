@@ -68,6 +68,15 @@ def main(argv=None):
         if any(entry['group'] == args.group and entry['title'].casefold() == title.casefold()
                for entry in existing):
             parser.error('An original article with this title already exists')
+        # A canonical title cannot silently duplicate an exported Notion record.
+        # Search public source records only; draft article manifests are checked above.
+        for original in (root / 'content/notion').rglob('*.md'):
+            if original.parent.name != args.group:
+                continue
+            first_line = original.read_text(encoding='utf-8').splitlines()
+            if first_line and first_line[0].removeprefix('# ').strip().casefold() == title.casefold():
+                parser.error('An article with this title already exists in the Notion export')
+
         available = set(canonical) | {entry['id'] for entry in existing
                                        if entry['status'] == 'published'}
         if any(ref not in available for ref in args.related):

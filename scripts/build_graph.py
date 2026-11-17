@@ -112,7 +112,7 @@ def write_map(root=ROOT, out=None):
     for kind, label in groups:
         entries = [node for node in graph['nodes'] if node['type'] == kind]
         links = ''.join(
-            '<li><a href="../' + html.escape(node['url'], quote=True) + '">'
+            '<li><a href="' + html.escape(node['url'], quote=True) + '">'
             + html.escape(node['label']) + '</a></li>' for node in entries)
         catalogs.append('<details class="map-directory"><summary>' + label + ' (' +
                         str(len(entries)) + ')</summary><ul>' + links + '</ul></details>')

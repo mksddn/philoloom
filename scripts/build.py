@@ -664,7 +664,8 @@ resources = (
     '<span class="resource-tile-arrow" aria-hidden="true">↗</span></a>'
     '</div>'
 )
-body = f'<div class="catalog-toolbar"><nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>{SEARCH_BUTTON}</div>'
+body = (f'<div class="catalog-toolbar"><nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>'
+        f'{SEARCH_BUTTON}<a class="knowledge-map-cta" href="map/">Карта знаний</a></div>')
 
 class MediaLinks(HTMLParser):
     def __init__(self, text):
@@ -893,3 +894,8 @@ ET.ElementTree(sitemap).write(OUT / 'sitemap.xml', encoding='utf-8', xml_declara
 )
 print(f'Built {len(public_ids)} public pages, {len(ordered["Цитаты"])} inline quotations; '
       + ', '.join(f'{g}: {len(ordered[g])}' for g, _ in GROUPS))
+
+# Optional source-derived graph; the normal reference remains fully static.
+from build_graph import write_map
+knowledge_graph = write_map()
+print(f"Knowledge map: {len(knowledge_graph['nodes'])} nodes, {len(knowledge_graph['edges'])} explicit links")

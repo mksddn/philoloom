@@ -48,6 +48,15 @@ class SiteTests(unittest.TestCase):
         self.assertEqual(set(nodes), set(self.slugs))
         self.assertEqual({node['url'] for node in nodes.values()}, set(self.slugs.values()))
         self.assertGreater(len(graph['edges']), 0)
+        semantic = [s for edge in graph['edges'] for s in edge['semantics']]
+        expected = {('5c62a805028a4272bd0b99d7e493d7bd', '44efa008da2d4553911e0d6d29e3b795'),
+                    ('ba21d53fa1ee428f9f0fdc01cde8ea14', 'd5303c3cb5d8405b8915abd0d9074c9f'),
+                    ('8bc4ee4c287b4a25bd8683f57f84ea81', 'c4c741fb50874c87a5d2cb4d4def5e50')}
+        self.assertEqual({(s['source'], s['target']) for s in semantic}, expected)
+        for relation in semantic:
+            self.assertTrue(relation['evidence']['work'])
+            self.assertTrue(relation['evidence']['locator'])
+            self.assertTrue(relation['evidence']['url'].startswith('https://plato.stanford.edu/'))
         pairs = set()
         for edge in graph['edges']:
             self.assertIn(edge['kind'], ('relation', 'mention', 'curated'))

@@ -67,6 +67,20 @@
       const content = document.createElement('span');
       content.className = 'map-neighbour-copy';
       content.append(link, note);
+      // A scholarly relation is distinct from a generic mention: its source
+      // must be reachable by touch and keyboard, not only via mouse tooltip.
+      if (relationship.semantics?.length) {
+        const evidence = relationship.semantics[0].evidence;
+        if (evidence.url) {
+          const source = document.createElement('a');
+          source.className = 'map-evidence';
+          source.href = evidence.url;
+          source.target = '_blank';
+          source.rel = 'noopener noreferrer';
+          source.textContent = 'Источник: ' + evidence.work + ', ' + evidence.locator;
+          content.append(source);
+        }
+      }
       li.append(content, button);
       list.append(li);
     });

@@ -1,4 +1,35 @@
 {
   "version": 1,
-  "links": []
+  "links": [
+    {
+      "source": "5c62a805028a4272bd0b99d7e493d7bd",
+      "target": "44efa008da2d4553911e0d6d29e3b795",
+      "relation": "influences",
+      "evidence": {
+        "work": "Plato — Stanford Encyclopedia of Philosophy",
+        "locator": "§ 4 «Socrates», о влиянии метода и этических вопросов Сократа на Платона",
+        "url": "https://plato.stanford.edu/entries/plato/"
+      }
+    },
+    {
+      "source": "ba21d53fa1ee428f9f0fdc01cde8ea14",
+      "target": "d5303c3cb5d8405b8915abd0d9074c9f",
+      "relation": "influences",
+      "evidence": {
+        "work": "Kant and Hume on Causality — Stanford Encyclopedia of Philosophy",
+        "locator": "§ 1, введение и обсуждение «Prolegomena», предисловие 4:257–260",
+        "url": "https://plato.stanford.edu/entries/kant-hume-causality/"
+      }
+    },
+    {
+      "source": "8bc4ee4c287b4a25bd8683f57f84ea81",
+      "target": "c4c741fb50874c87a5d2cb4d4def5e50",
+      "relation": "develops",
+      "evidence": {
+        "work": "Continental Rationalism — Stanford Encyclopedia of Philosophy, Summer 2024",
+        "locator": "§ 4 «Spinoza», различие монизма Спинозы и субстанциальной теории Декарта",
+        "url": "https://plato.stanford.edu/archives/sum2024/entries/continental-rationalism/"
+      }
+    }
+  ]
 }

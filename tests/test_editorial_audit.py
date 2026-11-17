@@ -118,6 +118,9 @@ class EditorialAuditTests(unittest.TestCase):
                 'Name,Личности\n'
                 f'Разум,Мыслитель ({C}.md)\n'
                 f'Разум,Мыслитель ({C}.md)\n', encoding='utf-8')
+            (root / 'content' / 'editorial').mkdir(parents=True)
+            (root / 'content' / 'editorial' / 'entries.json').write_text(
+                json.dumps({'version': 1, 'entries': []}), encoding='utf-8')
             (root / 'content' / 'slugs.json').write_text(json.dumps({
                 A: 'topics/razum/', B: 'topics/razum-2/',
                 C: 'people/myslitel/'}), encoding='utf-8')

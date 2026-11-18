@@ -327,13 +327,30 @@ async function assertThemeArtwork(page, theme) {
         JSON.stringify({ previous, current }));
     }
     await home.locator('.section-nav a').first().click();
-    await home.locator('.reference-section:not([hidden]) .entity-card-main').first().click();
+    const homeUrl = home.url();
+    const firstCard = home.locator('.reference-section:not([hidden]) .entity-card-main').first();
+    const cardPath = await firstCard.getAttribute('href');
+    await firstCard.click();
     await home.locator('#panel-content .entity-header h1').waitFor();
+    assert.equal(new URL(home.url()).pathname, new URL(cardPath, base + '/').pathname,
+      'Opening a panel must display the canonical entity path');
+    assert.equal(new URL(home.url()).search, '', 'No ?peek parameter in panel URLs');
+    assert.equal(new URL(home.url()).hash, '', 'Panel URLs must not contain home section fragments');
+    assert.equal(await home.evaluate(() => document.baseURI), base + '/',
+      'Relative links must remain rooted at the site when a panel is open');
     assert.ok(await home.locator('#panel-content article').isVisible());
     assert.equal(await home.locator('#panel-content .entity-kicker').count(), 1);
     assert.equal(await home.locator('#panel-content #search-open').count(), 0);
     assert.ok(await home.locator('#page-panel').evaluate(element => element.open));
     await home.locator('#panel-close').click();
+    await home.waitForFunction(() => !document.querySelector('#page-panel').open);
+    assert.equal(home.url(), homeUrl, 'Closing a panel should restore the original homepage URL');
+    const directPage = await desktop.newPage();
+    await directPage.goto(new URL(cardPath, base + '/').href, { waitUntil: 'domcontentloaded' });
+    assert.equal(await directPage.locator('main.detail-page h1').count(), 1,
+      'Refreshing a clean URL must serve the standalone entity page');
+    assert.equal(await directPage.locator('#page-panel').evaluate(element => element.open), false);
+    await directPage.close();
     assert.deepEqual(errors, [], 'No uncaught JavaScript errors on desktop');
     await desktop.close();
     // A 4K desktop must not stretch the original 1440px artwork to 3840px.

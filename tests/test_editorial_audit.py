@@ -27,11 +27,11 @@ class EditorialAuditTests(unittest.TestCase):
         self.assertEqual(opening_paragraph('![Портрет](portrait.jpg)'), '')
 
     def test_public_leads_explain_philosophy_instead_of_repeating_identity(self):
-        """All 119 articles should open with the philosophical substance."""
+        """All 124 articles should open with the philosophical substance."""
         report = audit()
         reviewed = [row for row in report['entries']
                     if row['scope'] == 'public' and row['section'] != 'Цитаты']
-        self.assertEqual(len(reviewed), 119)
+        self.assertEqual(len(reviewed), 124)
         for row in reviewed:
             with self.subTest(title=row['title']):
                 text = (Path(__file__).resolve().parents[1] / row['path']).read_text(encoding='utf-8')
@@ -68,8 +68,8 @@ class EditorialAuditTests(unittest.TestCase):
         """Final corpus-level checks: all published long-form records have text and citations."""
         result = audit()
         public = [r for r in result['entries'] if r['scope'] == 'public']
-        self.assertEqual(len(public), 130)
-        self.assertEqual(result['summary']['by_status'], {'needs-review': 130})
+        self.assertEqual(len(public), 135)
+        self.assertEqual(result['summary']['by_status'], {'needs-review': 135})
         for row in public:
             with self.subTest(title=row['title'], section=row['section']):
                 self.assertNotIn('empty_body', row['findings'])

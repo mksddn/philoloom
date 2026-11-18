@@ -253,6 +253,18 @@ def seo_description(page):
     return prose[:155].rsplit(' ', 1)[0].rstrip(' ,;:') + '…'
 
 
+def breadcrumb_items(page, canonical_path):
+    """Keep structured breadcrumbs aligned with the visible navigation."""
+    items = [{'@type': 'ListItem', 'position': 1, 'name': 'philoloom', 'item': SITE_URL}]
+    group_id = next((pid for pid, group in db_ids.items() if group == page['group']), '')
+    if group_id:
+        items.append({'@type': 'ListItem', 'position': 2, 'name': page['group'],
+                      'item': SITE_URL + '#' + group_id})
+    items.append({'@type': 'ListItem', 'position': len(items) + 1,
+                  'name': page['title'], 'item': SITE_URL + canonical_path})
+    return items
+
+
 def seo_schema(page, canonical_path, description):
     data = {
         '@context': 'https://schema.org',
@@ -266,10 +278,7 @@ def seo_schema(page, canonical_path, description):
         data['isPartOf'] = {'@type': 'WebSite', 'name': 'philoloom', 'url': SITE_URL}
         data['breadcrumb'] = {
             '@type': 'BreadcrumbList',
-            'itemListElement': [
-                {'@type': 'ListItem', 'position': 1, 'name': 'philoloom', 'item': SITE_URL},
-                {'@type': 'ListItem', 'position': 2, 'name': page['title'], 'item': SITE_URL + canonical_path},
-            ],
+            'itemListElement': breadcrumb_items(page, canonical_path),
         }
     return json.dumps(data, ensure_ascii=False).replace('<', '\\u003c')
 

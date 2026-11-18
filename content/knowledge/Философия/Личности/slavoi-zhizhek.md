@@ -3,7 +3,7 @@
 Год рождения: 1949
 История философии: Философия XXI века (history/filosofiya-xxi-veka.md)
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Slavoj_%C5%BDi%C5%BEek_2015.jpg/600px-Slavoj_%C5%BDi%C5%BEek_2015.jpg)
+![](https://upload.wikimedia.org/wikipedia/commons/f/fb/Slavoj_%C5%BDi%C5%BEek_2015.jpg)
 
 Человек может смеяться над рекламой, понимать её уловки — и всё равно покупать обещанный образ жизни. Жижек исследует, как идеология действует не только через убеждения, но и через привычки, желания и фантазии, обращаясь к Гегелю, психоанализу Лакана и современной культуре.
 

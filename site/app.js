@@ -255,6 +255,8 @@ document.addEventListener('click', event => {
   if (!link || link.hasAttribute('data-full-page') || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target || link.hasAttribute('download')) return;
   const path = pagePath(link.href);
   if (!path) return;
+  // Touch-size layouts use real document navigation and native browser history.
+  if (matchMedia('(max-width: 700px)').matches) return;
   event.preventDefault();
   openPanel(path);
 });

@@ -1,7 +1,7 @@
 # Философия Нового времени (Эпоха Возрождения)
 
 Темы: Гуманизм (topics/gumanizm.md), Научная революция (topics/nauchnaya-revolyutsiya.md), Рационализм (topics/ratsionalizm.md), Эмпиризм (topics/empirizm.md)
-Личности: Франческо Петрарка (people/franchesko-petrarka.md), Данте Алигьери (people/dante-aligeri.md), Фрэнсис Бэкон (people/frensis-bekon.md), Рене Декарт (people/rene-dekart.md), Готфрид Вильгельм Лейбниц (people/gotfrid-vilgelm-leibnits.md), Бенедикт (Барух) Спиноза (../%D0%9B%D0%B8%D1%87%D0%BD%D0%BE%D1%81%D1%82%D0%B8/%D0%91%D0%B5%D0%BD%D0%B5%D0%B4%D0%B8%D0%BA%D1%82%20(%D0%91%D0%B0%D1%80%D1%83%D1%85)%20%D0%A1%D0%BF%D0%B8%D0%BD%D0%BE%D0%B7%D0%B0%208bc4ee4c287b4a25bd8683f57f84ea81.md), Томас Гоббс (people/tomas-gobbs.md), Джон Локк (people/dzhon-lokk.md), Джордж Беркли (people/dzhordzh-berkli.md), Дэвид Юм (people/devid-yum.md)
+Личности: Франческо Петрарка (people/franchesko-petrarka.md), Данте Алигьери (people/dante-aligeri.md), Фрэнсис Бэкон (people/frensis-bekon.md), Рене Декарт (people/rene-dekart.md), Готфрид Вильгельм Лейбниц (people/gotfrid-vilgelm-leibnits.md), Бенедикт (Барух) Спиноза (people/benedikt-baruh-spinoza.md), Томас Гоббс (people/tomas-gobbs.md), Джон Локк (people/dzhon-lokk.md), Джордж Беркли (people/dzhordzh-berkli.md), Дэвид Юм (people/devid-yum.md)
 Конспект: https://disk.yandex.ru/d/BSGO_KmiZTDBEw
 Моя работа: Философы Нового времени (articles/filosofy-novogo-vremeni.md)
 

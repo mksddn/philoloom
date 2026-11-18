@@ -1,7 +1,7 @@
 # Категорический императив Канта
 
 Блок: Немецкий идеализм (history/nemetskii-idealizm.md)
-Задание: 4 (1).pdf (4%20(1)%20pdf%202dfd523ab11243edb66df673dfcf9086.md)
+Задание: 4 (1).pdf (4%20(1)%20pdf.md)
 Зачтено: 15/06/2023
 
 [Категорический императив Канта](https://flsf.maxdudin.ru/kategoricheskij-imperativ-kanta.html)

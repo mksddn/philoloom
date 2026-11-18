@@ -1,6 +1,6 @@
 # История русской философии
 
-Темы: Славянофильство (topics/slavyanofilstvo.md), Западничество (topics/zapadnichestvo.md), Всеединство (русское) (../%D0%A2%D0%B5%D0%BC%D1%8B/%D0%92%D1%81%D0%B5%D0%B5%D0%B4%D0%B8%D0%BD%D1%81%D1%82%D0%B2%D0%BE%20(%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%BE%D0%B5)%2021618a276d8d8073be48e9889147ce43.md), Русский космизм (topics/russkii-kosmizm.md), Русский консерватизм (topics/russkii-konservatizm.md)
+Темы: Славянофильство (topics/slavyanofilstvo.md), Западничество (topics/zapadnichestvo.md), Всеединство (русское) (topics/vseedinstvo-russkoe.md), Русский космизм (topics/russkii-kosmizm.md), Русский консерватизм (topics/russkii-konservatizm.md)
 Личности: Алексей Хомяков (people/aleksei-homyakov.md), Иван Киреевский (people/ivan-kireevskii.md), Пётр Чаадаев (people/petr-chaadaev.md), Владимир Соловьёв (people/vladimir-solovev.md), Николай Фёдоров (people/nikolai-fedorov.md), Иван Ильин (people/ivan-ilin.md), Павел Флоренский (people/pavel-florenskii.md), Сергей Булгаков (people/sergei-bulgakov.md), Семён Франк (people/semen-frank.md), Лев Толстой (people/lev-tolstoi.md), Василий Розанов (people/vasilii-rozanov.md), Николай Бердяев (people/nikolai-berdyaev.md)
 Моя работа: Бакунин и его анархизм (articles/bakunin-i-ego-anarhizm.md)
 

@@ -1,7 +1,7 @@
 # Законы логики и формы правильного мышления
 
 Блок: Античная философия (history/antichnaya-filosofiya.md)
-Задание: 1 (1).pdf (1%20(1)%20pdf%20a26ad266837e42cd987efe1306059819.md)
+Задание: 1 (1).pdf (1%20(1)%20pdf.md)
 Зачтено: 29/12/2022
 
 [Законы логики и формы правильного мышления](https://flsf.maxdudin.ru/zakony-logiki-i-formy-pravilnogo-myshleniya.html)

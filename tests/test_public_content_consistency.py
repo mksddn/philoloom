@@ -86,5 +86,65 @@ class PublicContentConsistencyTests(unittest.TestCase):
         self.assertNotIn('Смысл слов зависит только от контекста', quote_titles)
 
 
+    def test_relationships_match_markdown_properties_and_reciprocate(self):
+        """Every typed public relation must exist in both exports and on both ends."""
+        schema = {
+            'Темы': {'Личности': ('Личности', 'Темы'),
+                     'История философии': ('История философии', 'Темы'),
+                     'Связь': ('Темы', 'Связь')},
+            'Личности': {'Темы': ('Темы', 'Личности'),
+                        'История философии': ('История философии', 'Личности')},
+            'История философии': {'Темы': ('Темы', 'История философии'),
+                                  'Личности': ('Личности', 'История философии')},
+        }
+        identity = {}
+        for group in schema:
+            for title, csv_row, path, source in records(group):
+                match = re.search(r'([a-f0-9]{32})\\.md
+    unittest.main()
+, path.name)
+                self.assertIsNotNone(match, str(path))
+                identity[match.group(1)] = (group, title, csv_row, path, source)
+
+        def referenced_ids(value):
+            return set(re.findall(r'([a-f0-9]{32})\\.md', value or '', re.I))
+
+        def markdown_properties(source):
+            properties = {}
+            started = False
+            for line in source.splitlines()[1:]:
+                if not line.strip():
+                    if started:
+                        break
+                    continue
+                match = re.match(r'^([^#>\\-*\\[\\n:]{1,35}): (.*)
+    unittest.main()
+, line)
+                if not match:
+                    break
+                properties[match.group(1)] = match.group(2)
+                started = True
+            return properties
+
+        for source_id, (group, title, csv_row, path, source) in identity.items():
+            props = markdown_properties(source)
+            for field, (target_group, reverse_field) in schema[group].items():
+                with self.subTest(group=group, title=title, field=field):
+                    csv_targets = referenced_ids(csv_row.get(field))
+                    markdown_targets = referenced_ids(props.get(field))
+                    self.assertEqual(csv_targets, markdown_targets,
+                                     'CSV/Markdown mismatch: ' + str(path))
+                    for target_id in csv_targets:
+                        self.assertIn(target_id, identity,
+                                      'Unknown relation target from ' + title)
+                        other_group, other_title, other_row, _, _ = identity[target_id]
+                        self.assertEqual(other_group, target_group,
+                                         'Wrong entity type in ' + title + ' -> ' + other_title)
+                        self.assertIn(source_id,
+                                      referenced_ids(other_row.get(reverse_field)),
+                                      'Unreciprocated relation: ' + title + ' -> ' + other_title)
+
+
+
 if __name__ == '__main__':
     unittest.main()

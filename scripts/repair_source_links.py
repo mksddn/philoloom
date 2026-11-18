@@ -38,7 +38,8 @@ for path in (root/'content/knowledge').rglob('*'):
         return (prefix.group(0) if prefix else '')+key+'.md'
     new=pattern.sub(sub,text)
     if 'Самостоятельная работа' in str(path):
-        new=re.sub(r' [a-f0-9]{32}(?=\.md)', '', new)
+        new=re.sub(r'(?:%20| )[a-f0-9]{32}(?=\.md)', '', new)
+        new=re.sub(r'[a-f0-9]{32}(?=\.md)', 'unavailable', new)
     if path.name=='index.md':
         new=re.sub(r' [a-f0-9]{32}(?=(?:_all)?\.csv)', '', new)
     if new!=text:path.write_text(new,encoding='utf-8-sig' if path.suffix=='.csv' else 'utf-8')

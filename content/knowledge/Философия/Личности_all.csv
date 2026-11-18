@@ -1,0 +1,65 @@
+﻿Name,Date,Год рождения,Год смерти,История философии,Темы
+Платон,,-427,-347,Античная философия (history/antichnaya-filosofiya.md),"Теория истины (topics/teoriya-istiny.md), Политическая философия (topics/politicheskaya-filosofiya.md), Государство (topics/gosudarstvo.md)"
+Иммануил Кант,,1724,1804,Немецкий идеализм (history/nemetskii-idealizm.md),"Категорический императив (topics/kategoricheskii-imperativ.md), Этика (topics/etika.md), Теория познания (topics/teoriya-poznaniya.md), Философия искусства (topics/filosofiya-iskusstva.md), Эстетика (topics/estetika.md)"
+Пифагор,,-570,-490,Античная философия (history/antichnaya-filosofiya.md),Пифагорейская школа (topics/pifagoreiskaya-shkola.md)
+Сократ,,-469,-399,Античная философия (history/antichnaya-filosofiya.md),
+Аристотель,,-384,-322,Античная философия (history/antichnaya-filosofiya.md),"Логика (topics/logika.md), Государство (topics/gosudarstvo.md), Этика (topics/etika.md), Теория истины (topics/teoriya-istiny.md), Онтология (topics/ontologiya.md)"
+Аврелий Августин,,354,430,Средневековая философия (history/srednevekovaya-filosofiya.md),"Философия религии (topics/filosofiya-religii.md), Патристика (topics/patristika.md)"
+Пьер Абеляр,,1079,1142,Средневековая философия (history/srednevekovaya-filosofiya.md),Схоластика (topics/sholastika.md)
+Фома Аквинский,,1225,1274,Средневековая философия (history/srednevekovaya-filosofiya.md),"Государство (topics/gosudarstvo.md), Схоластика (topics/sholastika.md), Философия религии (topics/filosofiya-religii.md)"
+Франческо Петрарка,,1304,1374,Философия Нового времени (Эпоха Возрождения) (history/filosofiya-novogo-vremeni-epoha-vozrozhdeniya.md),
+Данте Алигьери,,1265,1321,Философия Нового времени (Эпоха Возрождения) (history/filosofiya-novogo-vremeni-epoha-vozrozhdeniya.md),
+Фрэнсис Бэкон,,1561,1626,Философия Нового времени (Эпоха Возрождения) (history/filosofiya-novogo-vremeni-epoha-vozrozhdeniya.md),"Эмпиризм (topics/empirizm.md), Философия науки (topics/filosofiya-nauki.md)"
+Рене Декарт,,1596,1650,Философия Нового времени (Эпоха Возрождения) (history/filosofiya-novogo-vremeni-epoha-vozrozhdeniya.md),"Рационализм (topics/ratsionalizm.md), Теория познания (topics/teoriya-poznaniya.md)"
+Готфрид Вильгельм Лейбниц,,1646,1716,Философия Нового времени (Эпоха Возрождения) (history/filosofiya-novogo-vremeni-epoha-vozrozhdeniya.md),Рационализм (topics/ratsionalizm.md)
+Бенедикт (Барух) Спиноза,,1632,1677,Философия Нового времени (Эпоха Возрождения) (history/filosofiya-novogo-vremeni-epoha-vozrozhdeniya.md),Рационализм (topics/ratsionalizm.md)
+Томас Гоббс,,1588,1679,Философия Нового времени (Эпоха Возрождения) (history/filosofiya-novogo-vremeni-epoha-vozrozhdeniya.md),"Эмпиризм (topics/empirizm.md), Политическая философия (topics/politicheskaya-filosofiya.md), Государство (topics/gosudarstvo.md)"
+Джон Локк,,1632,1704,Философия Нового времени (Эпоха Возрождения) (history/filosofiya-novogo-vremeni-epoha-vozrozhdeniya.md),"Эмпиризм (topics/empirizm.md), Теория познания (topics/teoriya-poznaniya.md), Политическая философия (topics/politicheskaya-filosofiya.md), Государство (topics/gosudarstvo.md)"
+Джордж Беркли,,1685,1753,Философия Нового времени (Эпоха Возрождения) (history/filosofiya-novogo-vremeni-epoha-vozrozhdeniya.md),Эмпиризм (topics/empirizm.md)
+Дэвид Юм,,1711,1776,Философия Нового времени (Эпоха Возрождения) (history/filosofiya-novogo-vremeni-epoha-vozrozhdeniya.md),"Эмпиризм (topics/empirizm.md), Теория познания (topics/teoriya-poznaniya.md)"
+Протагор,,-490,-420,Античная философия (history/antichnaya-filosofiya.md),Софистика (topics/sofistika.md)
+Артур Шопенгауэр,,1788,1860,Философия XIX века (history/filosofiya-xix-veka.md),"Эстетика (topics/estetika.md), Философия искусства (topics/filosofiya-iskusstva.md)"
+Иоганн Готлиб Фихте,,1762,1814,Немецкий идеализм (history/nemetskii-idealizm.md),
+Фридрих Вильгельм Йозеф Шеллинг,,1775,1854,Немецкий идеализм (history/nemetskii-idealizm.md),Философия искусства (topics/filosofiya-iskusstva.md)
+Георг Вильгельм Фридрих Гегель,,1770,1831,Немецкий идеализм (history/nemetskii-idealizm.md),
+Карл Маркс,,1818,1883,Философия XIX века (history/filosofiya-xix-veka.md),"Марксизм (topics/marksizm.md), Социальная философия (topics/sotsialnaya-filosofiya.md)"
+Сёрен Обье Кьеркегор,,1813,1855,Философия XIX века (history/filosofiya-xix-veka.md),
+Фридрих Ницше,,1844,1900,Философия XIX века (history/filosofiya-xix-veka.md),
+Анри Бергсон,,1859,1941,Философия XIX века (history/filosofiya-xix-veka.md),
+Морис Мерло-Понт,,1908,1961,Первая половина XX века (history/pervaya-polovina-xx-veka.md),Феноменология (topics/fenomenologiya.md)
+Ханс-Георг Гадамер,,1900,2002,Вторая половина ХХ века (history/vtoraya-polovina-hh-veka.md),Герменевтика (topics/germenevtika.md)
+Людвиг Витгенштейн,,1889,1951,Первая половина XX века (history/pervaya-polovina-xx-veka.md),Аналитическая философия (topics/analiticheskaya-filosofiya.md)
+Карл Ясперс,,1883,1969,Первая половина XX века (history/pervaya-polovina-xx-veka.md),Экзистенциализм (topics/ekzistentsializm.md)
+Мартин Хайдеггер,,1889,1976,Первая половина XX века (history/pervaya-polovina-xx-veka.md),"Экзистенциализм (topics/ekzistentsializm.md), Герменевтика (topics/germenevtika.md), Философия техники (topics/filosofiya-tekhniki.md), Феноменология (topics/fenomenologiya.md)"
+Жан-Поль Сартр,,1905,1980,Первая половина XX века (history/pervaya-polovina-xx-veka.md),Экзистенциализм (topics/ekzistentsializm.md)
+Альбер Камю,,1913,1960,Первая половина XX века (history/pervaya-polovina-xx-veka.md),Экзистенциализм (topics/ekzistentsializm.md)
+Николай Бердяев,,1874,1948,"Первая половина XX века (history/pervaya-polovina-xx-veka.md), История русской философии (history/istoriya-russkoi-filosofii.md)",Экзистенциализм (topics/ekzistentsializm.md)
+Мигель де Унамуно,,1864,1936,Первая половина XX века (history/pervaya-polovina-xx-veka.md),Экзистенциализм (topics/ekzistentsializm.md)
+Хосе Ортега-и-Гассет,,1883,1955,Первая половина XX века (history/pervaya-polovina-xx-veka.md),Экзистенциализм (topics/ekzistentsializm.md)
+Мишель Фуко,,1926,1984,Вторая половина ХХ века (history/vtoraya-polovina-hh-veka.md),Социальная философия (topics/sotsialnaya-filosofiya.md)
+Клод Леви-Стросс,,1908,2009,Вторая половина ХХ века (history/vtoraya-polovina-hh-veka.md),"Структурная антропология (topics/strukturnaya-antropologiya.md), Структурализм (topics/strukturalizm.md)"
+Ролан Барт,,1915,1980,Вторая половина ХХ века (history/vtoraya-polovina-hh-veka.md),Структурализм (topics/strukturalizm.md)
+Жак Лакан,,1901,1981,Вторая половина ХХ века (history/vtoraya-polovina-hh-veka.md),Структурализм (topics/strukturalizm.md)
+Жан Франсуа Лиотар,,1924,1998,Вторая половина ХХ века (history/vtoraya-polovina-hh-veka.md),Постмодернизм (topics/postmodernizm.md)
+Жан Бодрийяр,,1929,2007,Вторая половина ХХ века (history/vtoraya-polovina-hh-veka.md),"Постмодернизм (topics/postmodernizm.md), Общество потребления (topics/obshchestvo-potrebleniya.md)"
+Бруно Латур,,1947,2022,Философия XXI века (history/filosofiya-xxi-veka.md),"Социология ассоциаций (topics/sotsiologiya-assotsiatsii.md), Акторно-сетевая теория (topics/aktorno-setevaya-teoriya.md), Антропоцен (topics/antropotsen.md), Философия науки (topics/filosofiya-nauki.md), Философия техники (topics/filosofiya-tekhniki.md)"
+Грэм Харман,,1968,,Философия XXI века (history/filosofiya-xxi-veka.md),"Спекулятивный реализм (topics/spekulyativnyi-realizm.md), Объектно-ориентированная онтология (topics/obektno-orientirovannaya-ontologiya.md)"
+Стивен Шавиро,,1954,,Философия XXI века (history/filosofiya-xxi-veka.md),Спекулятивный реализм (topics/spekulyativnyi-realizm.md)
+Ален Бадью,,1937,,Философия XXI века (history/filosofiya-xxi-veka.md),
+Славой Жижек,,1949,,Философия XXI века (history/filosofiya-xxi-veka.md),
+Дэниел Деннет,,1942,2024,Философия XXI века (history/filosofiya-xxi-veka.md),
+Джон Сёрл,,1932,2025,Философия XXI века (history/filosofiya-xxi-veka.md),Китайская комната (topics/kitaiskaya-komnata.md)
+Сол Крипке,,1940,2022,Философия XXI века (history/filosofiya-xxi-veka.md),
+Герберт Маркузе,,1898,1979,Вторая половина ХХ века (history/vtoraya-polovina-hh-veka.md),
+Алексей Хомяков,,1804,1860,История русской философии (history/istoriya-russkoi-filosofii.md),Славянофильство (topics/slavyanofilstvo.md)
+Иван Киреевский,,1806,1856,История русской философии (history/istoriya-russkoi-filosofii.md),Славянофильство (topics/slavyanofilstvo.md)
+Пётр Чаадаев,,1794,1856,История русской философии (history/istoriya-russkoi-filosofii.md),Западничество (topics/zapadnichestvo.md)
+Владимир Соловьёв,,1853,1900,История русской философии (history/istoriya-russkoi-filosofii.md),Всеединство (русское) (topics/vseedinstvo-russkoe.md)
+Николай Фёдоров,,1829,1903,История русской философии (history/istoriya-russkoi-filosofii.md),Русский космизм (topics/russkii-kosmizm.md)
+Иван Ильин,,1883,1954,История русской философии (history/istoriya-russkoi-filosofii.md),Русский консерватизм (topics/russkii-konservatizm.md)
+Павел Флоренский,,1882,1937,История русской философии (history/istoriya-russkoi-filosofii.md),
+Сергей Булгаков,,1879,1944,История русской философии (history/istoriya-russkoi-filosofii.md),
+Семён Франк,,1877,1950,История русской философии (history/istoriya-russkoi-filosofii.md),
+Лев Толстой,,1828,1910,История русской философии (history/istoriya-russkoi-filosofii.md),
+Василий Розанов,,1856,1919,История русской философии (history/istoriya-russkoi-filosofii.md),
+Макс Шелер,,1874,1928,Первая половина XX века (history/pervaya-polovina-xx-veka.md),"Философская антропология (topics/filosofskaya-antropologiya.md), Этика (topics/etika.md)"

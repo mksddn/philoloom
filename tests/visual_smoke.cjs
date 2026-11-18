@@ -412,8 +412,8 @@ async function assertThemeArtwork(page, theme) {
     const portraitSrc = await small.locator('.person-portrait-image').getAttribute('src');
     assert.ok(portraitSrc?.startsWith('media/'), 'Portrait must be served from local optimized assets');
     await assertNoOverflow(small, '390px philosopher');
-    await small.goto(base + '/index.html#quote-47d742c8761f4a0c86a27b43497759b0', { waitUntil: 'domcontentloaded' });
-    await small.locator('#quote-47d742c8761f4a0c86a27b43497759b0').waitFor({state: 'visible'});
+    await small.goto(base + '/index.html#quote-cogito-ergo-sum-ya-myslyu-sledovatelno-sushchestvuyu', { waitUntil: 'domcontentloaded' });
+    await small.locator('#quote-cogito-ergo-sum-ya-myslyu-sledovatelno-sushchestvuyu').waitFor({state: 'visible'});
     assert.ok(await small.locator('.quote-catalog').isVisible(), 'Direct quote links must reveal the quotations tab');
     await assertNoOverflow(small, '390px inline quotation');
     await small.goto(base + '/topics/germenevtika/', { waitUntil: 'domcontentloaded' });

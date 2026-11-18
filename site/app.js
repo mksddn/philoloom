@@ -380,7 +380,7 @@ const sectionNav = document.querySelector('.section-nav');
 const sectionTabs = sectionNav ? [...sectionNav.querySelectorAll('a')] : [];
 const sections = [...document.querySelectorAll('.reference-section')];
 function activateSection(id, focus = false) {
-  const quoteAnchor = /^quote-[a-f0-9]{32}$/.test(id) ? document.getElementById(id) : null;
+  const quoteAnchor = /^quote-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id) ? document.getElementById(id) : null;
   const selected = quoteAnchor?.closest('.reference-section') ||
     sections.find(section => section.id === id) || sections[0];
   if (!selected) return;

@@ -1,4 +1,4 @@
-"""Build a portable static reference from the original source dataset."""
+"""Build the Philoloom atlas from human-readable knowledge records."""
 import csv
 import hashlib
 import html
@@ -19,37 +19,36 @@ GROUPS = [('Темы', 'Темы'), ('История философии', 'Ис�
           ('Цитаты', 'Цитаты'), ('Личности', 'Личности')]
 # Retain non-public homework metadata for direct article URLs, but no public section.
 SOURCE_GROUPS = GROUPS + [('Самостоятельная работа', '💪 Мои статьи')]
-ID = re.compile(r'([a-f0-9]{32})(?:_all)?\.(?:md|csv)$')
+ID = re.compile(r'((?:people|topics|history|quotes|articles)/[a-z0-9-]+)\.md$')
 escape = html.escape
 PREVIEWS = ROOT / 'content' / 'link-previews.json'
 previews = json.loads(PREVIEWS.read_text(encoding='utf-8')) if PREVIEWS.exists() else {}
+GROUP_KEY = {'Темы': 'topics', 'История философии': 'history', 'Цитаты': 'quotes', 'Личности': 'people', 'Самостоятельная работа': 'articles'}
 pages = {}
 for path in sorted(CONTENT.rglob('*.md')):
-    match = ID.search(path.name)
-    if not match:
-        raise ValueError(f'Page has no stable ID: {path.name}')
+    group = path.parent.name if path.parent != CONTENT else ''
+    key = ('home' if not group else GROUP_KEY[group] + '/' + path.stem)
+    match = (None, key)
     text = path.read_text(encoding='utf-8')
     title = text.splitlines()[0].removeprefix('# ').strip()
     pages[match[1]] = dict(id=match[1], path=path, title=title, text=text,
                          group=path.parent.name if path.parent != CONTENT else '')
 home = next(p for p in pages.values() if not p['group'])
-# IDs remain the source of truth; the checked-in map pins stable public URLs.
-SLUGS = json.loads((ROOT / 'content' / 'slugs.json').read_text(encoding='utf-8'))
+SLUGS = {p['id']: p['id'] + '/' for p in pages.values() if p['group'] in ('Темы', 'История философии', 'Личности')}
 
 def page_url(page):
     if page['id'] == home['id']:
         return 'index.html'
     if page['group'] == 'Цитаты':
-        return 'index.html#quote-' + page['id']
+        return 'index.html#quote-' + page['id'].split('/')[-1]
     return SLUGS.get(page['id'], '#')
 
 databases = {}
 for path in CONTENT.rglob('*_all.csv'):
-    name = re.sub(r' [a-f0-9]{32}_all$', '', path.stem)
+    name = path.stem.removesuffix('_all')
     with path.open(encoding='utf-8-sig', newline='') as stream:
         databases[name] = list(csv.DictReader(stream))
-db_ids = {ID.search(p.name)[1]: re.sub(r' [a-f0-9]{32}_all$', '', p.stem)
-          for p in CONTENT.rglob('*_all.csv')}
+db_ids = {GROUP_KEY[p.stem.removesuffix('_all')]: p.stem.removesuffix('_all') for p in CONTENT.rglob('*_all.csv')}
 assets = {p.resolve(): 'assets/' + p.relative_to(CONTENT).as_posix()
           for p in CONTENT.rglob('*') if p.is_file() and p.suffix not in ('.md', '.csv')}
 
@@ -180,7 +179,7 @@ def enrich_bookmarks(content, page):
 
 # CSV relations contain links with balanced parentheses in exported filenames.
 def property_html(value, page):
-    pattern = re.compile(r'([^\n]*?) \(([^\s]*?[a-f0-9]{32}\.md)\)(?:, |$)')
+    pattern = re.compile(r'([^\n]*?) \(((?:people|topics|history|quotes|articles)/[a-z0-9-]+\.md)\)(?:, |$)')
     parts, end = [], 0
     for m in pattern.finditer(value):
         if m.start() > end:
@@ -219,7 +218,7 @@ for group,_ in SOURCE_GROUPS:
 
 public_ids = {page['id'] for group, _ in GROUPS if group != 'Цитаты' for page in ordered[group]}
 if set(SLUGS) != public_ids:
-    raise ValueError('Public slug registry does not match the current published IDs. Update content/slugs.json.')
+    raise ValueError('Public records must have canonical typed slugs.')
 if len(set(SLUGS.values())) != len(SLUGS) or any(
     not re.fullmatch(r'(?:people|topics|history)/[a-z0-9]+(?:-[a-z0-9]+)*/', value)
     for value in SLUGS.values()
@@ -346,7 +345,7 @@ connections = {pid: set() for pid in pages}
 for pid, page in pages.items():
     values = [value for key, value in rows_by_id.get(pid, {}).items() if key not in ('Name', 'Конспект', 'Задание')]
     values.append(page_parts(page)[1])
-    for related_id in set(re.findall(r'([a-f0-9]{32})\.md', unquote(' '.join(values)))):
+    for related_id in set(re.findall(r'((?:people|topics|history|quotes|articles)/[a-z0-9-]+)\.md', unquote(' '.join(values)))):
         if related_id in pages and related_id != pid:
             connections[pid].add(related_id)
             connections[related_id].add(pid)
@@ -354,7 +353,7 @@ for pid, page in pages.items():
 
 def referenced_ids(text):
     """IDs referenced in a source field or Markdown body, independent of order."""
-    return set(re.findall(r'([a-f0-9]{32})\.md', unquote(text)))
+    return set(re.findall(r'((?:people|topics|history|quotes|articles)/[a-z0-9-]+)\.md', unquote(text)))
 
 
 def explicit_relations(page, relations, already_shown):
@@ -373,7 +372,7 @@ def explicit_relations(page, relations, already_shown):
             'История философии': 'Исторический контекст',
         },
     }
-    pattern = re.compile(r'([^\n]*?) \(([^\s]*?[a-f0-9]{32}\.md)\)(?:, |$)')
+    pattern = re.compile(r'([^\n]*?) \(((?:people|topics|history|quotes|articles)/[a-z0-9-]+\.md)\)(?:, |$)')
     rows = []
     for key, value in relations:
         links = []
@@ -430,7 +429,7 @@ QUOTE_STATUS_NOTES = {
 def quote_figure(page, anchored=False):
     author = rows_by_id[page['id']].get('Автор', '')
     author_html = property_html(author, page) if author else 'Автор не указан'
-    anchor = f' id="quote-{page["id"]}"' if anchored else ''
+    anchor = f' id="quote-{page["id"].split("/")[-1]}"' if anchored else ''
     info = QUOTE_PROVENANCE.get(page['id'])
     if not info:
         raise ValueError(f'No quotation provenance record for {page["id"]}')
@@ -498,7 +497,7 @@ def person_sources(resources, original):
 def person_quotes(page):
     selected = [
         quote for quote in ordered['Цитаты']
-        if page['id'] in re.findall(r'([a-f0-9]{32})\.md',
+        if page['id'] in re.findall(r'((?:people|topics|history|quotes|articles)/[a-z0-9-]+)\.md',
                                     unquote(rows_by_id[quote['id']].get('Автор', '')))
     ]
     if not selected:
@@ -831,55 +830,6 @@ search = [
     for p in pages.values() if p['id'] in public_ids or (p['group'] == 'Цитаты' and p['id'] in rows_by_id)
 ]
 (OUT / 'search.json').write_text(json.dumps(search, ensure_ascii=False), encoding='utf-8')
-
-# Old record-ID URLs remain as noindex HTML forwarding pages. GitHub Pages
-# cannot produce real HTTP 301 redirects on its own; never list aliases
-# in the sitemap or point canonical URLs back to the aliases.
-def write_legacy_alias(page, destination):
-    title = escape(page['title'])
-    href = escape(destination, quote=True)
-    canonical = escape(SITE_URL + destination.split('#', 1)[0], quote=True)
-    markup = (f'<!doctype html><html lang="ru"><head><meta charset="utf-8">'
-              f'<meta name="robots" content="noindex,follow">'
-              f'<link rel="canonical" href="{canonical}">'
-              f'<meta http-equiv="refresh" content="0;url={href}">'
-              f'<title>{title} · philoloom</title></head>'
-              f'<body><p>Страница переехала: <a href="{href}">{title}</a></p></body></html>')
-    (OUT / (page['id'] + '.html')).write_text(markup, encoding='utf-8')
-
-
-for page in pages.values():
-    if page['id'] in public_ids or page['group'] == 'Цитаты' and page['id'] in rows_by_id:
-        write_legacy_alias(page, page_url(page))
-
-# Explicit legacy redirects for merged or renamed public records.
-# These supplement the automatic record-ID forwarding pages.
-LEGACY_REDIRECTS = json.loads((ROOT / 'content' / 'redirects.json').read_text(encoding='utf-8'))
-for alias, target in LEGACY_REDIRECTS.items():
-    if target not in SLUGS.values():
-        raise ValueError(f'Legacy redirect target is not published: {target}')
-    if not (re.fullmatch(r'[a-f0-9]{32}\.html', alias)
-            or re.fullmatch(r'(?:topics|people|history)/[a-z0-9-]+/', alias)):
-        raise ValueError(f'Invalid legacy redirect source: {alias}')
-    destination = OUT / alias
-    if alias.endswith('/'):
-        destination = destination / 'index.html'
-    if destination.exists():
-        raise ValueError(f'Legacy redirect conflicts with an existing page: {alias}')
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    canonical_url = SITE_URL + target
-    title = next(p['title'] for p in pages.values()
-                 if SLUGS.get(p['id']) == target)
-    destination.write_text(
-        '<!doctype html><html lang="ru"><head><meta charset="utf-8">'
-        '<meta name="robots" content="noindex,follow">'
-        f'<link rel="canonical" href="{escape(canonical_url, quote=True)}">'
-        f'<meta http-equiv="refresh" content="0;url={escape(canonical_url, quote=True)}">'
-        f'<title>{escape(title)} · philoloom</title></head>'
-        f'<body><p>Страница переехала: <a href="{escape(canonical_url, quote=True)}">'
-        f'{escape(title)}</a></p></body></html>', encoding='utf-8'
-    )
-
 
 # The sitemap includes only human-readable canonical pages and the homepage.
 sitemap = ET.Element('urlset', xmlns='http://www.sitemaps.org/schemas/sitemap/0.9')

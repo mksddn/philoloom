@@ -36,7 +36,7 @@ class SiteTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.manifest = json.loads((ROOT / 'content/image-manifest.json').read_text())
-        cls.slugs = json.loads((ROOT / 'content/slugs.json').read_text())
+        cls.slugs = {key: key + '/' for key in [*('topics/' + p.stem for p in (ROOT / 'content/knowledge/Философия/Темы').glob('*.md')), *('history/' + p.stem for p in (ROOT / 'content/knowledge/Философия/История философии').glob('*.md')), *('people/' + p.stem for p in (ROOT / 'content/knowledge/Философия/Личности').glob('*.md'))]}
 
     def public_page(self, pid):
         return (OUT / self.slugs[pid] / 'index.html').read_text(encoding='utf-8')
@@ -65,34 +65,26 @@ class SiteTests(unittest.TestCase):
                         target = target / 'index.html'
                     self.assertTrue(target.is_file(), (entry['title'], link))
 
-    def test_pinned_slugs_and_legacy_forwarding(self):
-        self.assertEqual(self.slugs['c4c741fb50874c87a5d2cb4d4def5e50'], 'people/rene-dekart/')
-        self.assertEqual(self.slugs['10ebde78a3c349b29057a45caee57a92'], 'topics/ontologiya/')
+    def test_pinned_slugs_without_legacy_forwarding(self):
+        self.assertEqual(self.slugs['people/rene-dekart'], 'people/rene-dekart/')
+        self.assertEqual(self.slugs['topics/ontologiya'], 'topics/ontologiya/')
         self.assertEqual(len(set(self.slugs.values())), len(self.slugs))
         self.assertTrue(all((OUT / address / 'index.html').is_file() for address in self.slugs.values()))
-        detail = self.public_page('c4c741fb50874c87a5d2cb4d4def5e50')
+        detail = self.public_page('people/rene-dekart')
         self.assertIn('<base href="../../">', detail)
         self.assertIn('rel="canonical" href="https://mksddn.github.io/philoloom/people/rene-dekart/"', detail)
-        legacy = (OUT / 'c4c741fb50874c87a5d2cb4d4def5e50.html').read_text()
-        self.assertIn('name="robots" content="noindex,follow"', legacy)
-        self.assertIn('url=people/rene-dekart/', legacy)
+        self.assertFalse((OUT / 'people/rene-dekart.html').exists())
         sitemap = (OUT / 'sitemap.xml').read_text()
         self.assertIn('/people/rene-dekart/', sitemap)
-        self.assertNotIn('c4c741fb50874c87a5d2cb4d4def5e50.html', sitemap)
+        self.assertNotIn('people/rene-dekart.html', sitemap)
 
-    def test_slavophilism_merge_preserves_canonical_and_old_urls(self):
-        canonical_id = '21618a276d8d80fd8c45c76380b480ba'
-        retired_id = '21618a276d8d80b181ccf9d91811bd41'
+    def test_slavophilism_merge_preserves_canonical_url(self):
+        canonical_id = 'topics/slavyanofilstvo'
         self.assertEqual(self.slugs[canonical_id], 'topics/slavyanofilstvo/')
-        self.assertNotIn(retired_id, self.slugs)
         article = self.public_page(canonical_id)
         self.assertIn('Славянофильство', article)
         self.assertIn('Хомяков', article)
-        for legacy in (retired_id + '.html', 'topics/slavyanofilstvo-21618a27/index.html'):
-            page = (OUT / legacy).read_text(encoding='utf-8')
-            self.assertIn('name="robots" content="noindex,follow"', page)
-            self.assertIn('https://mksddn.github.io/philoloom/topics/slavyanofilstvo/', page)
-        with next((ROOT / 'content/knowledge').rglob('Темы *_all.csv')).open(
+        with next((ROOT / 'content/knowledge').rglob('Темы_all.csv')).open(
                 encoding='utf-8-sig', newline='') as stream:
             names = [row['Name'] for row in csv.DictReader(stream)]
         self.assertEqual(names.count('Славянофильство'), 1)
@@ -101,10 +93,10 @@ class SiteTests(unittest.TestCase):
 
     def test_foundational_philosophers_include_independent_content_and_sources(self):
         examples = {
-            '5c62a805028a4272bd0b99d7e493d7bd': ('эленхос', 'Сократ'),
-            '44efa008da2d4553911e0d6d29e3b795': ('эйдос', 'Платон'),
-            'bed09a3399144396a503d79898e8a5ca': ('силлогизм', 'Аристотель'),
-            'd5303c3cb5d8405b8915abd0d9074c9f': ('трансцендентальный', 'Иммануил Кант'),
+            'people/sokrat': ('эленхос', 'Сократ'),
+            'people/platon': ('эйдос', 'Платон'),
+            'people/aristotel': ('силлогизм', 'Аристотель'),
+            'people/immanuil-kant': ('трансцендентальный', 'Иммануил Кант'),
         }
         for pid, (keyword, name) in examples.items():
             with self.subTest(philosopher=name):
@@ -117,11 +109,11 @@ class SiteTests(unittest.TestCase):
 
     def test_foundational_topics_have_clear_introductions(self):
         titles = {
-            '2f72ef4fe8234fac95e4f7386c6828ff': 'Эллинизм',
-            '680f3c6b79564cf7a4176bcd07c8f61b': 'Неоплатонизм',
-            '6a3b16ed93cf45cfbe6c86b1c11bc000': 'Патристика',
-            'a6f686e17d3149ac9b4ba3b31457a84e': 'Гуманизм',
-            'c6def37927ee4cdb8cba31ceaebf68bd': 'Пифагорейская школа',
+            'topics/ellinizm': 'Эллинизм',
+            'topics/neoplatonizm': 'Неоплатонизм',
+            'topics/patristika': 'Патристика',
+            'topics/gumanizm': 'Гуманизм',
+            'topics/pifagoreiskaya-shkola': 'Пифагорейская школа',
         }
         for pid, title in titles.items():
             with self.subTest(topic=title):
@@ -133,14 +125,14 @@ class SiteTests(unittest.TestCase):
     def test_next_philosopher_batch_has_independent_explanations(self):
         """Eight philosopher cards have substantive text and retained metadata."""
         expected = {
-            '6eda584ca34948838eae6bba482a1ea2': 'первичные качества',
-            'ba21d53fa1ee428f9f0fdc01cde8ea14': 'индукции',
-            '43d6e4e552094f21bd5e0de378f311fd': 'пограничных ситуаций',
-            'f86d8811cb4446978333cb13528ee88e': 'идеология',
-            'a6c8256c59de4bd0bdeb2f80bfa1e3cf': 'диалектика',
-            '901b9cac4f5b412b9f1cd2084f255032': 'сверхчеловека',
-            '10739540eb1a4ed594f8b542b7317867': 'бытие-в-мире',
-            '3132d7f8d0844f899c62d7db011891b8': 'языковые игры',
+            'people/dzhon-lokk': 'первичные качества',
+            'people/devid-yum': 'индукции',
+            'people/karl-yaspers': 'пограничных ситуаций',
+            'people/slavoi-zhizhek': 'идеология',
+            'people/georg-vilgelm-fridrih-gegel': 'диалектика',
+            'people/fridrih-nitsshe': 'сверхчеловека',
+            'people/martin-haidegger': 'бытие-в-мире',
+            'people/lyudvig-vitgenshtein': 'языковые игры',
         }
         for pid, term in expected.items():
             with self.subTest(pid=pid):
@@ -152,15 +144,14 @@ class SiteTests(unittest.TestCase):
                 self.assertIn('href="https://', article)
 
     def test_quotes_are_inline_and_deep_linkable(self):
-        quote_id = '47d742c8761f4a0c86a27b43497759b0'
+        quote_id = 'cogito-ergo-sum-ya-myslyu-sledovatelno-sushchestvuyu'
         home = (OUT / 'index.html').read_text()
         self.assertIn(f'id="quote-{quote_id}"', home)
         self.assertIn('class="quote-entry"', home)
         self.assertNotIn(f'href="{quote_id}.html"', home)
-        legacy = (OUT / f'{quote_id}.html').read_text()
-        self.assertIn(f'index.html#quote-{quote_id}', legacy)
+        self.assertFalse((OUT / f'{quote_id}.html').exists())
         self.assertFalse((OUT / 'quotes').exists())
-        descartes = self.public_page('c4c741fb50874c87a5d2cb4d4def5e50')
+        descartes = self.public_page('people/rene-dekart')
         self.assertIn('class="person-quotes"', descartes)
 
 
@@ -172,7 +163,7 @@ class SiteTests(unittest.TestCase):
         self.assertNotIn('Точность русского перевода не сверена', home)
         self.assertNotIn('Возможный пересказ, не дословная цитата', home)
         self.assertIn('Если наказывать ребенка за дурное и награждать за доброе', home)
-        descartes = self.public_page('c4c741fb50874c87a5d2cb4d4def5e50')
+        descartes = self.public_page('people/rene-dekart')
         self.assertNotIn('person-quote-note', descartes)
         self.assertNotIn('первоисточники цитат требуют проверки', descartes)
 
@@ -198,7 +189,7 @@ class SiteTests(unittest.TestCase):
         }
         total_relations = 0
         for group, keys in relation_fields.items():
-            csv_files = list(source_root.rglob(group + ' *' + '_all.csv'))
+            csv_files = list(source_root.rglob(group + '_all.csv'))
             self.assertEqual(len(csv_files), 1, group)
             with csv_files[0].open(encoding='utf-8-sig', newline='') as stream:
                 rows = list(csv.DictReader(stream))
@@ -224,7 +215,7 @@ class SiteTests(unittest.TestCase):
                     if not raw:
                         continue
                     expected.append('<dt>' + key + '</dt>')
-                    for pid in re.findall(r'([a-f0-9]{32})\.md', raw):
+                    for pid in re.findall(r'((?:people|topics|history|quotes|articles)/[a-z0-9-]+)\.md', raw):
                         # Only linkable public entities: unpublished homework and
                         # missing export entries never masquerade as public pages.
                         if pid not in self.slugs:
@@ -253,7 +244,7 @@ class SiteTests(unittest.TestCase):
             self.assertIn('.history-related .entity-collection:has(> .entity-card:only-child)', css)
 
     def test_person_cards_ordered_by_year_of_death(self):
-        csv_files = list((ROOT / 'content' / 'knowledge').rglob('Личности *_all.csv'))
+        csv_files = list((ROOT / 'content' / 'knowledge').rglob('Личности_all.csv'))
         self.assertEqual(len(csv_files), 1)
         with csv_files[0].open(encoding='utf-8-sig', newline='') as stream:
             people = list(csv.DictReader(stream))
@@ -279,10 +270,10 @@ class SiteTests(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_explicit_relation_is_bidirectional(self):
-        hermeneutics = self.public_page('89ecf3804396453cbc4256966e24aa27')
-        gadamer = self.public_page('8fdcb8310a88441da41bce0b8f4857c4')
-        self.assertIn(self.slugs['8fdcb8310a88441da41bce0b8f4857c4'], hermeneutics)
-        self.assertIn(self.slugs['89ecf3804396453cbc4256966e24aa27'], gadamer)
+        hermeneutics = self.public_page('topics/germenevtika')
+        gadamer = self.public_page('people/hans-georg-gadamer')
+        self.assertIn(self.slugs['people/hans-georg-gadamer'], hermeneutics)
+        self.assertIn(self.slugs['topics/germenevtika'], gadamer)
 
     def test_home_navigation_and_search(self):
         home = (OUT / 'index.html').read_text(encoding='utf-8')
@@ -341,7 +332,7 @@ class SiteTests(unittest.TestCase):
             self.assertNotIn('<dt>Моя работа</dt>', record, item['title'])
 
     def test_person_details_separate_facts_content_and_relations(self):
-        descartes = self.public_page('c4c741fb50874c87a5d2cb4d4def5e50')
+        descartes = self.public_page('people/rene-dekart')
         self.assertIn('class="entity-detail entity-detail--people"', descartes)
         self.assertIn('class="entity-facts-list"', descartes)
         self.assertIn('<dt>Год рождения</dt><dd>1596</dd>', descartes)
@@ -356,25 +347,25 @@ class SiteTests(unittest.TestCase):
         self.assertIn('<dt>История философии</dt>', descartes)
 
     def test_contextual_links_deduplicate_explicit_and_discovered_relations(self):
-        hermeneutics = self.public_page('89ecf3804396453cbc4256966e24aa27')
+        hermeneutics = self.public_page('topics/germenevtika')
         self.assertIn('<dt>Философы</dt>', hermeneutics)
         self.assertIn('<dt>Исторический контекст</dt>', hermeneutics)
-        self.assertEqual(hermeneutics.count('href="' + self.slugs['8fdcb8310a88441da41bce0b8f4857c4'] + '"'), 1)
+        self.assertEqual(hermeneutics.count('href="' + self.slugs['people/hans-georg-gadamer'] + '"'), 1)
         self.assertNotIn('Связи и упоминания', hermeneutics)
         self.assertNotIn('Также упоминается', hermeneutics)
 
-        ancient = self.public_page('f79b26bcefbf45a2aa50319cd5dc1858')
+        ancient = self.public_page('history/antichnaya-filosofiya')
         self.assertIn('<dt>Представители</dt>', ancient)
         self.assertIn('<dt>Темы и направления</dt>', ancient)
 
-        gadamer = self.public_page('8fdcb8310a88441da41bce0b8f4857c4')
+        gadamer = self.public_page('people/hans-georg-gadamer')
         self.assertNotIn('class="discovered-links"', gadamer)
         self.assertNotIn('class="entity-links"', gadamer)
         self.assertIn('class="person-context"', gadamer)
 
     def test_compact_headerless_shell_and_system_theme(self):
         home = (OUT / 'index.html').read_text(encoding='utf-8')
-        detail = self.public_page('89ecf3804396453cbc4256966e24aa27')
+        detail = self.public_page('topics/germenevtika')
         css = (OUT / 'style.css').read_text(encoding='utf-8')
         self.assertIn('<h1><span class="hero-project-name"><span class="brand-accessible-name">philoloom</span>', home)
         self.assertEqual(home.count('<h1>'), 1)
@@ -429,7 +420,7 @@ class SiteTests(unittest.TestCase):
 
     def test_brand_logo_and_favicon_are_published(self):
         home = (OUT / 'index.html').read_text(encoding='utf-8')
-        detail = self.public_page('89ecf3804396453cbc4256966e24aa27')
+        detail = self.public_page('topics/germenevtika')
         self.assertIn('class="hero-brand-watermark" aria-hidden="true"', home)
         self.assertNotIn('class="hero-brand-mark"', home)
         css = (OUT / 'style.css').read_text(encoding='utf-8')

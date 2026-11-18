@@ -21,7 +21,7 @@ def records(group):
         title = text.splitlines()[0].removeprefix('# ').strip()
         by_title[title].append((path, text))
     csv_paths = sorted(p for p in CONTENT.rglob('*_all.csv')
-                       if re.sub(r' [a-f0-9]{32}_all$', '', p.stem) == group)
+                       if p.stem.removesuffix('_all') == group)
     if len(csv_paths) != 1:
         raise ValueError('Missing or ambiguous entity CSV: ' + group)
     with csv_paths[0].open(encoding='utf-8-sig', newline='') as stream:
@@ -42,6 +42,14 @@ def records(group):
 
 
 class PublicContentConsistencyTests(unittest.TestCase):
+    def test_no_export_ids_in_content(self):
+        for path in CONTENT.rglob('*'):
+            if path.suffix not in ('.md', '.csv'):
+                continue
+            with self.subTest(path=str(path)):
+                self.assertNotRegex(path.name, r'[a-f0-9]{32}')
+                self.assertNotRegex(path.read_text(encoding='utf-8-sig'), r'[a-f0-9]{32}\.md')
+
     def test_every_public_csv_matches_a_markdown_heading(self):
         expected = {'Темы': 51, 'История философии': 9, 'Личности': 64, 'Цитаты': 11}
         for group, count in expected.items():
@@ -59,19 +67,19 @@ class PublicContentConsistencyTests(unittest.TestCase):
 
     def test_chinese_room_origin_and_historical_reciprocity(self):
         room = next(item for item in records('Темы') if item[0] == 'Китайская комната')
-        self.assertIn('101b04bc57514b1cad67d7f6b207dcd9.md', room[1]['История философии'])
-        self.assertIn('101b04bc57514b1cad67d7f6b207dcd9.md', room[3])
+        self.assertIn('history/vtoraya-polovina-hh-veka.md', room[1]['История философии'])
+        self.assertIn('history/vtoraya-polovina-hh-veka.md', room[3])
         history = {title: row for title, row, _, _ in records('История философии')}
-        self.assertIn('b0221180ced546df90c4000ea04e5a3f.md',
+        self.assertIn('topics/kitaiskaya-komnata.md',
                       history['Вторая половина ХХ века']['Темы'])
-        self.assertNotIn('b0221180ced546df90c4000ea04e5a3f.md',
+        self.assertNotIn('topics/kitaiskaya-komnata.md',
                          history['Философия XXI века']['Темы'])
 
     def test_anthropocentrism_and_correlationism_are_not_equated_by_csv(self):
         topic_rows = {title: row for title, row, _, _ in records('Темы')}
-        self.assertNotIn('c2a6a8fa37144057aa2a2e308c479aa8.md',
+        self.assertNotIn('topics/korrelyatsionizm.md',
                          str(topic_rows['Антропоцентризм']))
-        self.assertNotIn('0bb5cd4cf7c348efaa07b4d077892b98.md',
+        self.assertNotIn('topics/antropotsentrizm.md',
                          str(topic_rows['Корреляционизм']))
 
     def test_corrected_philosopher_dates_and_quotes(self):
@@ -100,12 +108,12 @@ class PublicContentConsistencyTests(unittest.TestCase):
         identity = {}
         for group in schema:
             for title, csv_row, path, source in records(group):
-                match = re.search(r'([a-f0-9]{32})\.md$', path.name)
+                match = re.search(r'([a-z0-9-]+)\.md$', path.name)
                 self.assertIsNotNone(match, str(path))
-                identity[match.group(1)] = (group, title, csv_row, path, source)
+                identity[{'Темы':'topics','Личности':'people','История философии':'history'}[group] + '/' + match.group(1)] = (group, title, csv_row, path, source)
 
         def referenced_ids(value):
-            return set(re.findall(r'([a-f0-9]{32})\.md', value or '', re.I))
+            return set(re.findall(r'((?:people|topics|history|quotes|articles)/[a-z0-9-]+)\.md', value or '', re.I))
 
         def markdown_properties(source):
             properties = {}
@@ -147,7 +155,7 @@ class PublicContentConsistencyTests(unittest.TestCase):
         """Editorially confirmed philosophy relations should survive later imports."""
         corpus = {
             group: {
-                title: (row, re.search(r'([a-f0-9]{32})\.md$', path.name).group(1))
+                title: (row, {'Темы':'topics','Личности':'people','История философии':'history'}[group] + '/' + path.stem)
                 for title, row, path, _ in records(group)
             }
             for group in ('Темы', 'Личности', 'История философии')

@@ -41,7 +41,7 @@ class Metadata(HTMLParser):
             self.title += data
 
 parser = Links()
-for path in (ROOT / 'content' / 'notion').rglob('*.md'):
+for path in (ROOT / 'content' / 'knowledge').rglob('*.md'):
     parser.feed(markdown.markdown(path.read_text(encoding='utf-8')))
 cache = json.loads(CACHE.read_text()) if CACHE.exists() else {}
 

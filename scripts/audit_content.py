@@ -1,4 +1,4 @@
-"""Reproducible, non-destructive editorial inventory of the Notion export.
+"""Reproducible, non-destructive editorial inventory of the source dataset.
 
 Heuristics identify review candidates; they never certify philosophical accuracy.
 Run from any directory. Reports cover all exported Markdown, but only the four
@@ -13,7 +13,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-CONTENT = ROOT / 'content' / 'notion'
+CONTENT = ROOT / 'content' / 'knowledge'
 PUBLIC_GROUPS = {'Темы', 'Личности', 'История философии', 'Цитаты'}
 STABLE_ID = re.compile(r'([a-f0-9]{32})\.md$', re.I)
 REFERENCED_ID = re.compile(r'([a-f0-9]{32})\.md', re.I)
@@ -77,7 +77,7 @@ def refs(text):
 
 
 def load_csv_metadata(content, records):
-    """Match _all.csv rows to stable IDs in export order, like build.py."""
+    """Match _all.csv rows to stable IDs in dataset order, like build.py."""
     by_group_title = defaultdict(list)
     for record in records.values():
         by_group_title[(record['section'], record['title'])].append(record['id'])
@@ -102,7 +102,7 @@ def load_csv_metadata(content, records):
 
 def audit(root=ROOT):
     root = Path(root)
-    content = root / 'content' / 'notion'
+    content = root / 'content' / 'knowledge'
     slugs_file = root / 'content' / 'slugs.json'
     slugs = json.loads(slugs_file.read_text(encoding='utf-8')) if slugs_file.exists() else {}
     records, invalid_names, duplicate_ids = {}, [], []
@@ -239,14 +239,14 @@ def audit(root=ROOT):
         'entries': entries,
         'note': ('Heuristic inventory: "ready" requires independent editorial verification. '
                  'Unpublished homework is excluded; quotations require source verification. '
-                 'CSV relations are paired in export order; outgoing links are not inferred '
+                 'CSV relations are paired in dataset order; outgoing links are not inferred '
                  'from incoming links. No files are modified.'),
     }
 
 
 
 # The public build must have no structural/editorial completeness regressions.
-# The private Notion-export homework remains inventoried, not release-blocking.
+# The private content source-export homework remains inventoried, not release-blocking.
 PUBLIC_GATE_FINDINGS = {
     'placeholder', 'empty_body', 'stub_review', 'missing_intro',
     'intro_length_review', 'duplicate_title_review', 'missing_public_slug',

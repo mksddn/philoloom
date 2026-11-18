@@ -92,7 +92,7 @@ class SiteTests(unittest.TestCase):
             page = (OUT / legacy).read_text(encoding='utf-8')
             self.assertIn('name="robots" content="noindex,follow"', page)
             self.assertIn('https://mksddn.github.io/philoloom/topics/slavyanofilstvo/', page)
-        with next((ROOT / 'content/notion').rglob('Темы *_all.csv')).open(
+        with next((ROOT / 'content/knowledge').rglob('Темы *_all.csv')).open(
                 encoding='utf-8-sig', newline='') as stream:
             names = [row['Name'] for row in csv.DictReader(stream)]
         self.assertEqual(names.count('Славянофильство'), 1)
@@ -190,7 +190,7 @@ class SiteTests(unittest.TestCase):
     def test_catalog_cards_render_all_structured_links(self):
         """Every published relation in a CSV field appears in that entity card."""
         home = (OUT / 'index.html').read_text(encoding='utf-8')
-        source_root = ROOT / 'content' / 'notion'
+        source_root = ROOT / 'content' / 'knowledge'
         relation_fields = {
             'Темы': ('История философии', 'Личности', 'Связь'),
             'Личности': ('Темы', 'История философии'),
@@ -204,7 +204,7 @@ class SiteTests(unittest.TestCase):
                 rows = list(csv.DictReader(stream))
             for row in rows:
                 # Cards link the same record, but duplicate titles can occur in
-                # the original export. Verify each card once, not by title alone.
+                # the content collection. Verify each card once, not by title alone.
                 name = row['Name']
                 kind = {'Темы': 'topics', 'Личности': 'people',
                         'История философии': 'history'}[group]
@@ -253,7 +253,7 @@ class SiteTests(unittest.TestCase):
             self.assertIn('.history-related .entity-collection:has(> .entity-card:only-child)', css)
 
     def test_person_cards_ordered_by_year_of_death(self):
-        csv_files = list((ROOT / 'content' / 'notion').rglob('Личности *_all.csv'))
+        csv_files = list((ROOT / 'content' / 'knowledge').rglob('Личности *_all.csv'))
         self.assertEqual(len(csv_files), 1)
         with csv_files[0].open(encoding='utf-8-sig', newline='') as stream:
             people = list(csv.DictReader(stream))
@@ -474,7 +474,7 @@ class SiteTests(unittest.TestCase):
         info = self.manifest['sources']['site/assets/forest-cover.jpg']
         self.assertLess(info['variants'][-1]['bytes'], info['original_bytes'] / 4)
         for relative, info in self.manifest['sources'].items():
-            if relative.startswith('content/notion/'):
+            if relative.startswith('content/knowledge/'):
                 with Image.open(ROOT / relative) as original:
                     original = ImageOps.exif_transpose(original).convert('RGBA')
                 with Image.open(OUT / info['variants'][-1]['url']) as optimized:

@@ -1,4 +1,4 @@
-"""Regression checks for public Notion CSV and Markdown identity metadata.
+"""Regression checks for public entity CSV and Markdown identity metadata.
 
 These are consistency tests, not a substitute for scholarly source verification.
 """
@@ -9,7 +9,7 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CONTENT = ROOT / 'content' / 'notion'
+CONTENT = ROOT / 'content' / 'knowledge'
 PUBLIC = ('Темы', 'История философии', 'Личности', 'Цитаты')
 
 
@@ -23,7 +23,7 @@ def records(group):
     csv_paths = sorted(p for p in CONTENT.rglob('*_all.csv')
                        if re.sub(r' [a-f0-9]{32}_all$', '', p.stem) == group)
     if len(csv_paths) != 1:
-        raise ValueError('Missing or ambiguous Notion CSV: ' + group)
+        raise ValueError('Missing or ambiguous entity CSV: ' + group)
     with csv_paths[0].open(encoding='utf-8-sig', newline='') as stream:
         csv_rows = list(csv.DictReader(stream))
     used = defaultdict(int)

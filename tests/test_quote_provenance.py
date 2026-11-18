@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-QUOTE_DIR = ROOT / "content" / "notion" / "Философия" / "Цитаты"
+QUOTE_DIR = ROOT / "content" / "knowledge" / "Философия" / "Цитаты"
 PROVENANCE = ROOT / "content" / "quote-provenance.json"
 ID_RE = re.compile(r"([a-f0-9]{32})\.md$")
 

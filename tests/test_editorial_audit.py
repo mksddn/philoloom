@@ -101,20 +101,20 @@ class EditorialAuditTests(unittest.TestCase):
     def test_full_inventory_csv_backlinks_and_exclusions(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            notion = root / 'content' / 'notion' / 'Философия'
+            knowledge = root / 'content' / 'knowledge' / 'Философия'
             for group in ('Темы', 'Личности', 'Цитаты', 'Самостоятельная работа'):
-                (notion / group).mkdir(parents=True)
-            (notion / 'Темы' / f'Тема {A}.md').write_text(
+                (knowledge / group).mkdir(parents=True)
+            (knowledge / 'Темы' / f'Тема {A}.md').write_text(
                 '# Разум\n\n## Начало\n\nТекст.\n', encoding='utf-8')
-            (notion / 'Темы' / f'Тема2 {B}.md').write_text(
+            (knowledge / 'Темы' / f'Тема2 {B}.md').write_text(
                 '# Разум\n\nРазум — философское понятие.\n\n'
                 'Содержательное обсуждение. ' * 20, encoding='utf-8')
-            (notion / 'Личности' / f'Личность {C}.md').write_text(
+            (knowledge / 'Личности' / f'Личность {C}.md').write_text(
                 '# Мыслитель\n\nГод рождения: 1800\nГод смерти: 1870\n\n'
                 'Содержательный текст философа. ' * 12, encoding='utf-8')
-            (notion / 'Самостоятельная работа' / f'Личное {D}.md').write_text(
+            (knowledge / 'Самостоятельная работа' / f'Личное {D}.md').write_text(
                 '# Мои заметки\n\nНе публично', encoding='utf-8')
-            (notion / f'Темы {"f"*32}_all.csv').write_text(
+            (knowledge / f'Темы {"f"*32}_all.csv').write_text(
                 'Name,Личности\n'
                 f'Разум,Мыслитель ({C}.md)\n'
                 f'Разум,Мыслитель ({C}.md)\n', encoding='utf-8')

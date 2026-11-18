@@ -1,6 +1,8 @@
 // Keep relative links and assets anchored to the site root while the address bar
 // points to an entity. Static pages can then be opened normally on refresh.
 const siteRoot = new URL('.', document.baseURI);
+// This document's actual route never changes when history.pushState updates a desktop preview.
+const documentRoute = location.pathname;
 const initialSection = location.hash.slice(1);
 if (!document.querySelector('base')) {
   const base = document.createElement('base');
@@ -243,11 +245,21 @@ panelNext.addEventListener('click', () => { if (panelNext.dataset.path) openPane
 panel.addEventListener('cancel', event => { event.preventDefault(); closePanel(); });
 panel.addEventListener('click', event => { if (event.target === panel) closePanel(); });
 window.addEventListener('popstate', () => {
+  const mobile = matchMedia('(max-width: 700px)').matches;
+  const isPanelHistory = Boolean(history.state?.philoPanel);
+  // Mobile entity navigation uses real documents. A previously opened desktop
+  // preview can leave a same-document history entry with a different pathname.
+  // Never display stale content under the URL of another page.
+  if (mobile && (location.pathname !== documentRoute || isPanelHistory)) {
+    location.replace(location.href);
+    return;
+  }
   // A path alone cannot identify an open panel: a full detail page has the
   // same URL. History state distinguishes the modal from the static page.
-  panelDepth = history.state?.philoPanel ? (history.state.philoDepth || 0) : 0;
-  const path = history.state?.philoPanel ? pagePath(location.href) : null;
+  panelDepth = isPanelHistory ? (history.state.philoDepth || 0) : 0;
+  const path = isPanelHistory ? pagePath(location.href) : null;
   if (path) displayPanel(path);
+  else if (location.pathname !== documentRoute) location.replace(location.href);
   else hidePanel();
 });
 document.addEventListener('click', event => {

@@ -54,8 +54,3 @@ jobs:
         env:
           PLAYWRIGHT_BROWSER_CHANNEL: chrome
         run: node tests/visual_smoke.cjs
-      - name: Audit current published OG metadata (informational before deployment)
-        if: github.head_ref == 'fix/social-og-images'
-        env:
-          PLAYWRIGHT_BROWSER_CHANNEL: chrome
-        run: node tests/live_social_meta.cjs

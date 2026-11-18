@@ -592,10 +592,10 @@ def person_overview(page, facts_html, relations):
 def breadcrumbs(page):
     group_id = next((pid for pid, group in db_ids.items() if group == page['group']), '')
     group_link = f'<a href="index.html#{group_id}">{escape(page["group"])}</a>' if group_id else ''
-    return (f'<nav class="back page-breadcrumbs" aria-label="Путь по справочнику"><a href="index.html">philoloom</a>'
-            f'<span aria-hidden="true">/</span>{group_link}<span aria-hidden="true">/</span>'
-            f'<span aria-current="page" title="{escape(page["title"],quote=True)}">{escape(page["title"])}</span></nav>')
-
+    separator = '<span aria-hidden="true">/</span>'
+    return (f'<nav class="back page-breadcrumbs" aria-label="Путь по справочнику">'
+            f'<a href="index.html">philoloom</a>'
+            f'{separator}{group_link}</nav>')
 
 
 class MediaLinks(HTMLParser):
@@ -669,7 +669,7 @@ for p in pages.values():
     head = (
         f'<div class="detail-navigation">{breadcrumbs(p)}{SEARCH_BUTTON}</div>'
         f'<div class="entity-detail entity-detail--{kind}">'
-        f'<header class="entity-header"><span class="entity-kicker">{escape(p["group"])}</span>'
+        f'<header class="entity-header">'
         f'<h1>{escape(p["title"])}</h1></header>'
     )
     if p['group'] == 'Личности':

@@ -72,9 +72,9 @@ class SiteTests(unittest.TestCase):
                 portrait = re.search(r'<img(?=[^>]*class="person-portrait-image")[^>]*\ssrc="([^"]+)"', page)
                 self.assertIsNotNone(portrait, 'Portrait missing from generated biography')
                 source = html_unescape(portrait.group(1))
-                self.assertTrue(source.startswith('media/') or
-                                source.startswith('https://upload.wikimedia.org/wikipedia/commons/'),
-                                'Portrait source must be local or from Wikimedia Commons')
+                self.assertTrue(source.startswith('media/'),
+                                'Portrait must use local optimized WebP, never an external URL')
+                self.assertTrue((OUT / source).is_file(), 'Local portrait asset must exist')
                 self.assertNotIn('person-portrait-placeholder', page)
 
     def test_pinned_slugs_without_legacy_forwarding(self):

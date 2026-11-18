@@ -505,21 +505,19 @@ def quote_figure(page, anchored=False):
 
 
 def person_portrait(page):
-    """Prefer cached Wikipedia preview for the explicitly illustrated person."""
+    """Serve local responsive WebP for all people; keep upstream URLs for credits."""
     image_match = re.search(r'!\[[^\]]*\]\((https?://[^)]+)\)', page['text'])
     original = image_match[1] if image_match else ''
+    local = 'previews/portraits/' + page['path'].stem + '.jpg'
+    if image_info(local):
+        return local, original
     if not original:
         return '', ''
     for url, metadata in previews.items():
         cached = metadata.get('local_image', '')
         if 'wikipedia.org/wiki/' in url and url in page['text'] and cached and image_info(cached):
             return cached, original
-    # A missing local preview must not leave a person without a portrait.
-    # Only direct, HTTPS Wikimedia Commons files are eligible for this fallback.
-    source = urlsplit(original)
-    if (source.scheme == 'https' and source.netloc == 'upload.wikimedia.org'
-            and source.path.startswith('/wikipedia/commons/')):
-        return original, original
+    # Missing local assets must fail the portrait regression test, not hotlink.
     return '', original
 
 

@@ -1315,6 +1315,234 @@
         }
       ]
     },
+    "content/previews/portraits/fridrih-vilgelm-iozef-shelling.jpg": {
+      "original_bytes": 86811,
+      "sha256": "9231aef17a7cecc2c2f0dcccc265b5c9be10f4add087ba94d1f4947ea9417238",
+      "variants": [
+        {
+          "bytes": 12326,
+          "height": 365,
+          "url": "media/6e3ad08f30fdfbc8c31e2d5a-320.webp",
+          "width": 320
+        },
+        {
+          "bytes": 58466,
+          "height": 666,
+          "url": "media/6e3ad08f30fdfbc8c31e2d5a-584.webp",
+          "width": 584
+        }
+      ]
+    },
+    "content/previews/portraits/gerbert-markuze.jpg": {
+      "original_bytes": 33008,
+      "sha256": "db78e117391ccf7c3bc1c75fea94d9cbf50f139d041f2b6c2e9944dcaafdd9da",
+      "variants": [
+        {
+          "bytes": 8398,
+          "height": 258,
+          "url": "media/94715de20547e4f2d3f34b5a-320.webp",
+          "width": 320
+        },
+        {
+          "bytes": 15816,
+          "height": 444,
+          "url": "media/94715de20547e4f2d3f34b5a-550.webp",
+          "width": 550
+        }
+      ]
+    },
+    "content/previews/portraits/iogann-gotlib-fihte.jpg": {
+      "original_bytes": 647960,
+      "sha256": "db5ff6d2e17aece67113ea38cc7c5bfffc31e044bf5a380acdf6b8bed6a44333",
+      "variants": [
+        {
+          "bytes": 21022,
+          "height": 366,
+          "url": "media/fcf05472d0ed25f992b2bcb2-320.webp",
+          "width": 320
+        },
+        {
+          "bytes": 105724,
+          "height": 731,
+          "url": "media/fcf05472d0ed25f992b2bcb2-640.webp",
+          "width": 640
+        },
+        {
+          "bytes": 271232,
+          "height": 1097,
+          "url": "media/fcf05472d0ed25f992b2bcb2-960.webp",
+          "width": 960
+        }
+      ]
+    },
+    "content/previews/portraits/ivan-kireevskii.jpg": {
+      "original_bytes": 31974,
+      "sha256": "aad51605167e8b6450d0477cdb4646b42fe81cddf0035a2bcfda7f8ddc1b5d81",
+      "variants": [
+        {
+          "bytes": 9496,
+          "height": 471,
+          "url": "media/21847929e954e7a8b186b76c-320.webp",
+          "width": 320
+        },
+        {
+          "bytes": 16756,
+          "height": 659,
+          "url": "media/21847929e954e7a8b186b76c-448.webp",
+          "width": 448
+        }
+      ]
+    },
+    "content/previews/portraits/karl-yaspers.jpg": {
+      "original_bytes": 173694,
+      "sha256": "e7ce950c77f49c87261f4c80a11dda554e8ffbacad928bef52f4cb002163308c",
+      "variants": [
+        {
+          "bytes": 8620,
+          "height": 432,
+          "url": "media/500dba6e60ec0543b596bc4d-320.webp",
+          "width": 320
+        },
+        {
+          "bytes": 79588,
+          "height": 864,
+          "url": "media/500dba6e60ec0543b596bc4d-640.webp",
+          "width": 640
+        },
+        {
+          "bytes": 138730,
+          "height": 975,
+          "url": "media/500dba6e60ec0543b596bc4d-722.webp",
+          "width": 722
+        }
+      ]
+    },
+    "content/previews/portraits/maks-sheler.jpg": {
+      "original_bytes": 45868,
+      "sha256": "fbb841f76ae1b7b236c6d31771fe3e7ecab5c1eb724cfae6ea6df371f8ba2687",
+      "variants": [
+        {
+          "bytes": 12888,
+          "height": 391,
+          "url": "media/daab467adfa15e742945c6de-320.webp",
+          "width": 320
+        },
+        {
+          "bytes": 21236,
+          "height": 581,
+          "url": "media/daab467adfa15e742945c6de-476.webp",
+          "width": 476
+        }
+      ]
+    },
+    "content/previews/portraits/mishel-fuko.jpg": {
+      "original_bytes": 12154,
+      "sha256": "d66d979f0b46bb6cbd6901d44f415eb411adff17ba6cddb68047f1aedec34940",
+      "variants": [
+        {
+          "bytes": 9160,
+          "height": 246,
+          "url": "media/68dc00a35d6d30a32d07a579-207.webp",
+          "width": 207
+        }
+      ]
+    },
+    "content/previews/portraits/pavel-florenskii.jpg": {
+      "original_bytes": 36547,
+      "sha256": "2c598b1b570f916b0049497adea51f44e046fd595e833c831d28803513cde32b",
+      "variants": [
+        {
+          "bytes": 18754,
+          "height": 427,
+          "url": "media/b59227bf7743431844e0cec3-320.webp",
+          "width": 320
+        },
+        {
+          "bytes": 22786,
+          "height": 467,
+          "url": "media/b59227bf7743431844e0cec3-350.webp",
+          "width": 350
+        }
+      ]
+    },
+    "content/previews/portraits/petr-chaadaev.jpg": {
+      "original_bytes": 43220,
+      "sha256": "c40f54ff4d5d8135f73989d1e88b45aca48f3b224d6ac1d0b27d4383a9098f30",
+      "variants": [
+        {
+          "bytes": 7992,
+          "height": 413,
+          "url": "media/51498157a3809c9e65c7df00-320.webp",
+          "width": 320
+        },
+        {
+          "bytes": 21264,
+          "height": 700,
+          "url": "media/51498157a3809c9e65c7df00-542.webp",
+          "width": 542
+        }
+      ]
+    },
+    "content/previews/portraits/seren-obe-kerkegor.jpg": {
+      "original_bytes": 96715,
+      "sha256": "c4919def063f893a07c4585ef86ab1908ce4067d6eac3100ae11ac05adab0502",
+      "variants": [
+        {
+          "bytes": 17630,
+          "height": 452,
+          "url": "media/01538c59216e07327613c456-320.webp",
+          "width": 320
+        },
+        {
+          "bytes": 57972,
+          "height": 796,
+          "url": "media/01538c59216e07327613c456-564.webp",
+          "width": 564
+        }
+      ]
+    },
+    "content/previews/portraits/sergei-bulgakov.jpg": {
+      "original_bytes": 76786,
+      "sha256": "f94221164fe3a41afbf2a18ba87c644e084efe08703211f3ad04a6aecce1743a",
+      "variants": [
+        {
+          "bytes": 27362,
+          "height": 470,
+          "url": "media/45c3cb47e2b00a0f408a4fb8-320.webp",
+          "width": 320
+        },
+        {
+          "bytes": 54912,
+          "height": 659,
+          "url": "media/45c3cb47e2b00a0f408a4fb8-449.webp",
+          "width": 449
+        }
+      ]
+    },
+    "content/previews/portraits/slavoi-zhizhek.jpg": {
+      "original_bytes": 256798,
+      "sha256": "7dd029c2d88295018c83fbfc22250fa36e228159a1618d56ec98700668f73283",
+      "variants": [
+        {
+          "bytes": 7786,
+          "height": 215,
+          "url": "media/0a3618793b543dde14df60ca-320.webp",
+          "width": 320
+        },
+        {
+          "bytes": 18830,
+          "height": 431,
+          "url": "media/0a3618793b543dde14df60ca-640.webp",
+          "width": 640
+        },
+        {
+          "bytes": 32554,
+          "height": 646,
+          "url": "media/0a3618793b543dde14df60ca-960.webp",
+          "width": 960
+        }
+      ]
+    },
     "site/assets/forest-cover.jpg": {
       "original_bytes": 3956438,
       "sha256": "ba0b422a6656e7334d12d23c58af0c597b859c9562453ad93c4599e00dbd971e",

@@ -43,28 +43,7 @@ const {chromium} = require('playwright');
       ' decoded; remote Wikimedia: ' + remote.length);
     for (const r of failed) console.log('MISSING IMAGE: ' + JSON.stringify(r));
     for (const r of remote) console.log('REMOTE IMAGE: ' + JSON.stringify(r));
-    // A PR checks the already-deployed site. Probe newly proposed Commons URLs
-    // separately so corrected images can be verified before production changes.
-    const probe = await ctx.newPage();
-    const changed = ['fridrih-vilgelm-iozef-shelling', 'karl-yaspers',
-      'seren-obe-kerkegor', 'slavoi-zhizhek'];
-    for (const slug of changed) {
-      const source = fs.readFileSync(path.join(people, slug + '.md'), 'utf8');
-      const url = source.match(/!\[[^\]]*\]\((https?:\/\/[^)]+)\)/)?.[1];
-      if (!url) throw new Error('Missing source image: ' + slug);
-      const state = await probe.evaluate(async src => {
-        const image = new Image();
-        image.src = src;
-        const outcome = await Promise.race([
-          image.decode().then(() => 'decoded').catch(() => 'decode failed'),
-          new Promise(resolve => setTimeout(() => resolve('timeout'), 12000))
-        ]);
-        return {src, naturalWidth: image.naturalWidth, state: outcome};
-      }, url);
-      console.log('CANDIDATE IMAGE: ' + JSON.stringify({slug, ...state}));
-      if (!state.naturalWidth || state.state !== 'decoded') process.exitCode = 1;
-    }
-    await probe.close();
     console.log('LIVE PORTRAITS RESULT: ' + JSON.stringify({checked: results.length, failed: failed.length}));
+    if (failed.length) process.exitCode = 1;
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

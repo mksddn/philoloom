@@ -5,6 +5,8 @@
 История философии: Первая половина XX века (history/pervaya-polovina-xx-veka.md)
 Темы: Философская антропология (topics/filosofskaya-antropologiya.md), Этика (topics/etika.md)
 
+![Портрет Макса Шелера](https://upload.wikimedia.org/wikipedia/commons/c/c8/Max_Scheler.jpg)
+
 Человека нельзя полностью объяснить его телесными потребностями и приспособлением к среде. Шелер исследовал, как эмоциональное восприятие ценностей, любовь и духовная открытость позволяют человеку относиться к миру иначе, чем в рамках одних биологических реакций. Его ответы связаны с феноменологией и становлением философской антропологии XX века.
 
 ## Материальная этика ценностей
@@ -25,3 +27,5 @@
 - «Формы знания и общество» (1926).
 - «Положение человека в космосе» (1928).
 - [Max Scheler — Stanford Encyclopedia of Philosophy](https://plato.stanford.edu/entries/scheler/).
+
+- [Источник портрета: Wikimedia Commons, опубликован до 1939 года](https://commons.wikimedia.org/wiki/File:Max_Scheler.jpg).

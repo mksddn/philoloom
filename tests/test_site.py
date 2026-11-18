@@ -65,6 +65,18 @@ class SiteTests(unittest.TestCase):
                         target = target / 'index.html'
                     self.assertTrue(target.is_file(), (entry['title'], link))
 
+    def test_every_person_has_a_trusted_portrait(self):
+        for pid in sorted(key for key in self.slugs if key.startswith('people/')):
+            with self.subTest(person=pid):
+                page = self.public_page(pid)
+                portrait = re.search(r'<img(?=[^>]*class="person-portrait-image")[^>]*\ssrc="([^"]+)"', page)
+                self.assertIsNotNone(portrait, 'Portrait missing from generated biography')
+                source = html_unescape(portrait.group(1))
+                self.assertTrue(source.startswith('media/') or
+                                source.startswith('https://upload.wikimedia.org/wikipedia/commons/'),
+                                'Portrait source must be local or from Wikimedia Commons')
+                self.assertNotIn('person-portrait-placeholder', page)
+
     def test_pinned_slugs_without_legacy_forwarding(self):
         self.assertEqual(self.slugs['people/rene-dekart'], 'people/rene-dekart/')
         self.assertEqual(self.slugs['topics/ontologiya'], 'topics/ontologiya/')

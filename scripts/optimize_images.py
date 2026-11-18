@@ -10,7 +10,7 @@ MANIFEST = ROOT / 'content' / 'image-manifest.json'
 SUFFIXES = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
 # These pre-optimized UI assets are served directly from dist/ui/.
 # Recompressing them would move them into hashed media/ URLs and break
-# direct CSS and HTML references. Original Notion images still use the pipeline.
+# direct CSS and HTML references. Original content images still use the pipeline.
 PREOPTIMIZED_UI = {
     'descartes-hero-dark.webp',
     'descartes-hero-light.webp',
@@ -23,7 +23,7 @@ VERSION = 'webp-v1-quality82-lossless-diagrams'
 def optimize():
     OUTPUT.mkdir(parents=True, exist_ok=True)
     sources = []
-    for folder in ('content/notion', 'content/previews', 'site/assets'):
+    for folder in ('content/knowledge', 'content/previews', 'site/assets'):
         sources.extend(p for p in (ROOT / folder).rglob('*')
                        if p.suffix.lower() in SUFFIXES
                        and not (folder == 'site/assets' and p.name in PREOPTIMIZED_UI))
@@ -49,7 +49,7 @@ def optimize():
                 raise ValueError(f'Animated image requires an animation-preserving encoder: {relative}')
             image = ImageOps.exif_transpose(opened).convert('RGBA' if 'A' in opened.getbands() or 'transparency' in opened.info else 'RGB')
         hero = relative == 'site/assets/forest-cover.jpg'
-        diagram = relative.startswith('content/notion/')
+        diagram = relative.startswith('content/knowledge/')
         widths = [640, 1280, 1920] if hero else [640, 1280, image.width] if diagram else [320, 640, 960]
         variants = []
         for width in sorted({min(width, image.width) for width in widths}):

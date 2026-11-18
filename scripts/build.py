@@ -1,4 +1,4 @@
-"""Build a portable static reference from the original Notion export."""
+"""Build a portable static reference from the original source dataset."""
 import csv
 import hashlib
 import html
@@ -12,12 +12,12 @@ from html.parser import HTMLParser
 import markdown
 
 ROOT = Path(__file__).resolve().parents[1]
-CONTENT = ROOT / 'content' / 'notion'
+CONTENT = ROOT / 'content' / 'knowledge'
 OUT = ROOT / 'dist'
 SITE_URL = 'https://mksddn.github.io/philoloom/'
 GROUPS = [('Темы', 'Темы'), ('История философии', 'История философии'),
           ('Цитаты', 'Цитаты'), ('Личности', 'Личности')]
-# Retain exported homework metadata for direct article URLs, but no public section.
+# Retain non-public homework metadata for direct article URLs, but no public section.
 SOURCE_GROUPS = GROUPS + [('Самостоятельная работа', '💪 Мои статьи')]
 ID = re.compile(r'([a-f0-9]{32})(?:_all)?\.(?:md|csv)$')
 escape = html.escape
@@ -63,7 +63,7 @@ def image_info(url):
     decoded = unquote(url)
     if decoded in variant_sources:
         return variant_sources[decoded]
-    for prefix, source in [('previews/', 'content/previews/'), ('ui/', 'site/assets/'), ('assets/', 'content/notion/')]:
+    for prefix, source in [('previews/', 'content/previews/'), ('ui/', 'site/assets/'), ('assets/', 'content/knowledge/')]:
         if decoded.startswith(prefix):
             return optimized_sources.get(source + decoded[len(prefix):])
     return None
@@ -187,7 +187,7 @@ def property_html(value, page):
             parts.append(escape(value[end:m.start()]))
         target = ID.search(unquote(m[2]))
         if target and target[1] not in pages:
-            parts.append(f'<span class="empty">{escape(m[1])} (нет в экспорте)</span>')
+            parts.append(f'<span class="empty">{escape(m[1])} (запись не найдена)</span>')
         else:
             parts.append(f'<a class="relation" href="{escape(resolve(m[2],page),quote=True)}">{escape(m[1])}</a>')
         end = m.end()
@@ -200,7 +200,7 @@ def property_html(value, page):
 
 def matching_page(group, row):
     matches = [p for p in pages.values() if p['group'] == group and p['title'] == row['Name']]
-    # Preserve the empty duplicate as a separate entry, in export order.
+    # Preserve the empty duplicate as a separate entry, in dataset order.
     for p in matches:
         if p['id'] not in assigned:
             assigned.add(p['id'])
@@ -229,7 +229,7 @@ if len(set(SLUGS.values())) != len(SLUGS) or any(
 nav = (''.join(f'<a href="index.html#{next(i for i,n in db_ids.items() if n==g)}">{label}</a>' for g,label in GROUPS)
        + '<a href="index.html#more">Ещё</a>')
 
-# The visual identity is a presentation layer; content remains sourced from Notion.
+# The visual identity is a presentation layer; content remains sourced from source records.
 SEARCH_BUTTON = ('<button id="search-open" class="museum-search" type="button" '
                  'aria-label="Открыть поиск по справочнику" aria-haspopup="dialog" '
                  'aria-controls="search-dialog" title="Поиск">'
@@ -457,7 +457,7 @@ def person_portrait(page):
 
 
 def person_document(markdown_text):
-    """Recompose existing Markdown visually; do not modify the original export."""
+    """Recompose existing Markdown visually; do not modify the content collection."""
     lines, resources = [], []
     first_image_removed = False
     for line in markdown_text.splitlines():
@@ -596,7 +596,7 @@ for p in pages.values():
     destination.write_text(shell(p['title'], body, p['group'], canonical_path=address), encoding='utf-8')
 
 # Preserve the exact published quotation and resources from the untouched
-# Notion introduction; none of these are newly authored philosophical claims.
+# source introduction; none of these are newly authored philosophical claims.
 intro = home['text'].split('\n## ')[0]
 quote_source = intro.split('- Посмотреть', 1)[0].splitlines()[1:]
 quote_lines = [line.strip() for line in quote_source if line.strip() and line.strip() != '>']
@@ -832,7 +832,7 @@ search = [
 ]
 (OUT / 'search.json').write_text(json.dumps(search, ensure_ascii=False), encoding='utf-8')
 
-# Old Notion-ID URLs remain as noindex HTML forwarding pages. GitHub Pages
+# Old record-ID URLs remain as noindex HTML forwarding pages. GitHub Pages
 # cannot produce real HTTP 301 redirects on its own; never list aliases
 # in the sitemap or point canonical URLs back to the aliases.
 def write_legacy_alias(page, destination):
@@ -853,7 +853,7 @@ for page in pages.values():
         write_legacy_alias(page, page_url(page))
 
 # Explicit legacy redirects for merged or renamed public records.
-# These supplement the automatic Notion-ID forwarding pages.
+# These supplement the automatic record-ID forwarding pages.
 LEGACY_REDIRECTS = json.loads((ROOT / 'content' / 'redirects.json').read_text(encoding='utf-8'))
 for alias, target in LEGACY_REDIRECTS.items():
     if target not in SLUGS.values():

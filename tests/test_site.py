@@ -466,7 +466,11 @@ class SiteTests(unittest.TestCase):
         images = [p for p in OUT.rglob('*') if p.suffix.lower() in {'.jpg', '.jpeg', '.png', '.webp', '.gif'}]
         self.assertTrue(images)
         for path in images:
-            self.assertEqual(path.suffix, '.webp', path)
+            if path.is_relative_to(OUT / 'og'):
+                # Social crawlers need dedicated JPEGs; regular UI remains WebP-only.
+                self.assertEqual(path.suffix, '.jpg', path)
+            else:
+                self.assertEqual(path.suffix, '.webp', path)
             with Image.open(path) as image:
                 image.verify()
         for info in self.manifest['sources'].values():

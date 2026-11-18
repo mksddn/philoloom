@@ -65,7 +65,7 @@ class SiteTests(unittest.TestCase):
                         target = target / 'index.html'
                     self.assertTrue(target.is_file(), (entry['title'], link))
 
-    def test_pinned_slugs_and_legacy_forwarding(self):
+    def test_pinned_slugs_without_legacy_forwarding(self):
         self.assertEqual(self.slugs['c4c741fb50874c87a5d2cb4d4def5e50'], 'people/rene-dekart/')
         self.assertEqual(self.slugs['10ebde78a3c349b29057a45caee57a92'], 'topics/ontologiya/')
         self.assertEqual(len(set(self.slugs.values())), len(self.slugs))
@@ -73,14 +73,12 @@ class SiteTests(unittest.TestCase):
         detail = self.public_page('c4c741fb50874c87a5d2cb4d4def5e50')
         self.assertIn('<base href="../../">', detail)
         self.assertIn('rel="canonical" href="https://mksddn.github.io/philoloom/people/rene-dekart/"', detail)
-        legacy = (OUT / 'c4c741fb50874c87a5d2cb4d4def5e50.html').read_text()
-        self.assertIn('name="robots" content="noindex,follow"', legacy)
-        self.assertIn('url=people/rene-dekart/', legacy)
+        self.assertFalse((OUT / 'c4c741fb50874c87a5d2cb4d4def5e50.html').exists())
         sitemap = (OUT / 'sitemap.xml').read_text()
         self.assertIn('/people/rene-dekart/', sitemap)
         self.assertNotIn('c4c741fb50874c87a5d2cb4d4def5e50.html', sitemap)
 
-    def test_slavophilism_merge_preserves_canonical_and_old_urls(self):
+    def test_slavophilism_merge_preserves_canonical_url(self):
         canonical_id = '21618a276d8d80fd8c45c76380b480ba'
         retired_id = '21618a276d8d80b181ccf9d91811bd41'
         self.assertEqual(self.slugs[canonical_id], 'topics/slavyanofilstvo/')
@@ -88,10 +86,8 @@ class SiteTests(unittest.TestCase):
         article = self.public_page(canonical_id)
         self.assertIn('Славянофильство', article)
         self.assertIn('Хомяков', article)
-        for legacy in (retired_id + '.html', 'topics/slavyanofilstvo-21618a27/index.html'):
-            page = (OUT / legacy).read_text(encoding='utf-8')
-            self.assertIn('name="robots" content="noindex,follow"', page)
-            self.assertIn('https://mksddn.github.io/philoloom/topics/slavyanofilstvo/', page)
+        self.assertFalse((OUT / (retired_id + '.html')).exists())
+        self.assertFalse((OUT / 'topics/slavyanofilstvo-21618a27/index.html').exists())
         with next((ROOT / 'content/knowledge').rglob('Темы *_all.csv')).open(
                 encoding='utf-8-sig', newline='') as stream:
             names = [row['Name'] for row in csv.DictReader(stream)]
@@ -157,8 +153,7 @@ class SiteTests(unittest.TestCase):
         self.assertIn(f'id="quote-{quote_id}"', home)
         self.assertIn('class="quote-entry"', home)
         self.assertNotIn(f'href="{quote_id}.html"', home)
-        legacy = (OUT / f'{quote_id}.html').read_text()
-        self.assertIn(f'index.html#quote-{quote_id}', legacy)
+        self.assertFalse((OUT / f'{quote_id}.html').exists())
         self.assertFalse((OUT / 'quotes').exists())
         descartes = self.public_page('c4c741fb50874c87a5d2cb4d4def5e50')
         self.assertIn('class="person-quotes"', descartes)

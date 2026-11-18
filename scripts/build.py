@@ -28,7 +28,7 @@ pages = {}
 for path in sorted(CONTENT.rglob('*.md')):
     group = path.parent.name if path.parent != CONTENT else ''
     key = ('home' if not group else GROUP_KEY[group] + '/' + path.stem)
-    match = (key,)
+    match = (None, key)
     text = path.read_text(encoding='utf-8')
     title = text.splitlines()[0].removeprefix('# ').strip()
     pages[match[1]] = dict(id=match[1], path=path, title=title, text=text,

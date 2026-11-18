@@ -54,3 +54,7 @@ jobs:
         env:
           PLAYWRIGHT_BROWSER_CHANNEL: chrome
         run: node tests/visual_smoke.cjs
+      - name: Audit deployed philosopher portraits
+        env:
+          PLAYWRIGHT_BROWSER_CHANNEL: chrome
+        run: node tests/live_portraits.cjs

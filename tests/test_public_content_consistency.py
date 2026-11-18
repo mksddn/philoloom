@@ -147,9 +147,7 @@ class PublicContentConsistencyTests(unittest.TestCase):
         """Editorially confirmed philosophy relations should survive later imports."""
         corpus = {
             group: {
-                title: (row, re.search(r'([a-f0-9]{32})\.md
-    unittest.main()
-, path.name).group(1))
+                title: (row, re.search(r'([a-f0-9]{32})\.md$', path.name).group(1))
                 for title, row, path, _ in records(group)
             }
             for group in ('Темы', 'Личности', 'История философии')

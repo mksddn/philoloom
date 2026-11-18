@@ -1,3 +1,13 @@
+// Keep relative links and assets anchored to the site root while the address bar
+// points to an entity. Static pages can then be opened normally on refresh.
+const siteRoot = new URL('.', document.baseURI);
+const initialSection = location.hash.slice(1);
+if (!document.querySelector('base')) {
+  const base = document.createElement('base');
+  base.href = siteRoot.href;
+  document.head.prepend(base);
+}
+
 // A URL override is for previewing themes; otherwise follow system changes.
 const systemColorScheme = matchMedia('(prefers-color-scheme: light)');
 const requestedTheme = new URLSearchParams(location.search).get('theme');
@@ -115,16 +125,16 @@ async function catalog() {
   return entries;
 }
 function pagePath(url) {
-  const siteBase = new URL('.', document.baseURI);
-  const target = new URL(url, document.baseURI);
-  if (target.origin !== siteBase.origin || !target.pathname.startsWith(siteBase.pathname) || target.hash) return null;
-  const path = target.pathname.slice(siteBase.pathname.length);
+  const target = new URL(url, siteRoot);
+  if (target.origin !== siteRoot.origin || !target.pathname.startsWith(siteRoot.pathname) || target.hash) return null;
+  const path = target.pathname.slice(siteRoot.pathname.length);
   return /^(?:people|topics|history)\/[a-z0-9-]+\/$/.test(path) ? path : null;
 }
 function panelLocation(path) {
-  const url = new URL(location.href);
-  if (path) url.searchParams.set('peek', path);
-  else url.searchParams.delete('peek');
+  const url = new URL(path || '.', siteRoot);
+  // Only the explicit developer theme preview keeps a query parameter.
+  if (themeOverride) url.searchParams.set('theme', themeOverride);
+  if (!path && initialSection) url.hash = initialSection;
   return url;
 }
 async function displayPanel(path) {
@@ -195,13 +205,13 @@ async function displayPanel(path) {
 function openPanel(path) {
   if (dialog.open) dialog.close();
   panelDepth += 1;
-  history.pushState({...history.state, philoDepth:panelDepth}, '', panelLocation(path));
+  history.pushState({...history.state, philoPanel:true, philoDepth:panelDepth}, '', panelLocation(path));
   displayPanel(path);
 }
 function closePanel() {
   if (panelDepth > 0) history.go(-panelDepth);
   else {
-    history.replaceState(history.state, '', panelLocation(null));
+    history.replaceState({...history.state, philoPanel:false, philoDepth:0}, '', panelLocation(null));
     hidePanel();
   }
 }
@@ -214,7 +224,7 @@ async function hidePanel() {
     await Promise.allSettled(panel.getAnimations().map(animation => animation.finished));
   }
   // A forward navigation may have reopened the panel during its exit animation.
-  if (new URL(location.href).searchParams.has('peek')) { panel.classList.remove('closing'); return; }
+  if (history.state?.philoPanel) { panel.classList.remove('closing'); return; }
   panel.close();
   panel.classList.remove('closing');
   document.documentElement.classList.remove('panel-open');
@@ -233,9 +243,11 @@ panelNext.addEventListener('click', () => { if (panelNext.dataset.path) openPane
 panel.addEventListener('cancel', event => { event.preventDefault(); closePanel(); });
 panel.addEventListener('click', event => { if (event.target === panel) closePanel(); });
 window.addEventListener('popstate', () => {
-  panelDepth = history.state?.philoDepth || 0;
-  const path = new URL(location.href).searchParams.get('peek');
-  if (path && pagePath(path)) displayPanel(path);
+  // A path alone cannot identify an open panel: a full detail page has the
+  // same URL. History state distinguishes the modal from the static page.
+  panelDepth = history.state?.philoPanel ? (history.state.philoDepth || 0) : 0;
+  const path = history.state?.philoPanel ? pagePath(location.href) : null;
+  if (path) displayPanel(path);
   else hidePanel();
 });
 document.addEventListener('click', event => {
@@ -311,9 +323,13 @@ document.addEventListener('keydown', event => {
 setupContent(document);
 const initialPeek = new URL(location.href).searchParams.get('peek');
 if (initialPeek && pagePath(initialPeek)) {
+  // Old bookmarks still open the panel, but immediately use the clean URL.
   panelDepth = 0;
-  history.replaceState({...history.state, philoDepth:0}, '');
+  history.replaceState({...history.state, philoPanel:true, philoDepth:0}, '', panelLocation(initialPeek));
   displayPanel(initialPeek);
+} else if (history.state?.philoPanel) {
+  // A hard reload of a clean entity URL serves its real static HTML page.
+  history.replaceState({...history.state, philoPanel:false, philoDepth:0}, '');
 }
 
 // Genuine waterfall masonry without CSS columns: cards retain their source
@@ -425,7 +441,7 @@ if (sectionNav) {
     });
   });
   document.documentElement.classList.add('tabs-ready');
-  activateSection(location.hash.slice(1));
+  activateSection(initialSection);
   window.addEventListener('hashchange', () => activateSection(location.hash.slice(1)));
   window.addEventListener('popstate', () => activateSection(location.hash.slice(1)));
 }

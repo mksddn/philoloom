@@ -2384,6 +2384,8 @@ footer .site-container {
   color: var(--text);
   text-decoration: none;
 }
+/* Override the global a:hover background without affecting other links. */
+.entity-card-main:hover { background: transparent; }
 
 .entity-card-main:focus-visible,
 .entity-card-connections a:focus-visible {

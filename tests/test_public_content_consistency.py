@@ -100,14 +100,12 @@ class PublicContentConsistencyTests(unittest.TestCase):
         identity = {}
         for group in schema:
             for title, csv_row, path, source in records(group):
-                match = re.search(r'([a-f0-9]{32})\\.md
-    unittest.main()
-, path.name)
+                match = re.search(r'([a-f0-9]{32})\.md$', path.name)
                 self.assertIsNotNone(match, str(path))
                 identity[match.group(1)] = (group, title, csv_row, path, source)
 
         def referenced_ids(value):
-            return set(re.findall(r'([a-f0-9]{32})\\.md', value or '', re.I))
+            return set(re.findall(r'([a-f0-9]{32})\.md', value or '', re.I))
 
         def markdown_properties(source):
             properties = {}
@@ -117,9 +115,9 @@ class PublicContentConsistencyTests(unittest.TestCase):
                     if started:
                         break
                     continue
-                match = re.match(r'^([^#>\\-*\\[\\n:]{1,35}): (.*)
-    unittest.main()
-, line)
+                if line.startswith(('#', '![', '>', '-', '*', '[')):
+                    break
+                match = re.match(r'^([^:\n]{1,35}): (.*)$', line)
                 if not match:
                     break
                 properties[match.group(1)] = match.group(2)
@@ -143,7 +141,6 @@ class PublicContentConsistencyTests(unittest.TestCase):
                         self.assertIn(source_id,
                                       referenced_ids(other_row.get(reverse_field)),
                                       'Unreciprocated relation: ' + title + ' -> ' + other_title)
-
 
 
 if __name__ == '__main__':

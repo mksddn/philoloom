@@ -34,7 +34,7 @@ class QuoteProvenanceTests(unittest.TestCase):
         self.assertEqual(
             {status: sum(q["status"] == status for q in ledger["quotes"].values())
              for status in statuses},
-            {"source_located": 9, "paraphrase_review": 2, "unverified": 0},
+            {"source_located": 11, "paraphrase_review": 0, "unverified": 0},
         )
 
 

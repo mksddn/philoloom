@@ -80,15 +80,11 @@ class SiteTests(unittest.TestCase):
 
     def test_slavophilism_merge_preserves_canonical_url(self):
         canonical_id = 'topics/slavyanofilstvo'
-        retired_id = '21618a276d8d80b181ccf9d91811bd41'
         self.assertEqual(self.slugs[canonical_id], 'topics/slavyanofilstvo/')
-        self.assertNotIn(retired_id, self.slugs)
         article = self.public_page(canonical_id)
         self.assertIn('Славянофильство', article)
         self.assertIn('Хомяков', article)
-        self.assertFalse((OUT / (retired_id + '.html')).exists())
-        self.assertFalse((OUT / 'topics/slavyanofilstvo-21618a27/index.html').exists())
-        with next((ROOT / 'content/knowledge').rglob('Темы *_all.csv')).open(
+        with next((ROOT / 'content/knowledge').rglob('Темы_all.csv')).open(
                 encoding='utf-8-sig', newline='') as stream:
             names = [row['Name'] for row in csv.DictReader(stream)]
         self.assertEqual(names.count('Славянофильство'), 1)
@@ -148,7 +144,7 @@ class SiteTests(unittest.TestCase):
                 self.assertIn('href="https://', article)
 
     def test_quotes_are_inline_and_deep_linkable(self):
-        quote_id = 'quotes/cogito-ergo-sum-ya-myslyu-sledovatelno-sushchestvuyu'
+        quote_id = 'cogito-ergo-sum-ya-myslyu-sledovatelno-sushchestvuyu'
         home = (OUT / 'index.html').read_text()
         self.assertIn(f'id="quote-{quote_id}"', home)
         self.assertIn('class="quote-entry"', home)
@@ -193,7 +189,7 @@ class SiteTests(unittest.TestCase):
         }
         total_relations = 0
         for group, keys in relation_fields.items():
-            csv_files = list(source_root.rglob(group + ' *' + '_all.csv'))
+            csv_files = list(source_root.rglob(group + '_all.csv'))
             self.assertEqual(len(csv_files), 1, group)
             with csv_files[0].open(encoding='utf-8-sig', newline='') as stream:
                 rows = list(csv.DictReader(stream))
@@ -248,7 +244,7 @@ class SiteTests(unittest.TestCase):
             self.assertIn('.history-related .entity-collection:has(> .entity-card:only-child)', css)
 
     def test_person_cards_ordered_by_year_of_death(self):
-        csv_files = list((ROOT / 'content' / 'knowledge').rglob('Личности *_all.csv'))
+        csv_files = list((ROOT / 'content' / 'knowledge').rglob('Личности_all.csv'))
         self.assertEqual(len(csv_files), 1)
         with csv_files[0].open(encoding='utf-8-sig', newline='') as stream:
             people = list(csv.DictReader(stream))

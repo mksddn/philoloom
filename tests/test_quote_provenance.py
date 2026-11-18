@@ -17,7 +17,7 @@ class QuoteProvenanceTests(unittest.TestCase):
     def test_all_current_quotes_have_provenance_record(self):
         ledger = json.loads(PROVENANCE.read_text(encoding="utf-8"))
         self.assertEqual(ledger["version"], 1)
-        ids = {ID_RE.search(path.name).group(1) for path in QUOTE_DIR.glob("*.md")}
+        ids = {'quotes/' + ID_RE.search(path.name).group(1) for path in QUOTE_DIR.glob("*.md")}
         self.assertEqual(set(ledger["quotes"]), ids)
         self.assertEqual(len(ids), 11)
         statuses = {"source_located", "paraphrase_review", "unverified"}

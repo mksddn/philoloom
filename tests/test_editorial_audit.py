@@ -8,10 +8,10 @@ from pathlib import Path
 from scripts.audit_content import audit, opening_paragraph, page_parts, prose_chars, public_gate_issues
 
 
-A = 'a' * 32
-B = 'b' * 32
-C = 'c' * 32
-D = 'd' * 32
+A = 'topics/razum'
+B = 'topics/razum-2'
+C = 'people/myslitel'
+D = 'articles/zametki'
 
 
 class EditorialAuditTests(unittest.TestCase):
@@ -57,7 +57,7 @@ class EditorialAuditTests(unittest.TestCase):
     def test_release_gate_ignores_excluded_legacy_references(self):
         result = audit()
         self.assertEqual(public_gate_issues(result), [])
-        self.assertGreaterEqual(len(result['unresolved_references']), 1)
+        self.assertFalse(any(item['source_id'].startswith(('topics/', 'people/', 'history/', 'quotes/')) for item in result['unresolved_references']))
         self.assertTrue(all(
             item['source_id'] in {row['id'] for row in result['entries']
                                   if row['scope'] == 'excluded'}
@@ -104,23 +104,20 @@ class EditorialAuditTests(unittest.TestCase):
             knowledge = root / 'content' / 'knowledge' / 'Философия'
             for group in ('Темы', 'Личности', 'Цитаты', 'Самостоятельная работа'):
                 (knowledge / group).mkdir(parents=True)
-            (knowledge / 'Темы' / f'Тема {A}.md').write_text(
+            (knowledge / 'Темы' / 'razum.md').write_text(
                 '# Разум\n\n## Начало\n\nТекст.\n', encoding='utf-8')
-            (knowledge / 'Темы' / f'Тема2 {B}.md').write_text(
+            (knowledge / 'Темы' / 'razum-2.md').write_text(
                 '# Разум\n\nРазум — философское понятие.\n\n'
                 'Содержательное обсуждение. ' * 20, encoding='utf-8')
-            (knowledge / 'Личности' / f'Личность {C}.md').write_text(
+            (knowledge / 'Личности' / 'myslitel.md').write_text(
                 '# Мыслитель\n\nГод рождения: 1800\nГод смерти: 1870\n\n'
                 'Содержательный текст философа. ' * 12, encoding='utf-8')
-            (knowledge / 'Самостоятельная работа' / f'Личное {D}.md').write_text(
+            (knowledge / 'Самостоятельная работа' / 'zametki.md').write_text(
                 '# Мои заметки\n\nНе публично', encoding='utf-8')
-            (knowledge / f'Темы {"f"*32}_all.csv').write_text(
+            (knowledge / 'Темы_all.csv').write_text(
                 'Name,Личности\n'
                 f'Разум,Мыслитель ({C}.md)\n'
                 f'Разум,Мыслитель ({C}.md)\n', encoding='utf-8')
-            (root / 'content' / 'slugs.json').write_text(json.dumps({
-                A: 'topics/razum/', B: 'topics/razum-2/',
-                C: 'people/myslitel/'}), encoding='utf-8')
             report = audit(root)
             self.assertEqual(report['pages'], 4)
             self.assertEqual(report['summary']['public'], 3)

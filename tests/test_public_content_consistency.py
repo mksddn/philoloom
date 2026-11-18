@@ -21,7 +21,7 @@ def records(group):
         title = text.splitlines()[0].removeprefix('# ').strip()
         by_title[title].append((path, text))
     csv_paths = sorted(p for p in CONTENT.rglob('*_all.csv')
-                       if re.sub(r' [a-f0-9]{32}_all$', '', p.stem) == group)
+                       if p.stem.removesuffix('_all') == group)
     if len(csv_paths) != 1:
         raise ValueError('Missing or ambiguous entity CSV: ' + group)
     with csv_paths[0].open(encoding='utf-8-sig', newline='') as stream:
@@ -102,7 +102,7 @@ class PublicContentConsistencyTests(unittest.TestCase):
             for title, csv_row, path, source in records(group):
                 match = re.search(r'([a-z0-9-]+)\.md$', path.name)
                 self.assertIsNotNone(match, str(path))
-                identity[match.group(1)] = (group, title, csv_row, path, source)
+                identity[{'Темы':'topics','Личности':'people','История философии':'history'}[group] + '/' + match.group(1)] = (group, title, csv_row, path, source)
 
         def referenced_ids(value):
             return set(re.findall(r'((?:people|topics|history|quotes|articles)/[a-z0-9-]+)\.md', value or '', re.I))
@@ -147,7 +147,7 @@ class PublicContentConsistencyTests(unittest.TestCase):
         """Editorially confirmed philosophy relations should survive later imports."""
         corpus = {
             group: {
-                title: (row, re.search(r'([a-z0-9-]+)\.md$', path.name).group(1))
+                title: (row, {'Темы':'topics','Личности':'people','История философии':'history'}[group] + '/' + path.stem)
                 for title, row, path, _ in records(group)
             }
             for group in ('Темы', 'Личности', 'История философии')

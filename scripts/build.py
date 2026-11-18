@@ -10,6 +10,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 from html.parser import HTMLParser
 import markdown
+from social_images import render_social_image
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'knowledge'
@@ -299,12 +300,32 @@ def shell(title, body, group='', hero_quote='', canonical_path='', page=None):
     description = (seo_description(page) if page else
                    'Интерактивная карта философских знаний Филолум. Исследуйте идеи, мыслителей и связи между ними.')
     canonical = SITE_URL + canonical_path
-    social_image = page_image(page) if page else ''
-    if social_image and not urlsplit(social_image).scheme:
-        social_image = SITE_URL + social_image
-    image_tags = (f'<meta property="og:image" content="{escape(social_image, quote=True)}">\n'
-                  '<meta name="twitter:card" content="summary_large_image">'
-                  if social_image else '<meta name="twitter:card" content="summary">')
+    # Each canonical page has its own locally generated, crawler-friendly JPEG.
+    # Keep social previews independent of external links and tiny portrait files.
+    social_slug = page['id'] if page else 'home'
+    social_path = OUT / 'og' / (social_slug + '.jpg')
+    portrait = None
+    if page and page['group'] == 'Личности':
+        info = image_info(person_portrait(page)[0])
+        if not info:
+            raise ValueError(f'No local portrait for social card: {page["title"]}')
+        portrait = OUT / info['variants'][-1]['url']
+    render_social_image(social_path, ROOT / 'site/assets/descartes-hero-dark.webp',
+                        title, page['group'] if page else 'Атлас философской мысли',
+                        portrait=portrait)
+    social_image = SITE_URL + social_path.relative_to(OUT).as_posix()
+    image_alt = f'Обложка страницы «{title}» в философском атласе philoloom'
+    image_tags = (
+        f'<meta property="og:image" content="{escape(social_image, quote=True)}">\n'
+        f'<meta property="og:image:secure_url" content="{escape(social_image, quote=True)}">\n'
+        '<meta property="og:image:type" content="image/jpeg">\n'
+        '<meta property="og:image:width" content="1200">\n'
+        '<meta property="og:image:height" content="630">\n'
+        f'<meta property="og:image:alt" content="{escape(image_alt, quote=True)}">\n'
+        '<meta name="twitter:card" content="summary_large_image">\n'
+        f'<meta name="twitter:image" content="{escape(social_image, quote=True)}">\n'
+        f'<meta name="twitter:image:alt" content="{escape(image_alt, quote=True)}">'
+    )
     schema = seo_schema(page, canonical_path, description)
     og_type = 'article' if page else 'website'
     return f'''<!doctype html>

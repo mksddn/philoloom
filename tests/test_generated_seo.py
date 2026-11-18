@@ -5,6 +5,7 @@ import unittest
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlparse
+from PIL import Image
 
 DIST = Path(__file__).resolve().parents[1] / 'dist'
 BASE = 'https://mksddn.github.io/philoloom/'
@@ -16,6 +17,7 @@ class PageInspector(HTMLParser):
         self.canonical = []
         self.descriptions = []
         self.og_urls = []
+        self.meta = {}
         self.schema = []
         self.breadcrumb_labels = []
         self._schema = False
@@ -23,6 +25,11 @@ class PageInspector(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
+        if tag == 'meta':
+            key = attrs.get('property') or attrs.get('name')
+            if key:
+                self.meta.setdefault(key, []).append(attrs.get('content', ''))
+
         if tag == 'link' and attrs.get('rel') == 'canonical':
             self.canonical.append(attrs.get('href'))
         if tag == 'meta' and attrs.get('name') == 'description':
@@ -52,6 +59,45 @@ class PageInspector(HTMLParser):
 
 
 class GeneratedSeoTests(unittest.TestCase):
+    def assert_social_image(self, parser, expected_url, expected_type):
+        meta = parser.meta
+        self.assertEqual(meta.get('og:type'), [expected_type])
+        self.assertEqual(meta.get('og:locale'), ['ru_RU'])
+        self.assertEqual(meta.get('og:site_name'), ['philoloom'])
+        self.assertEqual(meta.get('og:url'), [expected_url])
+        self.assertEqual(meta.get('og:image'), [expected_url.replace(
+            BASE, BASE + 'og/', 1).removesuffix('/') + '.jpg'
+            if expected_url != BASE else BASE + 'og/home.jpg'])
+        image_url = meta['og:image'][0]
+        self.assertEqual(meta.get('og:image:secure_url'), [image_url])
+        self.assertEqual(meta.get('og:image:type'), ['image/jpeg'])
+        self.assertEqual(meta.get('og:image:width'), ['1200'])
+        self.assertEqual(meta.get('og:image:height'), ['630'])
+        self.assertEqual(len(meta.get('og:image:alt', [])), 1)
+        self.assertTrue(meta['og:image:alt'][0].strip())
+        self.assertEqual(meta.get('twitter:card'), ['summary_large_image'])
+        self.assertEqual(meta.get('twitter:image'), [image_url])
+        self.assertEqual(meta.get('twitter:image:alt'), meta['og:image:alt'])
+        self.assertEqual(meta.get('twitter:title'), meta.get('og:title'))
+        self.assertEqual(meta.get('twitter:description'), meta.get('og:description'))
+        self.assertEqual(meta.get('og:description'), meta.get('description'))
+        self.assertTrue(image_url.startswith(BASE))
+        self.assertNotIn('?', image_url)
+        file_path = DIST / image_url[len(BASE):]
+        self.assertTrue(file_path.is_file(), image_url)
+        self.assertLess(file_path.stat().st_size, 5_000_000)
+        with Image.open(file_path) as image:
+            self.assertEqual(image.format, 'JPEG')
+            self.assertEqual(image.size, (1200, 630))
+            image.verify()
+
+    def test_home_social_image(self):
+        page = DIST / 'index.html'
+        self.assertTrue(page.is_file())
+        parser = PageInspector()
+        parser.feed(page.read_text(encoding='utf-8'))
+        self.assert_social_image(parser, BASE, 'website')
+
     def test_all_entity_pages(self):
         pages = sorted(DIST.glob('*/**/index.html'))
         self.assertTrue(pages, 'Build the site before running SEO checks')
@@ -63,6 +109,7 @@ class GeneratedSeoTests(unittest.TestCase):
                 expected = BASE + path.relative_to(DIST).parent.as_posix() + '/'
                 self.assertEqual(parser.canonical, [expected])
                 self.assertEqual(parser.og_urls, [expected])
+                self.assert_social_image(parser, expected, 'article')
                 self.assertEqual(len(parser.descriptions), 1)
                 self.assertTrue(0 < len(parser.descriptions[0]) <= 170)
                 self.assertEqual(len(parser.schema), 1)

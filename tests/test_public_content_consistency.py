@@ -48,7 +48,7 @@ class PublicContentConsistencyTests(unittest.TestCase):
                 continue
             with self.subTest(path=str(path)):
                 self.assertNotRegex(path.name, r'[a-f0-9]{32}')
-                self.assertNotRegex(path.read_text(encoding='utf-8-sig'), r'[a-f0-9]{32}\\.md')
+                self.assertNotRegex(path.read_text(encoding='utf-8-sig'), r'[a-f0-9]{32}\.md')
 
     def test_every_public_csv_matches_a_markdown_heading(self):
         expected = {'Темы': 51, 'История философии': 9, 'Личности': 64, 'Цитаты': 11}

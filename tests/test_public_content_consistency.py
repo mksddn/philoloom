@@ -143,5 +143,48 @@ class PublicContentConsistencyTests(unittest.TestCase):
                                       'Unreciprocated relation: ' + title + ' -> ' + other_title)
 
 
+    def test_canonical_relationships_and_exclusions(self):
+        """Editorially confirmed philosophy relations should survive later imports."""
+        corpus = {
+            group: {
+                title: (row, re.search(r'([a-f0-9]{32})\.md
+    unittest.main()
+, path.name).group(1))
+                for title, row, path, _ in records(group)
+            }
+            for group in ('Темы', 'Личности', 'История философии')
+        }
+        confirmed = (
+            ('Неоплатонизм', 'История философии', 'Античная философия'),
+            ('Патристика', 'Личности', 'Аврелий Августин'),
+            ('Объектно-ориентированная онтология', 'Личности', 'Грэм Харман'),
+            ('Эстетика', 'Личности', 'Иммануил Кант'),
+            ('Государство', 'Личности', 'Платон'),
+            ('Государство', 'Личности', 'Томас Гоббс'),
+            ('Государство', 'Личности', 'Джон Локк'),
+            ('Феноменология', 'Личности', 'Мартин Хайдеггер'),
+            ('Онтология', 'Личности', 'Аристотель'),
+        )
+        for topic, target_group, target in confirmed:
+            with self.subTest(topic=topic, related=target):
+                row = corpus['Темы'][topic][0]
+                target_id = corpus[target_group][target][1]
+                self.assertIn(target_id + '.md', row.get(target_group, ''))
+
+        rejected = (
+            ('Структурализм', 'Жан-Поль Сартр'),
+            ('Структурализм', 'Мишель Фуко'),
+            ('Социология ассоциаций', 'Мишель Фуко'),
+            ('Русский консерватизм', 'Николай Бердяев'),
+            ('Экзистенциализм', 'Сёрен Обье Кьеркегор'),
+            ('Экзистенциализм', 'Фридрих Ницше'),
+        )
+        for topic, thinker in rejected:
+            with self.subTest(topic=topic, wrongly_attributed=thinker):
+                row = corpus['Темы'][topic][0]
+                person_id = corpus['Личности'][thinker][1]
+                self.assertNotIn(person_id + '.md', row.get('Личности', ''))
+
+
 if __name__ == '__main__':
     unittest.main()

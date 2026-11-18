@@ -5,7 +5,7 @@
 История философии: Первая половина XX века (history/pervaya-polovina-xx-veka.md)
 Темы: Экзистенциализм (topics/ekzistentsializm.md)
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Karl_Jaspers_1910.jpg/548px-Karl_Jaspers_1910.jpg)
+![](https://upload.wikimedia.org/wikipedia/commons/7/70/Karl_Jaspers_1910.jpg)
 
 Перед смертью, виной или страданием человек сталкивается с обстоятельствами, которые нельзя окончательно устранить знаниями или техникой. Ясперс называл их пограничными ситуациями и спрашивал, как в такой встрече с пределами собственного существования обрести свободу и подлинное общение с другими.
 

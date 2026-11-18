@@ -22,6 +22,6 @@
 - «Философские исследования о сущности человеческой свободы» (1809).
 - [Friedrich Wilhelm Joseph von Schelling — Stanford Encyclopedia of Philosophy](https://plato.stanford.edu/entries/schelling/).
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Friedrich_Wilhelm_Joseph_Schelling%2C_1848_daguerreotype_-_cropped.jpg/548px-Friedrich_Wilhelm_Joseph_Schelling%2C_1848_daguerreotype_-_cropped.jpg)
+![](https://upload.wikimedia.org/wikipedia/commons/9/9a/Friedrich_Wilhelm_Joseph_Schelling%2C_1848_daguerreotype_-_cropped.jpg)
 
 [Шеллинг, Фридрих Вильгельм Йозеф](https://ru.wikipedia.org/wiki/%D0%A8%D0%B5%D0%BB%D0%BB%D0%B8%D0%BD%D0%B3,_%D0%A4%D1%80%D0%B8%D0%B4%D1%80%D0%B8%D1%85_%D0%92%D0%B8%D0%BB%D1%8C%D0%B3%D0%B5%D0%BB%D1%8C%D0%BC_%D0%99%D0%BE%D0%B7%D0%B5%D1%84)

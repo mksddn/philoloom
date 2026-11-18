@@ -21,6 +21,6 @@
 - «Понятие тревоги» (1844); «Болезнь к смерти» (1849).
 - [Søren Kierkegaard — Stanford Encyclopedia of Philosophy](https://plato.stanford.edu/entries/kierkegaard/).
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/S%C3%B8ren_Kierkegaard_%281813-1855%29_-_%28cropped%29.jpg/548px-S%C3%B8ren_Kierkegaard_%281813-1855%29_-_%28cropped%29.jpg)
+![](https://upload.wikimedia.org/wikipedia/commons/d/d4/S%C3%B8ren_Kierkegaard_%281813-1855%29_-_%28cropped%29.jpg)
 
 [Кьеркегор, Сёрен](https://ru.wikipedia.org/wiki/%D0%9A%D1%8C%D0%B5%D1%80%D0%BA%D0%B5%D0%B3%D0%BE%D1%80,_%D0%A1%D1%91%D1%80%D0%B5%D0%BD)

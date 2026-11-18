@@ -243,10 +243,8 @@ SEARCH_BUTTON = ('<button id="search-open" class="museum-search" type="button" '
 def seo_description(page):
     """Use article prose for unique, meaningful descriptions."""
     _, body = page_parts(page)
-    prose = re.sub(r'!\\[[^]]*\\]\\([^)]+\\)', ' ', body)
-    prose = re.sub(r'\\[([^]]+)\\]\\([^)]+\\)', r'\\1', prose)
-    prose = re.sub(r'(?m)^#{1,6}\\s*|[*>#_]', ' ', prose)
-    prose = re.sub(r'https?://\\S+', ' ', prose)
+    lines = [line.strip(' #>*_\\t') for line in body.splitlines()]
+    prose = ' '.join(line for line in lines if line and not line.startswith(('![', 'http://', 'https://')))
     prose = re.sub(r'\\s+', ' ', prose).strip()
     if not prose:
         return page['title'] + ' — идеи и связи в философском атласе Philoloom.'

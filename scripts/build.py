@@ -240,7 +240,43 @@ SEARCH_BUTTON = ('<button id="search-open" class="museum-search" type="button" '
 # Their local WebP files are referenced through theme-aware CSS.
 
 
-def shell(title, body, group='', hero_quote='', canonical_path=''):
+def seo_description(page):
+    """Use article prose for unique, meaningful descriptions."""
+    _, body = page_parts(page)
+    prose = re.sub(r'!\\[[^]]*\\]\\([^)]+\\)', ' ', body)
+    prose = re.sub(r'\\[([^]]+)\\]\\([^)]+\\)', r'\\1', prose)
+    prose = re.sub(r'(?m)^#{1,6}\\s*|[*>#_]', ' ', prose)
+    prose = re.sub(r'https?://\\S+', ' ', prose)
+    prose = re.sub(r'\\s+', ' ', prose).strip()
+    if not prose:
+        return page['title'] + ' — идеи и связи в философском атласе Philoloom.'
+    if len(prose) <= 155:
+        return prose
+    return prose[:155].rsplit(' ', 1)[0].rstrip(' ,;:') + '…'
+
+
+def seo_schema(page, canonical_path, description):
+    data = {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage' if page else 'WebSite',
+        'name': page['title'] if page else 'philoloom',
+        'url': SITE_URL + canonical_path,
+        'inLanguage': 'ru',
+        'description': description,
+    }
+    if page:
+        data['isPartOf'] = {'@type': 'WebSite', 'name': 'philoloom', 'url': SITE_URL}
+        data['breadcrumb'] = {
+            '@type': 'BreadcrumbList',
+            'itemListElement': [
+                {'@type': 'ListItem', 'position': 1, 'name': 'philoloom', 'item': SITE_URL},
+                {'@type': 'ListItem', 'position': 2, 'name': page['title'], 'item': SITE_URL + canonical_path},
+            ],
+        }
+    return json.dumps(data, ensure_ascii=False).replace('<', '\\u003c')
+
+
+def shell(title, body, group='', hero_quote='', canonical_path='', page=None):
     # Project identity belongs inside the home page's main heading.
     cover = (f'<div class="museum-stage"><div class="hero-cover">'
              f'<div class="hero-artwork" role="img" '
@@ -253,6 +289,17 @@ def shell(title, body, group='', hero_quote='', canonical_path=''):
              f'<span class="hero-wordmark" aria-hidden="true"></span></span> '
              f'<span class="hero-title-text">Атлас философской мысли</span></h1>'
              f'{hero_quote}</div></div></div>') if not group else ''
+    description = (seo_description(page) if page else
+                   'Интерактивная карта философских знаний Филолум. Исследуйте идеи, мыслителей и связи между ними.')
+    canonical = SITE_URL + canonical_path
+    social_image = page_image(page) if page else ''
+    if social_image and not urlsplit(social_image).scheme:
+        social_image = SITE_URL + social_image
+    image_tags = (f'<meta property="og:image" content="{escape(social_image, quote=True)}">\\n'
+                  '<meta name="twitter:card" content="summary_large_image">'
+                  if social_image else '<meta name="twitter:card" content="summary">')
+    schema = seo_schema(page, canonical_path, description)
+    og_type = 'article' if page else 'website'
     return f'''<!doctype html>
 <html lang="ru">
 <head>
@@ -263,7 +310,16 @@ def shell(title, body, group='', hero_quote='', canonical_path=''):
 {('<base href="../../">' if canonical_path.count('/') == 2 else '')}
 <title>{escape(title)} · philoloom</title>
 <link rel="canonical" href="{escape(SITE_URL + canonical_path, quote=True)}">
-<meta name="description" content="{escape("Интерактивная карта философских знаний Филолум. Исследуйте идеи, мыслителей и связи между ними." if not group else title + " — история философии, направления и мыслители в справочнике philoloom.", quote=True)}">
+<meta name="description" content="{escape(description, quote=True)}">
+<meta property="og:type" content="{og_type}">
+<meta property="og:title" content="{escape(title, quote=True)}">
+<meta property="og:description" content="{escape(description, quote=True)}">
+<meta property="og:url" content="{escape(canonical, quote=True)}">
+<meta property="og:locale" content="ru_RU">
+{image_tags}
+<meta name="twitter:title" content="{escape(title, quote=True)}">
+<meta name="twitter:description" content="{escape(description, quote=True)}">
+<script type="application/ld+json">{schema}</script>
 <script>const previewTheme = new URLSearchParams(location.search).get('theme'); document.documentElement.dataset.theme = ['light', 'dark'].includes(previewTheme) ? previewTheme : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta property="og:site_name" content="philoloom">
@@ -592,7 +648,7 @@ for p in pages.values():
     address = page_url(p)
     destination = OUT / address / 'index.html'
     destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_text(shell(p['title'], body, p['group'], canonical_path=address), encoding='utf-8')
+    destination.write_text(shell(p['title'], body, p['group'], canonical_path=address, page=p), encoding='utf-8')
 
 # Preserve the exact published quotation and resources from the untouched
 # source introduction; none of these are newly authored philosophical claims.

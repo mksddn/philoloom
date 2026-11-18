@@ -80,6 +80,77 @@ class SiteTests(unittest.TestCase):
         self.assertIn('/people/rene-dekart/', sitemap)
         self.assertNotIn('c4c741fb50874c87a5d2cb4d4def5e50.html', sitemap)
 
+    def test_slavophilism_merge_preserves_canonical_and_old_urls(self):
+        canonical_id = '21618a276d8d80fd8c45c76380b480ba'
+        retired_id = '21618a276d8d80b181ccf9d91811bd41'
+        self.assertEqual(self.slugs[canonical_id], 'topics/slavyanofilstvo/')
+        self.assertNotIn(retired_id, self.slugs)
+        article = self.public_page(canonical_id)
+        self.assertIn('Славянофильство', article)
+        self.assertIn('Хомяков', article)
+        for legacy in (retired_id + '.html', 'topics/slavyanofilstvo-21618a27/index.html'):
+            page = (OUT / legacy).read_text(encoding='utf-8')
+            self.assertIn('name="robots" content="noindex,follow"', page)
+            self.assertIn('https://mksddn.github.io/philoloom/topics/slavyanofilstvo/', page)
+        with next((ROOT / 'content/notion').rglob('Темы *_all.csv')).open(
+                encoding='utf-8-sig', newline='') as stream:
+            names = [row['Name'] for row in csv.DictReader(stream)]
+        self.assertEqual(names.count('Славянофильство'), 1)
+        search = json.loads((OUT / 'search.json').read_text(encoding='utf-8'))
+        self.assertEqual(sum(x['title'] == 'Славянофильство' for x in search), 1)
+
+    def test_foundational_philosophers_include_independent_content_and_sources(self):
+        examples = {
+            '5c62a805028a4272bd0b99d7e493d7bd': ('эленхос', 'Сократ'),
+            '44efa008da2d4553911e0d6d29e3b795': ('эйдос', 'Платон'),
+            'bed09a3399144396a503d79898e8a5ca': ('силлогизм', 'Аристотель'),
+            'd5303c3cb5d8405b8915abd0d9074c9f': ('трансцендентальный', 'Иммануил Кант'),
+        }
+        for pid, (keyword, name) in examples.items():
+            with self.subTest(philosopher=name):
+                html = self.public_page(pid)
+                self.assertIn(keyword, html.casefold())
+                self.assertIn('Stanford Encyclopedia of Philosophy', html)
+                self.assertIn('<article>', html)
+                self.assertTrue(any(label in html for label in (
+                    'Первоисточники', 'Основные сочинения', 'основные произведения')))
+
+    def test_foundational_topics_have_clear_introductions(self):
+        titles = {
+            '2f72ef4fe8234fac95e4f7386c6828ff': 'Эллинизм',
+            '680f3c6b79564cf7a4176bcd07c8f61b': 'Неоплатонизм',
+            '6a3b16ed93cf45cfbe6c86b1c11bc000': 'Патристика',
+            'a6f686e17d3149ac9b4ba3b31457a84e': 'Гуманизм',
+            'c6def37927ee4cdb8cba31ceaebf68bd': 'Пифагорейская школа',
+        }
+        for pid, title in titles.items():
+            with self.subTest(topic=title):
+                page = self.public_page(pid)
+                self.assertIn(title, page)
+                self.assertIn('<article>', page)
+                self.assertIn('Источники и исследования', page)
+
+    def test_next_philosopher_batch_has_independent_explanations(self):
+        """Eight philosopher cards have substantive text and retained metadata."""
+        expected = {
+            '6eda584ca34948838eae6bba482a1ea2': 'первичные качества',
+            'ba21d53fa1ee428f9f0fdc01cde8ea14': 'индукции',
+            '43d6e4e552094f21bd5e0de378f311fd': 'пограничных ситуаций',
+            'f86d8811cb4446978333cb13528ee88e': 'идеология',
+            'a6c8256c59de4bd0bdeb2f80bfa1e3cf': 'диалектика',
+            '901b9cac4f5b412b9f1cd2084f255032': 'сверхчеловека',
+            '10739540eb1a4ed594f8b542b7317867': 'бытие-в-мире',
+            '3132d7f8d0844f899c62d7db011891b8': 'языковые игры',
+        }
+        for pid, term in expected.items():
+            with self.subTest(pid=pid):
+                article = self.public_page(pid)
+                self.assertIn(term, article.casefold())
+                self.assertIn('Основные произведения и исследования', article)
+                self.assertIn('Год рождения', article)
+                self.assertIn('entity-detail--people', article)
+                self.assertIn('href="https://', article)
+
     def test_quotes_are_inline_and_deep_linkable(self):
         quote_id = '47d742c8761f4a0c86a27b43497759b0'
         home = (OUT / 'index.html').read_text()
@@ -92,6 +163,18 @@ class SiteTests(unittest.TestCase):
         descartes = self.public_page('c4c741fb50874c87a5d2cb4d4def5e50')
         self.assertIn('class="person-quotes"', descartes)
 
+
+    def test_quotations_remain_clean_without_public_review_comments(self):
+        """The reader sees the quotation and its author; provenance stays internal."""
+        home = (OUT / 'index.html').read_text(encoding='utf-8')
+        self.assertEqual(home.count('class="quote-entry-label"'), 11)
+        self.assertNotIn('class="quote-source-note"', home)
+        self.assertNotIn('Точность русского перевода не сверена', home)
+        self.assertNotIn('Возможный пересказ, не дословная цитата', home)
+        self.assertIn('Если наказывать ребенка за дурное и награждать за доброе', home)
+        descartes = self.public_page('c4c741fb50874c87a5d2cb4d4def5e50')
+        self.assertNotIn('person-quote-note', descartes)
+        self.assertNotIn('первоисточники цитат требуют проверки', descartes)
 
     def test_sections_remain_in_static_html(self):
         source = (OUT / 'index.html').read_text()

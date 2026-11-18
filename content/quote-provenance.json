@@ -2,7 +2,7 @@
   "version": 1,
   "note": "Research ledger, not published quotation text. source_located confirms a passage's origin, NOT verbatim Russian wording.",
   "quotes": {
-    "47d742c8761f4a0c86a27b43497759b0": {
+    "quotes/cogito-ergo-sum-ya-myslyu-sledovatelno-sushchestvuyu": {
       "author": "Рене Декарт",
       "short": "Cogito ergo sum",
       "status": "source_located",
@@ -11,7 +11,7 @@
       "source_url": "https://plato.stanford.edu/entries/descartes-epistemology/",
       "note": "Латинская и французская формулы встречаются в разных произведениях. Русский перевод в карточке не сверен с конкретным изданием; в «Размышлениях» эта формула буквально не приводится."
     },
-    "99856047917a4173b1d5f37316cc883f": {
+    "quotes/cheloveku-issleduyushchemu-istinu-neobhodimo-hot-odi": {
       "author": "Рене Декарт",
       "short": "Усомниться во всех вещах",
       "status": "source_located",
@@ -20,7 +20,7 @@
       "source_url": "https://www.gutenberg.org/cache/epub/4391/pg4391-images.html",
       "note": "Тезис о сомнении встречается в начале первой части. Нынешняя русская формулировка — не подтверждённая дословная цитата из конкретного перевода."
     },
-    "3c27718980054816a11c5e7c2edd06fd": {
+    "quotes/govori-v-sootvetstvii-s-urovnem-vospriyatiya-prostog": {
       "author": "Бенедикт (Барух) Спиноза",
       "short": "Говори в соответствии с уровнем восприятия",
       "status": "source_located",
@@ -29,7 +29,7 @@
       "source_url": "https://www.gutenberg.org/cache/epub/1016/pg1016-images.html",
       "note": "Источник содержит правило говорить понятно большинству и учитывать обычаи, не мешающие поиску истины. Текущий русский текст — сокращённый пересказ."
     },
-    "06734dbfb4384d1e8610b5214d5350b5": {
+    "quotes/kak-my-chuvstvuem-tak-ono-i-est-na-samom-dele": {
       "author": "Протагор",
       "short": "Как мы чувствуем, так оно и есть",
       "status": "source_located",
@@ -38,7 +38,7 @@
       "source_url": "https://www.gutenberg.org/cache/epub/1726/pg1726-images.html",
       "note": "Идея засвидетельствована в пересказе Сократа у Платона; прямой дословной цитатой из сохранившегося текста самого Протагора это считать нельзя."
     },
-    "89b3ad290add400caac8278884d2893f": {
+    "quotes/zdorovyi-nishchii-schastlivee-bolnogo-korolya": {
       "author": "Артур Шопенгауэр",
       "short": "Здоровый нищий счастливее больного короля",
       "status": "source_located",
@@ -47,7 +47,7 @@
       "source_url": "https://en.mouseia.org/read/schopenhauer-aphorisms/trn_schopenhauer_aphorisms_mouseia",
       "note": "Сопоставимый пассаж о первостепенном значении здоровья найден. Дословность русского перевода и точная страница не сверены."
     },
-    "ad10eab326254a9eb07d638aa5dfb895": {
+    "quotes/soznanie-ne-formiruet-poznavaemyi-obekt-ono-lish": {
       "author": "Альбер Камю",
       "short": "Сознание не формирует объект",
       "status": "source_located",
@@ -56,7 +56,7 @@
       "source_url": "https://thephilosopher.net/camus/tvorchestvo/the-myth-of-sisyphus/pagen/8/",
       "note": "Найден соответствующий английский пассаж; русский перевод не сверен с изданием, и формулировка в карточке сокращает контекст."
     },
-    "bbe8539bd74c403d896f7331b3297f7e": {
+    "quotes/znaniya-mogut-byt-lish-u-togo-u-kogo-est-voprosy": {
       "author": "Ханс-Георг Гадамер",
       "short": "Знания могут быть лишь у того, у кого есть вопросы",
       "status": "source_located",
@@ -65,7 +65,7 @@
       "source_url": "https://blogs.ubc.ca/nfriesen/files/2015/01/Pages-from-Hans-Georg_Gadamer_-_Truth_And_Method_.pdf",
       "note": "В англоязычном издании обнаружена соответствующая формула. Русский перевод без указанного переводчика/издания всё ещё требует сверки."
     },
-    "1f018a276d8d804cad56c75b51930ad8": {
+    "quotes/svoboda-vybora-gospodina-ne-otmenyaet-sushchestvovaniya": {
       "author": "Герберт Маркузе",
       "short": "Свобода выбора господина",
       "status": "source_located",
@@ -74,7 +74,7 @@
       "source_url": "https://www.marcuse.org/herbert/pubs/64onedim/odm1.html",
       "note": "Фраза об избрании господ и существовании рабов присутствует в английском оригинале. Русская формулировка требует проверки по названному изданию."
     },
-    "b2e4c5c1df524fff8de6a9ed27860fb5": {
+    "quotes/esli-nakazyvat-rebenka-za-durnoe-i-nagrazhdat-za": {
       "author": "Иммануил Кант",
       "short": "Наказывать ребёнка и награждать",
       "status": "source_located",
@@ -83,7 +83,7 @@
       "source_url": "https://de.wikisource.org/wiki/Seite:Immanuel_Kant_%C3%9Cber_P%C3%A4dagogik_K%C3%B6nigsberg_1803.pdf/71",
       "note": "Найден немецкий первичный текст на стр. 71 издания 1803 года. Смысл русской краткой формулы соответствует фрагменту, но русская карточка — сокращённая передача более длинного пассажа; точность по определённому русскому переводу не установлена."
     },
-    "3a48b3a7d6014acbbac6c064f7c5633a": {
+    "quotes/smysl-slov-zavisit-tolko-ot-konteksta": {
       "author": "Людвиг Витгенштейн",
       "short": "Значение слова — употребление в речи",
       "status": "source_located",
@@ -92,7 +92,7 @@
       "source_url": "https://www.bibikhin.ru/filosofskie_issledovaniya",
       "note": "Проверен только точный фрагмент перевода: «значение слова есть его употребление в речи». В §43 это утверждение ограничено «большим числом случаев», но не объявлено универсальным законом всех значений; ограничение разъясняется в статье о Витгенштейне."
     },
-    "3b191e26e3f54ca69be72643a79e15ba": {
+    "quotes/chelovek-est-sushchee-voproshayushchee-o-smysle-svoego-by": {
       "author": "Мартин Хайдеггер",
       "short": "Бытие этого сущего всегда моё",
       "status": "source_located",

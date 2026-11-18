@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 QUOTE_DIR = ROOT / "content" / "knowledge" / "Философия" / "Цитаты"
 PROVENANCE = ROOT / "content" / "quote-provenance.json"
-ID_RE = re.compile(r"([a-f0-9]{32})\.md$")
+ID_RE = re.compile(r"([a-z0-9-]+)\.md$")
 
 
 class QuoteProvenanceTests(unittest.TestCase):

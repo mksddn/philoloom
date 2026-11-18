@@ -15,8 +15,8 @@ from urllib.parse import unquote
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / 'content' / 'knowledge'
 PUBLIC_GROUPS = {'Темы', 'Личности', 'История философии', 'Цитаты'}
-STABLE_ID = re.compile(r'([a-f0-9]{32})\.md$', re.I)
-REFERENCED_ID = re.compile(r'([a-f0-9]{32})\.md', re.I)
+STABLE_ID = re.compile(r'^([a-z0-9]+(?:-[a-z0-9]+)*)\.md$', re.I)
+REFERENCED_ID = re.compile(r'((?:people|topics|history|quotes|articles)/[a-z0-9-]+)\.md', re.I)
 PROPERTY = re.compile(r'^[^#>\-*\[\n]{1,35}: ')
 PLACEHOLDERS = {'тема', 'личность', 'цитата', 'название работы', 'направление'}
 SOLO_LINK = re.compile(r'^\[[^]]+\]\([^)]*\)$')
@@ -84,7 +84,7 @@ def load_csv_metadata(content, records):
     assigned = defaultdict(int)
     csv_rows, warnings = {}, []
     for path in sorted(content.rglob('*_all.csv')):
-        group = re.sub(r' [a-f0-9]{32}_all$', '', path.stem, flags=re.I)
+        group = path.stem.removesuffix('_all')
         with path.open(encoding='utf-8-sig', newline='') as stream:
             rows = list(csv.DictReader(stream))
         for row in rows:
@@ -103,8 +103,7 @@ def load_csv_metadata(content, records):
 def audit(root=ROOT):
     root = Path(root)
     content = root / 'content' / 'knowledge'
-    slugs_file = root / 'content' / 'slugs.json'
-    slugs = json.loads(slugs_file.read_text(encoding='utf-8')) if slugs_file.exists() else {}
+    group_keys = {'Темы': 'topics', 'Личности': 'people', 'История философии': 'history', 'Цитаты': 'quotes', 'Самостоятельная работа': 'articles'}
     records, invalid_names, duplicate_ids = {}, [], []
     titles = defaultdict(list)
     for path in sorted(content.rglob('*.md')):
@@ -113,7 +112,8 @@ def audit(root=ROOT):
         if not match:
             invalid_names.append(rel)
             continue
-        pid = match[1].lower()
+        section = path.parent.name if path.parent != content else '(root)'
+        pid = 'home' if section == '(root)' else group_keys[section] + '/' + match[1].lower()
         if pid in records:
             duplicate_ids.append({'id': pid, 'paths': [records[pid]['path'], rel]})
             continue
@@ -159,9 +159,9 @@ def audit(root=ROOT):
     for pid, row in records.items():
         section, title, body = row['section'], row['title'], row['_body']
         if section in PUBLIC_GROUPS and section != 'Цитаты':
-            row['public_url'] = home_url + slugs[pid] if pid in slugs else None
+            row['public_url'] = home_url + pid + '/'
         elif section == 'Цитаты':
-            row['public_url'] = home_url + '#quote-' + pid
+            row['public_url'] = home_url + '#quote-' + pid.split('/')[-1]
         findings = []
         if not title or title.casefold() in PLACEHOLDERS:
             findings.append('placeholder')

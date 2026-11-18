@@ -50,16 +50,20 @@ def cache_portraits():
         url = portrait_source(slug)
         target = DEST / (slug + '.jpg')
         if not target.exists():
-            request = Request(url, headers={
-                'User-Agent': 'Philoloom/1.0 (philosophical atlas; Wikimedia attribution is preserved)',
-                'Accept': 'image/jpeg,image/png,image/webp,image/*'
-            })
-            with urlopen(request, timeout=35) as response:
-                if not response.headers.get_content_type().startswith('image/'):
-                    raise ValueError(f'{slug}: not an image response')
-                raw = response.read(15_000_001)
-                if len(raw) > 15_000_000:
-                    raise ValueError(f'{slug}: source image exceeds 15 MB')
+            browser_copy = target.with_suffix('.download')
+            if browser_copy.exists():
+                raw = browser_copy.read_bytes()
+            else:
+                request = Request(url, headers={
+                    'User-Agent': 'Philoloom/1.0 (https://github.com/mksddn/philoloom)',
+                    'Accept': 'image/jpeg,image/png,image/webp,image/*'
+                })
+                with urlopen(request, timeout=35) as response:
+                    if not response.headers.get_content_type().startswith('image/'):
+                        raise ValueError(f'{slug}: not an image response')
+                    raw = response.read(15_000_001)
+            if len(raw) > 15_000_000:
+                raise ValueError(f'{slug}: source image exceeds 15 MB')
             with Image.open(io.BytesIO(raw)) as opened:
                 if getattr(opened, 'is_animated', False):
                     raise ValueError(f'{slug}: unexpected animation')
@@ -68,6 +72,8 @@ def cache_portraits():
                     raise ValueError(f'{slug}: source too small: {picture.size}')
                 picture.thumbnail((1800, 1800), Image.Resampling.LANCZOS)
                 picture.save(target, 'JPEG', quality=88, optimize=True, progressive=True)
+            if browser_copy.exists():
+                browser_copy.unlink()
         with Image.open(target) as verified:
             verified.verify()
         name = unquote(url.split('/')[-1])

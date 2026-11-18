@@ -295,6 +295,7 @@ def main():
         args.report.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(result['summary'] if args.summary else result, ensure_ascii=False, indent=2))
     if args.strict and public_gate_issues(result):
+        print('PUBLIC GATE ISSUES:', json.dumps(public_gate_issues(result), ensure_ascii=False, indent=2))
         raise SystemExit(1)
     if args.strict_all and any(result[k] for k in (
             'possible_duplicates', 'possible_placeholders', 'invalid_filenames',

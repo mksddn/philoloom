@@ -589,6 +589,36 @@ def breadcrumbs(page):
 
 
 
+class MediaLinks(HTMLParser):
+    def __init__(self, text):
+        super().__init__()
+        self.images, self.links = [], []
+        self.feed(markdown.markdown(text))
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'img' and attrs.get('src'):
+            self.images.append(attrs['src'])
+        elif tag == 'a' and attrs.get('href','').startswith(('http://','https://')):
+            self.links.append(attrs['href'])
+
+
+def page_image(page):
+    media = MediaLinks(page['text'])
+    # Cached images derived from the linked Wikipedia page are available locally.
+    # Never substitute unrelated link-preview art for a person's portrait.
+    if page['group'] == 'Личности':
+        return person_portrait(page)[0]
+    if media.images:
+        return resolve(media.images[0], page)
+    for url in media.links:
+        data = previews.get(url, {})
+        image = data.get('local_image') or data.get('image')
+        if image and safe_url(image):
+            return image
+    return ''
+
+
+
 for p in pages.values():
     if p['id'] not in public_ids:
         continue
@@ -718,35 +748,6 @@ resources = (
     '</div>'
 )
 body = f'<div class="catalog-toolbar"><nav id="reference-nav" class="section-nav" aria-label="Разделы">{nav}</nav>{SEARCH_BUTTON}</div>'
-
-class MediaLinks(HTMLParser):
-    def __init__(self, text):
-        super().__init__()
-        self.images, self.links = [], []
-        self.feed(markdown.markdown(text))
-    def handle_starttag(self, tag, attrs):
-        attrs = dict(attrs)
-        if tag == 'img' and attrs.get('src'):
-            self.images.append(attrs['src'])
-        elif tag == 'a' and attrs.get('href','').startswith(('http://','https://')):
-            self.links.append(attrs['href'])
-
-
-def page_image(page):
-    media = MediaLinks(page['text'])
-    # Cached images derived from the linked Wikipedia page are available locally.
-    # Never substitute unrelated link-preview art for a person's portrait.
-    if page['group'] == 'Личности':
-        return person_portrait(page)[0]
-    if media.images:
-        return resolve(media.images[0], page)
-    for url in media.links:
-        data = previews.get(url, {})
-        image = data.get('local_image') or data.get('image')
-        if image and safe_url(image):
-            return image
-    return ''
-
 
 def record_meta(group, row):
     if group == 'Личности':

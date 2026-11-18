@@ -1,0 +1,24 @@
+name: One-time slug migration
+on:
+  push:
+    branches: [refactor/slug-native-content]
+permissions:
+  contents: write
+jobs:
+  migrate:
+    if: "!contains(github.event.head_commit.message, '[skip migration]')"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          persist-credentials: true
+      - name: Migrate and push
+        run: |
+          python3 scripts/migrate_to_slugs.py
+          rm scripts/migrate_to_slugs.py .github/workflows/migrate-slugs.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Migrate all entity references to slug keys [skip migration]"
+          git push origin HEAD:refactor/slug-native-content

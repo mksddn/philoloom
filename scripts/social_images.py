@@ -3,7 +3,11 @@
 A raster JPEG is used for social crawlers even when the web UI displays
 responsive WebP. Source portrait images and artwork already belong to the repo.
 """
+from functools import lru_cache
+from io import BytesIO
 from pathlib import Path
+
+import cairosvg
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 SIZE = (1200, 630)
@@ -11,6 +15,20 @@ BACKGROUND = '#0d1514'
 TEXT = '#f3f2e9'
 MUTED = '#c9d2c7'
 ACCENT = '#9ebba9'
+BRAND_ASSETS = Path(__file__).resolve().parents[1] / 'site' / 'assets'
+
+
+@lru_cache(maxsize=1)
+def _brand_images():
+    """Reuse the approved tree emblem and vector wordmark across share cards."""
+    with Image.open(BRAND_ASSETS / 'philoloom-tree.webp') as source:
+        tree = source.convert('RGBA').resize((68, 68), Image.Resampling.LANCZOS)
+    svg_png = cairosvg.svg2png(
+        url=str(BRAND_ASSETS / 'philoloom-wordmark.svg'), output_width=296)
+    with Image.open(BytesIO(svg_png)) as source:
+        wordmark = source.convert('RGBA')
+    return tree, wordmark
+
 
 
 def _font(size, bold=False):
@@ -60,7 +78,10 @@ def render_social_image(destination, artwork, title, section, portrait=None):
     canvas = Image.blend(backdrop, Image.new('RGB', SIZE, BACKGROUND), 0.78)
     draw = ImageDraw.Draw(canvas)
     draw.rectangle((0, 0, 10, SIZE[1]), fill=ACCENT)
-    draw.text((70, 50), 'philoloom', font=_font(43, bold=True), fill=TEXT)
+    # Use the real brand assets, including the custom infinity-shaped 'oo'.
+    tree, wordmark = _brand_images()
+    canvas.paste(tree, (70, 50), tree)
+    canvas.paste(wordmark, (154, 50), wordmark)
     draw.text((72, 124), section.upper(), font=_font(23, bold=True), fill=ACCENT)
     draw.line((70, 548, 1130, 548), fill='#486458', width=2)
     draw.text((72, 564), 'Интерактивная карта философских знаний',

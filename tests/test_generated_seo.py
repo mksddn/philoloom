@@ -98,6 +98,16 @@ class GeneratedSeoTests(unittest.TestCase):
         parser.feed(page.read_text(encoding='utf-8'))
         self.assert_social_image(parser, BASE, 'website')
 
+    def test_share_card_uses_approved_wordmark(self):
+        # The approved SVG is bronze; the old generic font header was white.
+        with Image.open(DIST / 'og/home.jpg') as image:
+            wordmark = image.convert('RGB').crop((154, 50, 450, 118))
+            bronze_pixels = sum(
+                1 for red, green, blue in wordmark.getdata()
+                if 164 <= red <= 210 and 130 <= green <= 174 and 85 <= blue <= 135
+            )
+        self.assertGreater(bronze_pixels, 500, 'Approved wordmark missing from OG image')
+
     def test_all_entity_pages(self):
         pages = sorted(DIST.glob('*/**/index.html'))
         self.assertTrue(pages, 'Build the site before running SEO checks')

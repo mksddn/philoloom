@@ -251,7 +251,7 @@ window.addEventListener('popstate', () => {
   // preview can leave a same-document history entry with a different pathname.
   // Never display stale content under the URL of another page.
   if (mobile && (location.pathname !== documentRoute || isPanelHistory)) {
-    location.replace(location.href);
+    location.reload();
     return;
   }
   // A path alone cannot identify an open panel: a full detail page has the
@@ -259,8 +259,16 @@ window.addEventListener('popstate', () => {
   panelDepth = isPanelHistory ? (history.state.philoDepth || 0) : 0;
   const path = isPanelHistory ? pagePath(location.href) : null;
   if (path) displayPanel(path);
-  else if (location.pathname !== documentRoute) location.replace(location.href);
+  else if (location.pathname !== documentRoute) location.reload();
   else hidePanel();
+});
+// Browsers may restore a page from the back/forward cache without rerunning
+// this script. Reconcile the URL and the actual HTML document on restoration.
+window.addEventListener('pageshow', event => {
+  if (event.persisted && location.pathname !== documentRoute) location.reload();
+});
+window.addEventListener('hashchange', () => {
+  if (location.pathname !== documentRoute) location.reload();
 });
 document.addEventListener('click', event => {
   const link = event.target.closest('a[href]');

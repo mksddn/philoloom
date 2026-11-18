@@ -293,7 +293,7 @@ def shell(title, body, group='', hero_quote='', canonical_path='', page=None):
     social_image = page_image(page) if page else ''
     if social_image and not urlsplit(social_image).scheme:
         social_image = SITE_URL + social_image
-    image_tags = (f'<meta property="og:image" content="{escape(social_image, quote=True)}">\\n'
+    image_tags = (f'<meta property="og:image" content="{escape(social_image, quote=True)}">\n'
                   '<meta name="twitter:card" content="summary_large_image">'
                   if social_image else '<meta name="twitter:card" content="summary">')
     schema = seo_schema(page, canonical_path, description)

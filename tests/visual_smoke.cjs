@@ -339,7 +339,7 @@ async function assertThemeArtwork(page, theme) {
     assert.equal(await home.evaluate(() => document.baseURI), base + '/',
       'Relative links must remain rooted at the site when a panel is open');
     assert.ok(await home.locator('#panel-content article').isVisible());
-    assert.equal(await home.locator('#panel-content .entity-kicker').count(), 1);
+    assert.equal(await home.locator('#panel-content .entity-kicker').count(), 0);
     assert.equal(await home.locator('#panel-content #search-open').count(), 0);
     assert.ok(await home.locator('#page-panel').evaluate(element => element.open));
     await home.locator('#panel-close').click();
@@ -423,6 +423,18 @@ async function assertThemeArtwork(page, theme) {
       el.getBoundingClientRect().bottom <= document.querySelector('.hero-cover').getBoundingClientRect().bottom),
       'Quotation must remain inside 390px Hero');
 
+    // Mobile entity cards must navigate as documents, and browser history must
+    // restore the correct DOM rather than only changing the address bar.
+    await small.goto(base + '/index.html#people', { waitUntil: 'domcontentloaded' });
+    await small.locator('.reference-section#people .entity-card-main').first().click();
+    await small.locator('main.detail-page h1').waitFor();
+    assert.equal(await small.locator('#page-panel').evaluate(el => el.open), false);
+    await small.goBack({ waitUntil: 'domcontentloaded' });
+    await small.locator('.reference-section#people .entity-card-main').first().waitFor({state:'visible'});
+    assert.ok(new URL(small.url()).hash === '#people', 'Back must restore the people tab URL');
+    assert.equal(await small.locator('main.detail-page').count(), 0, 'Back must restore homepage content');
+    await small.goForward({ waitUntil: 'domcontentloaded' });
+    assert.equal(await small.locator('main.detail-page h1').count(), 1, 'Forward must restore entity content');
     await small.goto(base + '/people/rene-dekart/', { waitUntil: 'domcontentloaded' });
     assert.ok(await small.locator('.person-overview').isVisible());
     assert.ok(await small.locator('.person-context .relation').count() > 0);

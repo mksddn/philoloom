@@ -322,7 +322,9 @@ class SiteTests(unittest.TestCase):
         self.assertNotIn('<dt>Моя работа</dt>', page)
         self.assertLess(page.index('<article>'), page.index('class="entity-links"'))
         self.assertIn('class="entity-detail entity-detail--topics"', page)
-        self.assertIn('class="entity-kicker">Темы</span>', page)
+        self.assertNotIn('class="entity-kicker">Темы</span>', page)
+        self.assertIn('class="back page-breadcrumbs"', page)
+        self.assertIn('<h1>Герменевтика</h1>', page)
         self.assertIn('class="entity-links-title">Связанные материалы</h2>', page)
         self.assertIn('id="search-open"', page)
         for item in entries:

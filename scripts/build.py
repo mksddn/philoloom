@@ -514,7 +514,12 @@ def person_portrait(page):
         cached = metadata.get('local_image', '')
         if 'wikipedia.org/wiki/' in url and url in page['text'] and cached and image_info(cached):
             return cached, original
-    # Never silently hotlink the portrait from Commons in the public UI.
+    # A missing local preview must not leave a person without a portrait.
+    # Only direct, HTTPS Wikimedia Commons files are eligible for this fallback.
+    source = urlsplit(original)
+    if (source.scheme == 'https' and source.netloc == 'upload.wikimedia.org'
+            and source.path.startswith('/wikipedia/commons/')):
+        return original, original
     return '', original
 
 

@@ -596,7 +596,7 @@ for p in pages.values():
     destination.write_text(shell(p['title'], body, p['group'], canonical_path=address), encoding='utf-8')
 
 # Preserve the exact published quotation and resources from the untouched
-# content source introduction; none of these are newly authored philosophical claims.
+# source introduction; none of these are newly authored philosophical claims.
 intro = home['text'].split('\n## ')[0]
 quote_source = intro.split('- Посмотреть', 1)[0].splitlines()[1:]
 quote_lines = [line.strip() for line in quote_source if line.strip() and line.strip() != '>']

@@ -43,7 +43,7 @@ def records(group):
 
 class PublicContentConsistencyTests(unittest.TestCase):
     def test_every_public_csv_matches_a_markdown_heading(self):
-        expected = {'Темы': 41, 'История философии': 9, 'Личности': 63, 'Цитаты': 11}
+        expected = {'Темы': 47, 'История философии': 9, 'Личности': 63, 'Цитаты': 11}
         for group, count in expected.items():
             with self.subTest(group=group):
                 self.assertEqual(len(records(group)), count)

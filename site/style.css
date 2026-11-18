@@ -2369,9 +2369,12 @@ footer .site-container {
   background: var(--surface);
   min-width: 0;
   overflow: hidden;
-  transition: border-color .15s ease, background .15s ease;
+  transition: border-color .18s ease;
 }
-.entity-card:hover { border-color: var(--accent); }
+@media (hover: hover) and (pointer: fine) {
+  .entity-card:has(> .entity-card-main:hover) { border-color: var(--accent); }
+  .entity-card-main:hover .entity-card-title { color: var(--accent); }
+}
 .entity-card-main {
   display: flex;
   flex-direction: column;
@@ -2381,7 +2384,7 @@ footer .site-container {
   color: var(--text);
   text-decoration: none;
 }
-.entity-card-main:hover { background: var(--hover); }
+
 .entity-card-main:focus-visible,
 .entity-card-connections a:focus-visible {
   outline: 2px solid var(--accent);
@@ -2391,6 +2394,7 @@ footer .site-container {
   font: 500 clamp(20px, 1.8vw, 26px)/1.25 var(--serif);
   letter-spacing: -.025em;
   overflow-wrap: anywhere;
+  transition: color .18s ease;
 }
 .entity-card-meta {
   font-size: 12px;

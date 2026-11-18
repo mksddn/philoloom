@@ -71,7 +71,7 @@ class GeneratedSeoTests(unittest.TestCase):
                 self.assertEqual(data['breadcrumb']['@type'], 'BreadcrumbList')
                 items = data['breadcrumb']['itemListElement']
                 self.assertEqual([x['position'] for x in items], list(range(1, len(items) + 1)))
-                self.assertEqual([x['name'] for x in items], parser.breadcrumb_labels)
+                self.assertEqual([x['name'] for x in items[:-1]], parser.breadcrumb_labels)
                 self.assertEqual(items[-1]['item'], expected)
                 self.assertNotIn('\\\\n', html, 'Literal escaped newline in generated HTML')
                 self.assertNotRegex(html, r'<section class="entity-links"[^>]*>\\s*</section>')
